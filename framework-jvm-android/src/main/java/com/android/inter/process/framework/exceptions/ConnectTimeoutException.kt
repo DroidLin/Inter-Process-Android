@@ -1,0 +1,23 @@
+package com.android.inter.process.framework.exceptions
+
+/**
+ * @author: liuzhongao
+ * @since: 2024/9/17 03:34
+ */
+class ConnectTimeoutException : RuntimeException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+    constructor(
+        message: String?,
+        cause: Throwable?,
+        enableSuppression: Boolean,
+        writableStackTrace: Boolean
+    ) : super(message, cause, enableSuppression, writableStackTrace)
+
+    companion object {
+        private const val serialVersionUID: Long = -6283375207410256603L
+    }
+
+}

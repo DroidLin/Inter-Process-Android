@@ -1,0 +1,29 @@
+package com.android.inter.process.framework
+
+import com.android.inter.process.framework.address.AndroidAddress
+import com.android.inter.process.framework.connector.AndroidConnectorFactory
+import com.android.inter.process.framework.metadata.ServiceCreateResource
+import com.android.inter.process.framework.reflect.callerFunction
+
+/**
+ * implementation of Component, used to create android-based inter process
+ * call logic.
+ *
+ * @author: liuzhongao
+ * @since: 2024/9/13 00:23
+ */
+internal class InterProcessAndroidComponent : InterProcessComponent<AndroidAddress> {
+
+    override fun <T : Any> serviceCreate(serviceCreateResource: ServiceCreateResource<T, AndroidAddress>): T {
+        val newGeneratedInstance = objectPool.getCaller(serviceCreateResource.clazz, serviceCreateResource.interProcessAddress)
+        return newGeneratedInstance ?: serviceCreateResource.clazz.callerFunction(
+            StandardInvocationCaller(
+                tryConnectSuspend = {
+                    val address = serviceCreateResource.interProcessAddress
+                    val connector = AndroidConnectorFactory.connectorCreate(address)
+                    connector.tryConnect()
+                }
+            )
+        )
+    }
+}
