@@ -13,4 +13,8 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
 
     override val processName: String
         get() = App.getProcessName(context)
+
+    override suspend fun fetchProcessName(): String {
+        return App.getProcessName(context)
+    }
 }

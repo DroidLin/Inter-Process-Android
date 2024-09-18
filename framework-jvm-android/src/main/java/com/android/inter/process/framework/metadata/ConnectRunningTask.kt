@@ -1,6 +1,6 @@
 package com.android.inter.process.framework.metadata
 
-import com.android.inter.process.framework.AndroidFunction
+import com.android.inter.process.framework.BasicConnection
 import kotlinx.coroutines.Deferred
 
 /**
@@ -8,5 +8,5 @@ import kotlinx.coroutines.Deferred
  * @since: 2024/9/17 03:16
  */
 internal data class ConnectRunningTask(
-    val deferred: Deferred<AndroidFunction>
+    val deferred: Deferred<BasicConnection>
 )

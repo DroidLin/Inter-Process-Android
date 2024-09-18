@@ -11,10 +11,6 @@ import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.address.AndroidAddress.Companion.toParcelableAddress
 import com.android.inter.process.framework.connector.connectContext
 import com.android.inter.process.framework.metadata.ConnectContext
-import com.android.inter.process.framework.metadata.FunctionParameter
-import com.android.inter.process.framework.metadata.function
-import com.android.inter.process.framework.objectPool
-import com.android.inter.process.framework.receiverAndroidFunction
 
 /**
  * @author: liuzhongao
@@ -25,15 +21,11 @@ abstract class BroadcastAndroidReceiver : BroadcastReceiver() {
     final override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
         val connectContext = intent?.connectContext ?: return
-        val androidFunction = BasicConnection::class.java.receiverAndroidFunction(BasicConnectionImpl)
         val newConnectContext = ConnectContext(
             sourceAddress = (InterProcessCenter.currentAddress as AndroidAddress).toParcelableAddress(),
-            functionParameter = FunctionParameter(
-                functionType = BasicConnection::class.java,
-                androidFunction = androidFunction
-            )
+            basicConnection = BasicConnection(BasicConnectionImpl)
         )
-        FunctionConnectionPool[newConnectContext.sourceAddress] = connectContext.functionParameter.androidFunction
-        BasicConnection(connectContext.functionParameter.androidFunction).setConnectContext(newConnectContext)
+        FunctionConnectionPool[newConnectContext.sourceAddress] = connectContext.basicConnection
+        connectContext.basicConnection.setConnectContext(newConnectContext)
     }
 }

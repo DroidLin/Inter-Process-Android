@@ -10,7 +10,7 @@ import kotlinx.coroutines.sync.Mutex
  */
 internal object FunctionConnectionPool {
 
-    private val basicConnectionMutableMap: MutableMap<ParcelableAndroidAddress, AndroidFunction> by lazy { HashMap() }
+    private val basicConnectionMutableMap: MutableMap<ParcelableAndroidAddress, BasicConnection> by lazy { HashMap() }
     private val connectionRunningRecord: MutableMap<ParcelableAndroidAddress, ConnectRunningTask> by lazy { HashMap() }
     private val mutexMap: MutableMap<ParcelableAndroidAddress, Mutex> by lazy { HashMap() }
 
@@ -43,17 +43,17 @@ internal object FunctionConnectionPool {
         }
     }
 
-    operator fun set(androidAddress: ParcelableAndroidAddress, androidFunction: AndroidFunction) {
+    operator fun set(androidAddress: ParcelableAndroidAddress, basicConnection: BasicConnection) {
         if (this.basicConnectionMutableMap[androidAddress] == null) {
             synchronized(this.basicConnectionMutableMap) {
                 if (this.basicConnectionMutableMap[androidAddress] == null) {
-                    this.basicConnectionMutableMap[androidAddress] = androidFunction
+                    this.basicConnectionMutableMap[androidAddress] = basicConnection
                 }
             }
         }
     }
 
-    operator fun get(androidAddress: ParcelableAndroidAddress): AndroidFunction? {
+    operator fun get(androidAddress: ParcelableAndroidAddress): BasicConnection? {
         return this.basicConnectionMutableMap[androidAddress]
     }
 }

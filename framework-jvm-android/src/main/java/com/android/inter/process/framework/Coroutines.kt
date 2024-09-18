@@ -34,19 +34,22 @@ internal fun <T> SafeContinuation(continuation: Continuation<T>): Continuation<T
 internal val ConnectionCoroutineDispatcherScope = CoroutineScope(Dispatchers.IO)
 
 internal fun runOnConnectionScope(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> Unit
 ) =
-    ConnectionCoroutineDispatcherScope.launch(context = ConnectionCoroutineDispatcherScope.coroutineContext, block = block)
+    ConnectionCoroutineDispatcherScope.launch(context = ConnectionCoroutineDispatcherScope.coroutineContext + coroutineContext, block = block)
 
 internal suspend fun <T> withConnectionScope(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> T
 ): T {
     return withContext(
-        context = ConnectionCoroutineDispatcherScope.coroutineContext,
+        context = ConnectionCoroutineDispatcherScope.coroutineContext + coroutineContext,
         block = block
     )
 }
 
 internal fun <T> blockingOnConnectionScope(
+    coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> T
-) = runBlocking(ConnectionCoroutineDispatcherScope.coroutineContext, block)
+) = runBlocking(ConnectionCoroutineDispatcherScope.coroutineContext + coroutineContext, block)

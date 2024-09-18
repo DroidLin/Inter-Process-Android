@@ -9,4 +9,6 @@ interface ApplicationInfo {
     val packageName: String
 
     val processName: String
+
+    suspend fun fetchProcessName(): String
 }

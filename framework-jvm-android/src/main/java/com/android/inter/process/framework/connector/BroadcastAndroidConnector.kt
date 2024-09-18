@@ -2,6 +2,7 @@ package com.android.inter.process.framework.connector
 
 import android.content.Intent
 import com.android.inter.process.framework.AndroidFunction
+import com.android.inter.process.framework.BasicConnection
 import com.android.inter.process.framework.address.BroadcastAndroidAddress
 import com.android.inter.process.framework.withConnectionScope
 
@@ -13,7 +14,7 @@ internal class BroadcastAndroidConnector(
     private val address: BroadcastAndroidAddress
 ) : AndroidConnector<BroadcastAndroidAddress> {
 
-    override suspend fun tryConnect(): AndroidFunction {
+    override suspend fun tryConnect(): BasicConnection {
         val address = this.address
         return withConnectionScope {
             doConnect(this, address) { connectContext ->

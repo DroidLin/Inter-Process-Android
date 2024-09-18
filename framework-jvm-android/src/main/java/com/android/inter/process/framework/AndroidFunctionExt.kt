@@ -12,13 +12,14 @@ import kotlin.coroutines.Continuation
  */
 
 internal fun <T : Any> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
-    return this.callerFunction(StandardInvocationCaller(tryConnect = { androidFunction }))
+    return this.callerFunction(StandardInvocationCaller(connection = AndroidAutoConnection(BasicConnection(androidFunction))))
 }
 
 internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
     return AndroidFunction(
         AndroidFunction { request ->
+            if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)
             val receiver = receiverFunction { StandardInvocationReceiver() }
             val invokeParameter = InvocationParameter(
                 declaredClassFullName = request.declaredClassFullName,
@@ -35,14 +36,14 @@ internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFun
             )
             val result = runCatching { receiver.invoke(instance, invokeParameter) }
                 .onFailure { InterProcessLogger.logError(it) }
-            AndroidResponse(result.getOrNull(), result.exceptionOrNull())
+            DefaultResponse(result.getOrNull(), result.exceptionOrNull())
         }
     )
 }
 
-internal fun AndroidResponse.getOrThrow(): Any? {
+internal fun Response.getOrThrow(): Any? {
     if (this.throwable != null) {
-        throw this.throwable
+        throw requireNotNull(this.throwable)
     }
     return this.data
 }

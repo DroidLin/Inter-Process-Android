@@ -7,13 +7,15 @@ import android.os.Parcelable
  * @author: liuzhongao
  * @since: 2024/9/15 11:08
  */
-internal data class AndroidResponse(
-    val data: Any?,
-    val throwable: Throwable?
-) : Response, Parcelable {
+internal interface AndroidResponse : Response, Parcelable
+
+internal data class DefaultResponse(
+    override val data: Any? = null,
+    override val throwable: Throwable? = null
+) : AndroidResponse {
 
     constructor(parcel: Parcel) : this(
-        parcel.readValue(AndroidResponse::class.java.classLoader),
+        parcel.readValue(DefaultResponse::class.java.classLoader),
         parcel.readCompatSerializable()
     )
 
@@ -28,12 +30,12 @@ internal data class AndroidResponse(
         } else 0
     }
 
-    companion object CREATOR : Parcelable.Creator<AndroidResponse> {
-        override fun createFromParcel(parcel: Parcel): AndroidResponse {
-            return AndroidResponse(parcel)
+    companion object CREATOR : Parcelable.Creator<DefaultResponse> {
+        override fun createFromParcel(parcel: Parcel): DefaultResponse {
+            return DefaultResponse(parcel)
         }
 
-        override fun newArray(size: Int): Array<AndroidResponse?> {
+        override fun newArray(size: Int): Array<DefaultResponse?> {
             return arrayOfNulls(size)
         }
     }

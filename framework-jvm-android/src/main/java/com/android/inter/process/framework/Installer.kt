@@ -17,7 +17,4 @@ fun InterProcessCenter.installAndroid(address: AndroidAddress) {
     installComponent(AndroidAddress::class.java, androidComponent)
     installComponent(BroadcastAndroidAddress::class.java, androidComponent)
     installComponent(ContentProviderAndroidAddress::class.java, androidComponent)
-
-    objectPool.putCallerFactory(BasicConnection::class.java) { BasicConnection(it as AndroidAddress) }
-    objectPool.putReceiver(BasicConnection::class.java, BasicConnection())
 }

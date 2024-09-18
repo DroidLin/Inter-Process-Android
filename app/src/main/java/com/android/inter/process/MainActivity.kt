@@ -87,6 +87,6 @@ fun GreetingPreview() {
 fun onClick(lifecycleOwner: LifecycleOwner, interProcess: InterProcess) {
     val function = interProcess.create(ApplicationInfo::class.java)
     lifecycleOwner.lifecycleScope.launch {
-        println("processName: ${function.processName}")
+        println("processName: ${function.fetchProcessName()}")
     }
 }

@@ -18,10 +18,10 @@ internal class InterProcessAndroidComponent : InterProcessComponent<AndroidAddre
         val newGeneratedInstance = objectPool.getCaller(serviceCreateResource.clazz, serviceCreateResource.interProcessAddress)
         return newGeneratedInstance ?: serviceCreateResource.clazz.callerFunction(
             StandardInvocationCaller(
-                tryConnectSuspend = {
+                connection = Connection {
                     val address = serviceCreateResource.interProcessAddress
                     val connector = AndroidConnectorFactory.connectorCreate(address)
-                    connector.tryConnect()
+                    AndroidAutoConnection(connector.tryConnect())
                 }
             )
         )

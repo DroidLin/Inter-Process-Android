@@ -9,7 +9,6 @@ android {
 
     defaultConfig {
         minSdk = 24
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
@@ -21,6 +20,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            buildConfigField("String", "buildVersion", "\"${System.currentTimeMillis()}\"")
+            buildConfigField("long", "version", 1001002.toString())
+        }
+
+        debug {
+            buildConfigField("String", "buildVersion", "\"${System.currentTimeMillis()}\"")
+            buildConfigField("long", "version", 1001002.toString())
         }
     }
     compileOptions {
@@ -32,6 +39,7 @@ android {
     }
     buildFeatures {
         aidl = true
+        buildConfig = true
     }
 }
 

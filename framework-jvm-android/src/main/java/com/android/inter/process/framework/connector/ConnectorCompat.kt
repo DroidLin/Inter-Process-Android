@@ -2,7 +2,6 @@ package com.android.inter.process.framework.connector
 
 import android.content.Intent
 import android.os.Build
-import com.android.inter.process.framework.AndroidFunction
 import com.android.inter.process.framework.BasicConnection
 import com.android.inter.process.framework.BasicConnectionImpl
 import com.android.inter.process.framework.FunctionConnectionPool
@@ -14,8 +13,6 @@ import com.android.inter.process.framework.address.AndroidAddress.Companion.toPa
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.ConnectRunningTask
-import com.android.inter.process.framework.metadata.FunctionParameter
-import com.android.inter.process.framework.receiverAndroidFunction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.sync.withLock
@@ -42,7 +39,7 @@ internal suspend fun doConnect(
     coroutineScope: CoroutineScope,
     address: AndroidAddress,
     typeOfConnection: (ConnectContext) -> Unit
-): AndroidFunction {
+): BasicConnection {
     val newParcelableAddress = address.toParcelableAddress()
     val basicConnection = FunctionConnectionPool[newParcelableAddress]
     if (basicConnection != null) {
@@ -86,30 +83,27 @@ internal suspend fun doConnectInner(
     destAddress: ParcelableAndroidAddress,
     connectTimeout: Long,
     typeOfConnection: (ConnectContext) -> Unit
-): AndroidFunction {
+): BasicConnection {
     return suspendCoroutine { continuation ->
         val safeContinuation = SafeContinuation(continuation)
 //        val timeoutJob = coroutineScope.async {
 //            delay(connectTimeout)
 //            safeContinuation.resumeWithException(ConnectTimeoutException("failed to connect to remote due to connect timeout."))
 //        }
-        val androidFunction = BasicConnection::class.java.receiverAndroidFunction(
+        val basicConnection = BasicConnection(
             object : BasicConnection by BasicConnectionImpl {
                 override fun setConnectContext(connectContext: ConnectContext) {
 //                    timeoutJob.cancel()
                     if (destAddress == connectContext.sourceAddress) {
-                        safeContinuation.resume(connectContext.functionParameter.androidFunction)
+                        safeContinuation.resume(connectContext.basicConnection)
                     } else safeContinuation.resumeWithException(IllegalArgumentException("unsatisfied source address: ${connectContext.sourceAddress} and destination address: ${destAddress}."))
                 }
             }
         )
-        val currentProcessAddress = InterProcessCenter.currentAddress as AndroidAddress
-        val functionParameter = FunctionParameter(
-            functionType = BasicConnection::class.java,
-            androidFunction = androidFunction
+        val connectContext = ConnectContext(
+            sourceAddress = (InterProcessCenter.currentAddress as AndroidAddress).toParcelableAddress(),
+            basicConnection = basicConnection
         )
-        val connectContext =
-            ConnectContext(currentProcessAddress.toParcelableAddress(), functionParameter)
         typeOfConnection(connectContext)
     }
 }

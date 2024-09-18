@@ -2,6 +2,8 @@ package com.android.inter.process.framework.reflect
 
 import com.android.inter.process.framework.IFunction
 import com.android.inter.process.framework.InterProcessObjectPool
+import com.android.inter.process.framework.Request
+import com.android.inter.process.framework.metadata.JvmMethodRequest
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import kotlin.coroutines.Continuation
@@ -10,7 +12,7 @@ import kotlin.coroutines.Continuation
  * @author: liuzhongao
  * @since: 2024/9/16 14:13
  */
-typealias InvocationCaller = (instance: Any?, method: Method, parameters: Array<Any?>?) -> Any?
+typealias InvocationCaller = (JvmMethodRequest) -> Any?
 typealias InvocationReceiver<T> = (instance: T, invocationParameter: InvocationParameter) -> Any?
 
 fun <T : Any> Class<T>.callerFunction(
