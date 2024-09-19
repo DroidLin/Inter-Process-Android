@@ -1,6 +1,8 @@
 package com.android.inter.process
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * @author: liuzhongao
@@ -15,6 +17,8 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
         get() = App.getProcessName(context)
 
     override suspend fun fetchProcessName(): String {
-        return App.getProcessName(context)
+        return withContext(Dispatchers.IO) {
+            App.getProcessName(context)
+        }
     }
 }

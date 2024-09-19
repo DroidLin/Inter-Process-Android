@@ -11,10 +11,12 @@ import com.android.inter.process.framework.SafeContinuation
 import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.address.AndroidAddress.Companion.toParcelableAddress
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
+import com.android.inter.process.framework.exceptions.ConnectTimeoutException
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.ConnectRunningTask
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -86,14 +88,14 @@ internal suspend fun doConnectInner(
 ): BasicConnection {
     return suspendCoroutine { continuation ->
         val safeContinuation = SafeContinuation(continuation)
-//        val timeoutJob = coroutineScope.async {
-//            delay(connectTimeout)
-//            safeContinuation.resumeWithException(ConnectTimeoutException("failed to connect to remote due to connect timeout."))
-//        }
+        val timeoutJob = coroutineScope.async {
+            delay(connectTimeout)
+            safeContinuation.resumeWithException(ConnectTimeoutException("failed to connect to remote due to connect timeout."))
+        }
         val basicConnection = BasicConnection(
             object : BasicConnection by BasicConnectionImpl {
                 override fun setConnectContext(connectContext: ConnectContext) {
-//                    timeoutJob.cancel()
+                    timeoutJob.cancel()
                     if (destAddress == connectContext.sourceAddress) {
                         safeContinuation.resume(connectContext.basicConnection)
                     } else safeContinuation.resumeWithException(IllegalArgumentException("unsatisfied source address: ${connectContext.sourceAddress} and destination address: ${destAddress}."))

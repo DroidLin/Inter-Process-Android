@@ -39,7 +39,6 @@ data class InvocationParameter(
     val uniqueKey: String,
     val methodParameterTypeFullNames: List<String>,
     val methodParameterValues: List<Any?>,
-    val suspendParameter: SuspendParameter? = null
 )
 
 data class SuspendParameter(

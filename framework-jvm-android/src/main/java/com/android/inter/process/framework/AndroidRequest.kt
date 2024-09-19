@@ -96,5 +96,25 @@ internal data class SetConnectContext(
             return arrayOfNulls(size)
         }
     }
+}
 
+internal class FetchBasicConnectionVersion() : AndroidRequest {
+
+    constructor(parcel: Parcel) : this()
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {}
+
+    companion object CREATOR : Parcelable.Creator<FetchBasicConnectionVersion> {
+        override fun createFromParcel(parcel: Parcel): FetchBasicConnectionVersion {
+            return FetchBasicConnectionVersion(parcel)
+        }
+
+        override fun newArray(size: Int): Array<FetchBasicConnectionVersion?> {
+            return arrayOfNulls(size)
+        }
+    }
 }

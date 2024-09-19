@@ -1,9 +1,12 @@
 package com.android.inter.process.framework
 
 import com.android.inter.process.framework.metadata.ConnectContext
+import com.android.inter.process.framework.metadata.FunctionParameter
+import com.android.inter.process.framework.metadata.SuspendContext
 import com.android.inter.process.framework.metadata.function
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
 /**
  * basic interface used to get information about remote process,
@@ -53,7 +56,7 @@ internal fun BasicConnection(basicConnection: BasicConnection): BasicConnection 
 private class BasicConnectionCaller(val androidFunction: AndroidFunction) : BasicConnection {
 
     override val version: Long
-        get() = TODO("Not yet implemented")
+        get() = this.androidFunction.call(FetchBasicConnectionVersion()).getOrThrow() as Long
 
     override fun setConnectContext(connectContext: ConnectContext) {
         this.androidFunction.call(SetConnectContext(connectContext))
@@ -64,8 +67,16 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
     }
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
-        return withConnectionScope {
-            this@BasicConnectionCaller.androidFunction.call(request).getOrThrow()
+        return suspendCoroutineUninterceptedOrReturn { continuation ->
+            val newRequest = request.copy(
+                suspendContext = SuspendContext(
+                    functionParameter = FunctionParameter(
+                        functionType = IContinuation::class.java,
+                        androidFunction = Continuation::class.java.receiverAndroidFunction(SafeContinuation(continuation))
+                    )
+                )
+            )
+            this@BasicConnectionCaller.androidFunction.call(newRequest).getOrThrow()
         }
     }
 }
@@ -87,6 +98,7 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
                     } else this.call(request)
 
                     is SetConnectContext -> this.setConnectContext(request.connectContext)
+                    is FetchBasicConnectionVersion -> this.version
                     else -> null
                 }
             }.onFailure { InterProcessLogger.logError(it) }

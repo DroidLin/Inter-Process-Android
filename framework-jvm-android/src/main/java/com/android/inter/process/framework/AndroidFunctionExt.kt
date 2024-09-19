@@ -1,7 +1,7 @@
 package com.android.inter.process.framework
 
+import com.android.inter.process.framework.metadata.function
 import com.android.inter.process.framework.reflect.InvocationParameter
-import com.android.inter.process.framework.reflect.SuspendParameter
 import com.android.inter.process.framework.reflect.callerFunction
 import com.android.inter.process.framework.reflect.receiverFunction
 import kotlin.coroutines.Continuation
@@ -20,19 +20,17 @@ internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFun
     return AndroidFunction(
         AndroidFunction { request ->
             if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)
-            val receiver = receiverFunction { StandardInvocationReceiver() }
+            val receiver = receiverFunction { ReflectInvocationReceiver }
             val invokeParameter = InvocationParameter(
                 declaredClassFullName = request.declaredClassFullName,
                 methodName = request.methodName,
                 uniqueKey = request.uniqueId,
-                methodParameterTypeFullNames = request.methodParameterTypeFullNames,
-                methodParameterValues = request.methodParameterValues,
-                suspendParameter = request.suspendContext?.functionParameter?.let {
-                    SuspendParameter(
-                        functionType = it.functionType as Class<out Continuation<*>>,
-                        function = it.androidFunction
-                    )
-                },
+                methodParameterTypeFullNames = if (request.suspendContext != null) {
+                    request.methodParameterTypeFullNames + Continuation::class.java.name
+                } else request.methodParameterTypeFullNames,
+                methodParameterValues = if (request.suspendContext != null) {
+                    request.methodParameterValues + request.suspendContext.functionParameter.function<Continuation<Any?>>()
+                } else request.methodParameterValues,
             )
             val result = runCatching { receiver.invoke(instance, invokeParameter) }
                 .onFailure { InterProcessLogger.logError(it) }

@@ -41,13 +41,5 @@ internal class DefaultInvocationHandler(
         )
 
         return this.function(request)
-//        val methodParameterTypes = method.parameterTypes
-//        val isSuspend = methodParameterTypes.lastOrNull() == Continuation::class.java
-//        return if (isSuspend) {
-//            val fixParameters = requireNotNull(parameters).copyOf(parameters.size - 1)
-//            val continuation = requireNotNull(parameters.lastOrNull() as? Continuation<Any?>)
-//            (this::invokeSuspend as Function3<Method, Array<out Any?>, Continuation<Any?>, Any?>)
-//                .invoke(method, fixParameters, continuation)
-//        } else this.invoke(method, parameters)
     }
 }
