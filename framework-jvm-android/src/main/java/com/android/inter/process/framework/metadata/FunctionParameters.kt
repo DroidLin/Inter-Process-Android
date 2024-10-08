@@ -1,9 +1,9 @@
 package com.android.inter.process.framework.metadata
 
-import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import com.android.inter.process.framework.containsFileDescriptor
+import com.android.inter.process.framework.readCompatMap
 
 /**
  * transport bridge
@@ -35,9 +35,7 @@ internal class FunctionParameters private constructor() : Parcelable {
     }
 
     public fun readFromParcel(parcel: Parcel) {
-        val innerParameterMap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            parcel.readHashMap(this.javaClass.classLoader, String::class.java, Any::class.java)
-        } else parcel.readHashMap(this.javaClass.classLoader) as? MutableMap<String, Any?>
+        val innerParameterMap = parcel.readCompatMap<String, Any>(this.javaClass.classLoader)
         if (innerParameterMap != null) {
             this.innerParameters.clear()
             this.innerParameters += innerParameterMap

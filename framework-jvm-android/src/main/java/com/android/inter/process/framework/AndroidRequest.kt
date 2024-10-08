@@ -7,6 +7,9 @@ import com.android.inter.process.framework.metadata.SuspendContext
 import kotlin.coroutines.Continuation
 
 /**
+ * for android extensions, all the request are implemented from [AndroidRequest] in order to
+ * be passed through binder driver.
+ *
  * @author: liuzhongao
  * @since: 2024/9/15 10:49
  */
@@ -71,49 +74,52 @@ internal data class AndroidJvmMethodRequest(
             return arrayOfNulls(size)
         }
     }
-
 }
 
-internal data class SetConnectContext(
-    val connectContext: ConnectContext
+internal const val TYPE_SET_CONNECT_CONTEXT = "type_set_connect_context"
+internal const val TYPE_FETCH_BASIC_CONNECTION_VERSION = "type_fetch_basic_connection_version"
+
+/**
+ * extensions fulfill better usage of kotlin types instead of String Parameter Access.
+ */
+internal var BasicConnectionSelfRequest.connectContext: ConnectContext?
+    set(value) {
+        this.extensions[TYPE_SET_CONNECT_CONTEXT] = value
+    }
+    get() = this.extensions[TYPE_SET_CONNECT_CONTEXT] as? ConnectContext
+
+internal data class BasicConnectionSelfRequest(
+    /**
+     * request type of internal basic connection interface.
+     */
+    val requestType: String,
+    /**
+     * extra parcelable parameters storage in self request,
+     * may be transported through binder driver.
+     */
+    val extensions: MutableMap<String, Any?> = HashMap()
 ) : AndroidRequest {
-    constructor(parcel: Parcel) : this(requireNotNull(parcel.readCompatParcelable(ConnectContext::class.java.classLoader)))
+
+    constructor(parcel: Parcel) : this(
+        requestType = requireNotNull(parcel.readString()),
+        extensions = parcel.readCompatMap<String, Any>(BasicConnectionSelfRequest::class.java.classLoader)?.toMutableMap() ?: HashMap<String, Any?>()
+    )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeParcelable(this.connectContext, flags)
+        parcel.writeString(requestType)
+        parcel.writeMap(this.extensions)
     }
 
     override fun describeContents(): Int {
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<SetConnectContext> {
-        override fun createFromParcel(parcel: Parcel): SetConnectContext {
-            return SetConnectContext(parcel)
+    companion object CREATOR : Parcelable.Creator<BasicConnectionSelfRequest> {
+        override fun createFromParcel(parcel: Parcel): BasicConnectionSelfRequest {
+            return BasicConnectionSelfRequest(parcel)
         }
 
-        override fun newArray(size: Int): Array<SetConnectContext?> {
-            return arrayOfNulls(size)
-        }
-    }
-}
-
-internal class FetchBasicConnectionVersion() : AndroidRequest {
-
-    constructor(parcel: Parcel) : this()
-
-    override fun describeContents(): Int {
-        return 0
-    }
-
-    override fun writeToParcel(dest: Parcel, flags: Int) {}
-
-    companion object CREATOR : Parcelable.Creator<FetchBasicConnectionVersion> {
-        override fun createFromParcel(parcel: Parcel): FetchBasicConnectionVersion {
-            return FetchBasicConnectionVersion(parcel)
-        }
-
-        override fun newArray(size: Int): Array<FetchBasicConnectionVersion?> {
+        override fun newArray(size: Int): Array<BasicConnectionSelfRequest?> {
             return arrayOfNulls(size)
         }
     }

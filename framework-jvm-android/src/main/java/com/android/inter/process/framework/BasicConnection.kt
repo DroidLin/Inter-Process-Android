@@ -56,10 +56,15 @@ internal fun BasicConnection(basicConnection: BasicConnection): BasicConnection 
 private class BasicConnectionCaller(val androidFunction: AndroidFunction) : BasicConnection {
 
     override val version: Long
-        get() = this.androidFunction.call(FetchBasicConnectionVersion()).getOrThrow() as Long
+        get() {
+            val request = BasicConnectionSelfRequest(TYPE_FETCH_BASIC_CONNECTION_VERSION)
+            return this.androidFunction.call(request).getOrThrow() as Long
+        }
 
     override fun setConnectContext(connectContext: ConnectContext) {
-        this.androidFunction.call(SetConnectContext(connectContext))
+        val request = BasicConnectionSelfRequest(requestType = TYPE_SET_CONNECT_CONTEXT)
+        request.connectContext = connectContext
+        this.androidFunction.call(request)
     }
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
@@ -87,18 +92,18 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
             val result = kotlin.runCatching {
                 when (request) {
                     is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
-                        val remoteContinuation = request.suspendContext.functionParameter.function<IContinuation<Any?>>()
-                        val continuation = object : Continuation<Any?> {
+                        val continuation = object : Continuation<Any?> by request.suspendContext.functionParameter.function<IContinuation<Any?>>() {
                             override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
-                            override fun resumeWith(result: Result<Any?>) {
-                                remoteContinuation.resumeWith(result)
-                            }
                         }
                         (this::callSuspend as Function2<AndroidRequest, Continuation<*>, AndroidResponse>)(request, continuation)
                     } else this.call(request)
-
-                    is SetConnectContext -> this.setConnectContext(request.connectContext)
-                    is FetchBasicConnectionVersion -> this.version
+                    is BasicConnectionSelfRequest -> {
+                        when (request.requestType) {
+                            TYPE_SET_CONNECT_CONTEXT -> this.setConnectContext(requireNotNull(request.connectContext))
+                            TYPE_FETCH_BASIC_CONNECTION_VERSION -> this.version
+                            else -> null
+                        }
+                    }
                     else -> null
                 }
             }.onFailure { InterProcessLogger.logError(it) }
