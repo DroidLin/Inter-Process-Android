@@ -40,6 +40,6 @@ internal class DefaultInvocationHandler(
             continuation = continuation
         )
 
-        return this.function(request)
+        return this.function.invoke(request)
     }
 }

@@ -20,10 +20,10 @@ class App : Application() {
 
         val packageName = getProcessName(this)
         println("process name: ${packageName}.")
-        if (packageName.endsWith(":lib")) {
+        if (packageName.endsWith(":lib")) { // lib进程
             val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_lib_ipc))
             InterProcessCenter.installAndroid(androidAddress)
-        } else if (!packageName.contains(":")) {
+        } else if (!packageName.contains(":")) { // main进程
             val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_main_ipc))
             InterProcessCenter.installAndroid(androidAddress)
         }

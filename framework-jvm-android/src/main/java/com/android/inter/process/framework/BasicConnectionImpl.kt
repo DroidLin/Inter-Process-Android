@@ -1,9 +1,7 @@
 package com.android.inter.process.framework
 
 import com.android.inter.process.framework.metadata.ConnectContext
-import com.android.inter.process.framework.metadata.function
 import com.android.inter.process.framework.reflect.InvocationParameter
-import com.android.inter.process.framework.reflect.receiverFunction
 import kotlin.coroutines.Continuation
 
 internal object BasicConnectionImpl : BasicConnection {
@@ -14,21 +12,23 @@ internal object BasicConnectionImpl : BasicConnection {
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
         val hostClass = request.declaredClassFullName.stringTypeConvert as Class<Any>
-        val instance = objectPool.getInstance(hostClass)
-        val invokeParameter = InvocationParameter(
+        val invocationReceiver = objectPool.getReceiver(hostClass)
+
+        val invocationParameter = InvocationParameter(
             declaredClassFullName = request.declaredClassFullName,
             methodName = request.methodName,
             uniqueKey = request.uniqueId,
             methodParameterTypeFullNames = request.methodParameterTypeFullNames,
             methodParameterValues = request.methodParameterValues,
         )
-        return hostClass.receiverFunction { ReflectInvocationReceiver }.invoke(instance, invokeParameter)
+        return invocationReceiver.invoke(invocationParameter)
     }
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
         return kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn { continuation ->
             val hostClass = request.declaredClassFullName.stringTypeConvert as Class<Any>
-            val instance = objectPool.getInstance(hostClass)
+            val invocationReceiver = objectPool.getReceiver(hostClass)
+
             val invokeParameter = InvocationParameter(
                 declaredClassFullName = request.declaredClassFullName,
                 methodName = request.methodName,
@@ -40,7 +40,7 @@ internal object BasicConnectionImpl : BasicConnection {
                     request.methodParameterValues + continuation
                 } else request.methodParameterValues,
             )
-            hostClass.receiverFunction { ReflectInvocationReceiver }.invoke(instance, invokeParameter)
+            invocationReceiver.invoke(invokeParameter)
         }
     }
 }

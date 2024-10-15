@@ -2,6 +2,7 @@ package com.android.inter.process.framework
 
 import com.android.inter.process.framework.metadata.function
 import com.android.inter.process.framework.reflect.InvocationParameter
+import com.android.inter.process.framework.reflect.InvocationReceiver
 import com.android.inter.process.framework.reflect.callerFunction
 import com.android.inter.process.framework.reflect.receiverFunction
 import kotlin.coroutines.Continuation
@@ -20,7 +21,7 @@ internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFun
     return AndroidFunction(
         AndroidFunction { request ->
             if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)
-            val receiver = receiverFunction { ReflectInvocationReceiver }
+            val receiver = this.receiverFunction()
             val invokeParameter = InvocationParameter(
                 declaredClassFullName = request.declaredClassFullName,
                 methodName = request.methodName,
@@ -32,16 +33,17 @@ internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFun
                     request.methodParameterValues + request.suspendContext.functionParameter.function<Continuation<Any?>>()
                 } else request.methodParameterValues,
             )
-            val result = runCatching { receiver.invoke(instance, invokeParameter) }
+            val result = runCatching { receiver.invoke(invokeParameter) }
                 .onFailure { InterProcessLogger.logError(it) }
             DefaultResponse(result.getOrNull(), result.exceptionOrNull())
         }
     )
 }
 
-internal fun Response.getOrThrow(): Any? {
-    if (this.throwable != null) {
-        throw requireNotNull(this.throwable)
+internal val Response.dataCompat: Any?
+    get() {
+        if (this.throwable != null) {
+            throw requireNotNull(this.throwable)
+        }
+        return this.data
     }
-    return this.data
-}

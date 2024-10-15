@@ -16,13 +16,11 @@ internal class BroadcastAndroidConnector(
 
     override suspend fun tryConnect(): BasicConnection {
         val address = this.address
-        return withConnectionScope {
-            doConnect(this, address) { connectContext ->
-                val intent = Intent(address.broadcastAction)
-                intent.`package` = address.packageName
-                intent.connectContext = connectContext
-                address.context.sendBroadcast(intent)
-            }
+        return doConnect(address) { connectContext ->
+            val intent = Intent(address.broadcastAction)
+            intent.`package` = address.packageName
+            intent.connectContext = connectContext
+            address.context.sendBroadcast(intent)
         }
     }
 }

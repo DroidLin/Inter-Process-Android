@@ -17,14 +17,16 @@ import kotlin.coroutines.EmptyCoroutineContext
 
 internal fun <T> SafeContinuation(continuation: Continuation<T>): Continuation<T> {
     return object : Continuation<T> by continuation {
-        val continuationConsumed by lazy { AtomicBoolean(false) }
+
+        private val continuationResumed by lazy { AtomicBoolean(false) }
+
         override fun resumeWith(result: Result<T>) {
-            val consumed = this.continuationConsumed.get()
+            val consumed = this.continuationResumed.get()
             if (consumed) {
                 InterProcessLogger.logDebug("SafeContinuation resume skipped, result: ${result}.")
                 return
             }
-            if (this.continuationConsumed.compareAndSet(false, true)) {
+            if (this.continuationResumed.compareAndSet(false, true)) {
                 continuation.resumeWith(result)
             }
         }
@@ -42,12 +44,10 @@ internal fun runOnConnectionScope(
 internal suspend fun <T> withConnectionScope(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,
     block: suspend CoroutineScope.() -> T
-): T {
-    return withContext(
-        context = ConnectionCoroutineDispatcherScope.coroutineContext + coroutineContext,
-        block = block
-    )
-}
+): T = withContext(
+    context = ConnectionCoroutineDispatcherScope.coroutineContext + coroutineContext,
+    block = block
+)
 
 internal fun <T> blockingOnConnectionScope(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

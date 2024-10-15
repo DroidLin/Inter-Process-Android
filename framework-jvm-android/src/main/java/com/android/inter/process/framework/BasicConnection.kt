@@ -1,6 +1,7 @@
 package com.android.inter.process.framework
 
 import android.os.IBinder
+import com.android.inter.process.framework.exceptions.BinderDisconnectedException
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.FunctionParameter
 import com.android.inter.process.framework.metadata.SuspendContext
@@ -8,6 +9,8 @@ import com.android.inter.process.framework.metadata.function
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.resumeWithException
 
 /**
  * basic interface used to get information about remote process,
@@ -50,16 +53,12 @@ internal fun BasicConnection(androidFunction: AndroidFunction): BasicConnection 
     return BasicConnectionCaller(androidFunction)
 }
 
-internal fun BasicConnection(basicConnection: BasicConnection): BasicConnection {
-    return BasicConnectionReceiver(basicConnection)
-}
-
 private class BasicConnectionCaller(val androidFunction: AndroidFunction) : BasicConnection {
 
     override val version: Long
         get() {
             val request = BasicConnectionSelfRequest(TYPE_FETCH_BASIC_CONNECTION_VERSION)
-            return this.androidFunction.call(request).getOrThrow() as Long
+            return this.androidFunction.call(request).dataCompat as Long
         }
 
     override fun setConnectContext(connectContext: ConnectContext) {
@@ -69,7 +68,7 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
     }
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
-        return this.androidFunction.call(request).getOrThrow()
+        return this.androidFunction.call(request).dataCompat
     }
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
@@ -77,14 +76,33 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
             val newRequest = request.copy(
                 suspendContext = SuspendContext(
                     functionParameter = FunctionParameter(
-                        functionType = IContinuation::class.java,
+                        functionType = Continuation::class.java,
                         androidFunction = Continuation::class.java.receiverAndroidFunction(SafeContinuation(continuation))
                     )
                 )
             )
-            this@BasicConnectionCaller.androidFunction.call(newRequest).getOrThrow()
+            val deathListener = object : AndroidFunction.DeathListener {
+                override fun onDead() {
+                    this@BasicConnectionCaller.androidFunction.removeDeathListener(this)
+                    continuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
+                }
+            }
+            var data: Any? = null
+            try {
+                this@BasicConnectionCaller.androidFunction.addDeathListener(deathListener)
+                data = this@BasicConnectionCaller.androidFunction.call(newRequest).dataCompat
+            } finally {
+                if (data != COROUTINE_SUSPENDED) {
+                    this@BasicConnectionCaller.androidFunction.removeDeathListener(deathListener)
+                }
+            }
+            data
         }
     }
+}
+
+internal fun BasicConnection(basicConnection: BasicConnection): BasicConnection {
+    return BasicConnectionReceiver(basicConnection)
 }
 
 private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicConnection by basicConnection {
@@ -93,7 +111,7 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
             val result = kotlin.runCatching {
                 when (request) {
                     is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
-                        val continuation = object : Continuation<Any?> by request.suspendContext.functionParameter.function<IContinuation<Any?>>() {
+                        val continuation = object : Continuation<Any?> by request.suspendContext.functionParameter.function() {
                             override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
                         }
                         (this::callSuspend as Function2<AndroidRequest, Continuation<*>, AndroidResponse>)(request, continuation)

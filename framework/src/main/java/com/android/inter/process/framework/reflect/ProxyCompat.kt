@@ -1,19 +1,19 @@
 package com.android.inter.process.framework.reflect
 
-import com.android.inter.process.framework.IFunction
 import com.android.inter.process.framework.InterProcessObjectPool
-import com.android.inter.process.framework.Request
 import com.android.inter.process.framework.metadata.JvmMethodRequest
-import java.lang.reflect.Method
+import com.android.inter.process.framework.objectPool
 import java.lang.reflect.Proxy
-import kotlin.coroutines.Continuation
 
-/**
- * @author: liuzhongao
- * @since: 2024/9/16 14:13
- */
-typealias InvocationCaller = (JvmMethodRequest) -> Any?
-typealias InvocationReceiver<T> = (instance: T, invocationParameter: InvocationParameter) -> Any?
+fun interface InvocationCaller {
+
+    fun invoke(request: JvmMethodRequest): Any?
+}
+
+
+fun interface InvocationReceiver<T> {
+    fun invoke(invocationParameter: InvocationParameter): Any?
+}
 
 fun <T : Any> Class<T>.callerFunction(
     invocationCaller: InvocationCaller
@@ -28,9 +28,9 @@ fun <T : Any> Class<T>.callerFunction(
     ) as T
 }
 
-fun <T : Any> Class<T>.receiverFunction(invocationReceiver: () -> InvocationReceiver<T>): InvocationReceiver<T> {
+fun <T : Any> Class<T>.receiverFunction(): InvocationReceiver<T> {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
-    return InterProcessObjectPool.getReceiverCache(this) ?: invocationReceiver()
+    return objectPool.getReceiver(this)
 }
 
 data class InvocationParameter(
@@ -40,3 +40,12 @@ data class InvocationParameter(
     val methodParameterTypeFullNames: List<String>,
     val methodParameterValues: List<Any?>,
 )
+
+internal val InvocationParameter.methodUniqueId: String
+    get() = "${declaredClassFullName}#${methodName}${
+        methodParameterTypeFullNames.joinToString(
+            ",",
+            prefix = "(",
+            postfix = ")"
+        )
+    }"

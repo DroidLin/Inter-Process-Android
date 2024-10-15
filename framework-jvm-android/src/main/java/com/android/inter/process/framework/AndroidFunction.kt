@@ -111,7 +111,7 @@ private class FunctionCaller(val binderFunction: Function) : AndroidFunction {
                 val functionParameters = FunctionParameters.obtain()
                 try {
                     functionParameters.request = request
-                    InterProcessLogger.logDebug("calling ${request.javaClass}")
+                    InterProcessLogger.logDebug("calling ${request.javaClass.name}")
                     this.binderFunction.call(functionParameters)
                     response = functionParameters.response
                     if (response == null) {

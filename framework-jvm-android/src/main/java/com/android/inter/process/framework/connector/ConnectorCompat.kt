@@ -14,6 +14,7 @@ import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.exceptions.ConnectTimeoutException
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.ConnectRunningTask
+import com.android.inter.process.framework.withConnectionScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -38,7 +39,6 @@ internal var Intent.connectContext: ConnectContext?
     } else this.getParcelableExtra(KEY_CONNECT_CONTEXT)
 
 internal suspend fun doConnect(
-    coroutineScope: CoroutineScope,
     address: AndroidAddress,
     typeOfConnection: (ConnectContext) -> Unit
 ): BasicConnection {
@@ -55,27 +55,29 @@ internal suspend fun doConnect(
         return runningTask.deferred.await()
     }
 
-    FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
-        try {
-            InterProcessLogger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
-            InterProcessLogger.logDebug("trying connect to remote: ${newParcelableAddress}.")
-            val connectRecord = ConnectRunningTask(
-                deferred = coroutineScope.async {
-                    doConnectInner(
-                        coroutineScope = coroutineScope,
-                        destAddress = newParcelableAddress,
-                        connectTimeout = 10_000,
-                        typeOfConnection = typeOfConnection
-                    )
+    return withConnectionScope connectionScope@{
+        FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
+            try {
+                InterProcessLogger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
+                InterProcessLogger.logDebug("trying connect to remote: ${newParcelableAddress}.")
+                val connectRecord = ConnectRunningTask(
+                    deferred = async {
+                        doConnectInner(
+                            coroutineScope = this@connectionScope,
+                            destAddress = newParcelableAddress,
+                            connectTimeout = 10_000,
+                            typeOfConnection = typeOfConnection
+                        )
+                    }
+                )
+                FunctionConnectionPool.addRecord(newParcelableAddress, connectRecord)
+                connectRecord.deferred.await().also { basicConnection ->
+                    FunctionConnectionPool[newParcelableAddress] = basicConnection
                 }
-            )
-            FunctionConnectionPool.addRecord(newParcelableAddress, connectRecord)
-            return connectRecord.deferred.await().also { basicConnection ->
-                FunctionConnectionPool[newParcelableAddress] = basicConnection
+            } finally {
+                FunctionConnectionPool.removeRecord(newParcelableAddress)
+                InterProcessLogger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner Finished >>>>>>>>>>>>>>>>>>>>>>>>>")
             }
-        } finally {
-            FunctionConnectionPool.removeRecord(newParcelableAddress)
-            InterProcessLogger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner Finished >>>>>>>>>>>>>>>>>>>>>>>>>")
         }
     }
 }
