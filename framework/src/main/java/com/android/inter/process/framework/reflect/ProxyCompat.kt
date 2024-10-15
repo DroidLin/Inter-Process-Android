@@ -40,8 +40,3 @@ data class InvocationParameter(
     val methodParameterTypeFullNames: List<String>,
     val methodParameterValues: List<Any?>,
 )
-
-data class SuspendParameter(
-    val functionType: Class<out Continuation<*>>,
-    val function: IFunction<*, *>
-)

@@ -1,5 +1,6 @@
 package com.android.inter.process.framework
 
+import android.os.IBinder
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.FunctionParameter
 import com.android.inter.process.framework.metadata.SuspendContext
@@ -38,10 +39,10 @@ internal interface BasicConnection {
     suspend fun callSuspend(request: AndroidJvmMethodRequest): Any?
 }
 
-internal val BasicConnection.androidFunction: AndroidFunction
+internal val BasicConnection.iBinder: IBinder
     get() = when (this) {
-        is BasicConnectionCaller -> this.androidFunction
-        is BasicConnectionReceiver -> this.androidFunction
+        is BasicConnectionCaller -> this.androidFunction.function.asBinder()
+        is BasicConnectionReceiver -> this.androidFunction.function.asBinder()
         else -> throw IllegalArgumentException("unknown basic connection type: ${this.javaClass}.")
     }
 

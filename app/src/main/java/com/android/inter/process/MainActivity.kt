@@ -1,12 +1,10 @@
 package com.android.inter.process
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,25 +16,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.android.inter.process.framework.InterProcess
-import com.android.inter.process.framework.InterProcessCenter
 import com.android.inter.process.framework.address.broadcast
 import com.android.inter.process.ui.theme.InterProcessAndroidTheme
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
 
     private val interProcess by lazy {
-        val address = broadcast(
-            context = this,
-            broadcastAction = getString(R.string.broadcast_action_lib_ipc)
+        InterProcess.with(
+            broadcast(
+                context = this,
+                broadcastAction = getString(R.string.broadcast_action_lib_ipc)
+            )
         )
-        InterProcess.with(address)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,7 +80,7 @@ fun GreetingPreview() {
 }
 
 fun onClick(lifecycleOwner: LifecycleOwner, interProcess: InterProcess) {
-    val function = interProcess.create(ApplicationInfo::class.java)
+    val function = interProcess.serviceCreate(ApplicationInfo::class.java)
     lifecycleOwner.lifecycleScope.launch {
         println("processName: ${function.fetchProcessName()}")
     }

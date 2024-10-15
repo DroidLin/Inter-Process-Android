@@ -13,7 +13,7 @@ class InterProcess private constructor(
     private val address: Address,
 ) {
 
-    fun <T : Any> create(clazz: Class<T>): T {
+    fun <T : Any> serviceCreate(clazz: Class<T>): T {
         if (!clazz.isInterface) {
             throw IllegalArgumentException("class: $clazz is not declared as an interface.")
         }

@@ -1,11 +1,13 @@
 package com.android.inter.process.framework
 
+import android.os.IBinder
 import android.os.RemoteException
 import com.android.inter.process.framework.exceptions.BinderNotConnectedException
 import com.android.inter.process.framework.exceptions.RemoteProcessFailureException
 import com.android.inter.process.framework.metadata.FunctionParameters
 import com.android.inter.process.framework.metadata.request
 import com.android.inter.process.framework.metadata.response
+import java.util.LinkedList
 
 /**
  * delegate of [IFunction]
@@ -15,14 +17,23 @@ import com.android.inter.process.framework.metadata.response
  */
 internal fun interface AndroidFunction : IFunction<AndroidRequest, AndroidResponse> {
 
-    override fun call(request: AndroidRequest): AndroidResponse
-}
+    /**
+     * add death listener to this android function.
+     */
+    fun addDeathListener(deathListener: DeathListener) {}
 
-internal val AndroidFunction.isAlive: Boolean
-    get() = when (this) {
-        is FunctionCaller -> this.binderFunction.asBinder().pingBinder()
-        else -> true
+    /**
+     * remove an exist death listener on this android function.
+     */
+    fun removeDeathListener(deathListener: DeathListener) {}
+
+    override fun call(request: AndroidRequest): AndroidResponse
+
+    fun interface DeathListener {
+
+        fun onDead()
     }
+}
 
 /**
  * fast way to get aidl function [IFunction] instance.
@@ -46,6 +57,43 @@ internal fun AndroidFunction(function: AndroidFunction): AndroidFunction {
  * implementation of [AndroidFunction] for calling remote method.
  */
 private class FunctionCaller(val binderFunction: Function) : AndroidFunction {
+
+    private val deathListenerList = LinkedList<AndroidFunction.DeathListener>()
+
+    init {
+        this.binderFunction.asBinder().linkToDeath(
+            object : IBinder.DeathRecipient {
+                override fun binderDied() {
+                    this@FunctionCaller.binderFunction.asBinder().unlinkToDeath(this, 0)
+                    this@FunctionCaller.notifyAndroidFunctionDeath()
+                }
+            },
+            0
+        )
+    }
+
+    override fun addDeathListener(deathListener: AndroidFunction.DeathListener) {
+        synchronized(this.deathListenerList) {
+            if (!this.deathListenerList.contains(deathListener)) {
+                this.deathListenerList += deathListener
+            }
+        }
+    }
+
+    override fun removeDeathListener(deathListener: AndroidFunction.DeathListener) {
+        synchronized(this.deathListenerList) {
+            if (this.deathListenerList.contains(deathListener)) {
+                this.deathListenerList -= deathListener
+            }
+        }
+    }
+
+    private fun notifyAndroidFunctionDeath() {
+        val deathListenerList = synchronized(this.deathListenerList) {
+            this.deathListenerList.toList()
+        }
+        deathListenerList.forEach(AndroidFunction.DeathListener::onDead)
+    }
 
     override fun call(request: AndroidRequest): AndroidResponse {
         InterProcessLogger.logDebug(">>>>>>>>>>>>>>>>>>>>>>>>> Start Inter Process Call <<<<<<<<<<<<<<<<<<<<<<<<<<<")
