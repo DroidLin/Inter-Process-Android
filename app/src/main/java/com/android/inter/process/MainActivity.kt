@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,9 +15,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.android.inter.process.framework.InterProcess
@@ -47,9 +51,23 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Button(onClick = { onClick(this@MainActivity, this@MainActivity.interProcess) }) {
-                            Text(text = "call process name")
-                        }
+
+                        Text(
+                            text = "call process name",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                .clickable(
+                                    interactionSource = remember {
+                                        MutableInteractionSource()
+                                    },
+                                    indication = null,
+                                    onClick = {
+                                        onClick(
+                                            this@MainActivity,
+                                            this@MainActivity.interProcess
+                                        )
+                                    },
+                                )
+                        )
                         Button(onClick = {
                             val intent = Intent(this@MainActivity, LibActivity::class.java)
                             startActivity(intent)
@@ -82,6 +100,6 @@ fun GreetingPreview() {
 fun onClick(lifecycleOwner: LifecycleOwner, interProcess: InterProcess) {
     val function = interProcess.serviceCreate(ApplicationInfo::class.java)
     lifecycleOwner.lifecycleScope.launch {
-        println("processName: ${function.fetchProcessName()}")
+        println("processName: ${function.packageName}")
     }
 }

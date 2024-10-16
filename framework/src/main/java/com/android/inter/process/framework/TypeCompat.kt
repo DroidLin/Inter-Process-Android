@@ -31,13 +31,13 @@ fun Any?.containsFileDescriptor(): Boolean {
     }
 }
 
-val Array<String>.stringTypeConvert: Array<Class<*>>
-    get() = this.map { className -> className.stringTypeConvert }.toTypedArray()
+val Array<String>.stringType2ClassType: Array<Class<*>>
+    get() = this.map { className -> className.stringType2ClassType }.toTypedArray()
 
-val List<String>.stringTypeConvert: List<Class<*>>
-    get() = this.map { className -> className.stringTypeConvert }
+val List<String>.stringType2ClassType: List<Class<*>>
+    get() = this.map { className -> className.stringType2ClassType }
 
-val String.stringTypeConvert: Class<*>
+val String.stringType2ClassType: Class<*>
     get() = when (this) {
         Byte::class.java.name -> Byte::class.java
         Int::class.java.name -> Int::class.java

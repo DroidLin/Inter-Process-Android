@@ -1,6 +1,6 @@
 package com.android.inter.process.framework.reflect
 
-import com.android.inter.process.framework.metadata.JvmMethodRequest
+import com.android.inter.process.framework.JvmReflectMethodRequest
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import kotlin.coroutines.Continuation
@@ -31,7 +31,7 @@ internal class DefaultInvocationHandler(
             throw IllegalArgumentException("suspend function with null origin parameters in invocation handler.")
         } else parameters)?.toList() ?: emptyList()
 
-        val request = JvmMethodRequest(
+        val request = JvmReflectMethodRequest(
             declaredClassFullName = method.declaringClass.name,
             methodName = method.name,
             methodParameterTypeFullNames = newMethodParameterType,

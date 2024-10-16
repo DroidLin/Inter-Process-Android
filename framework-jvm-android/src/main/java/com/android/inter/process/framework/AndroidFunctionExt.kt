@@ -1,6 +1,7 @@
 package com.android.inter.process.framework
 
 import com.android.inter.process.framework.metadata.function
+import com.android.inter.process.framework.reflect.DefaultInvocationReceiver
 import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
 import com.android.inter.process.framework.reflect.callerFunction
@@ -21,20 +22,23 @@ internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFun
     return AndroidFunction(
         AndroidFunction { request ->
             if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)
-            val receiver = this.receiverFunction()
+            val receiver = object : InvocationReceiver<T> by DefaultInvocationReceiver(instance) {}
             val invokeParameter = InvocationParameter(
                 declaredClassFullName = request.declaredClassFullName,
                 methodName = request.methodName,
                 uniqueKey = request.uniqueId,
-                methodParameterTypeFullNames = if (request.suspendContext != null) {
-                    request.methodParameterTypeFullNames + Continuation::class.java.name
-                } else request.methodParameterTypeFullNames,
-                methodParameterValues = if (request.suspendContext != null) {
-                    request.methodParameterValues + request.suspendContext.functionParameter.function<Continuation<Any?>>()
-                } else request.methodParameterValues,
+                methodParameterTypeFullNames = request.methodParameterTypeFullNames,
+                methodParameterValues = request.methodParameterValues,
             )
-            val result = runCatching { receiver.invoke(invokeParameter) }
-                .onFailure { InterProcessLogger.logError(it) }
+            val result = kotlin.runCatching {
+                val continuation = request.suspendContext?.functionParameter?.function<Continuation<Any?>>()
+                if (continuation != null) {
+                    val suspendFunction = receiver::invokeSuspend as Function2<InvocationParameter, Continuation<Any?>, Any?>
+                    suspendFunction(invokeParameter, continuation)
+                } else {
+                    receiver.invoke(invokeParameter)
+                }
+            }.onFailure { InterProcessLogger.logError(it) }
             DefaultResponse(result.getOrNull(), result.exceptionOrNull())
         }
     )

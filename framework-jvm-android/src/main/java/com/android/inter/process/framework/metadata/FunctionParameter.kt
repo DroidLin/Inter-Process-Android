@@ -5,7 +5,7 @@ import android.os.Parcelable
 import com.android.inter.process.framework.AndroidFunction
 import com.android.inter.process.framework.Function
 import com.android.inter.process.framework.function
-import com.android.inter.process.framework.stringTypeConvert
+import com.android.inter.process.framework.stringType2ClassType
 
 /**
  * a record that represent a function need to be called through two processes.
@@ -19,7 +19,7 @@ internal data class FunctionParameter(
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
-        requireNotNull(parcel.readString()).stringTypeConvert,
+        requireNotNull(parcel.readString()).stringType2ClassType,
         AndroidFunction(Function.Stub.asInterface(parcel.readStrongBinder()))
     )
 

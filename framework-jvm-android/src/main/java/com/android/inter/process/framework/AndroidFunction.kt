@@ -141,7 +141,9 @@ private class FunctionReceiver(androidFunction: AndroidFunction) :
         override fun call(functionParameters: FunctionParameters?) {
             try {
                 InterProcessLogger.logDebug("========================= Receiver Start Inter Process Call =========================")
-                val request = functionParameters?.request ?: return
+                val request = functionParameters?.request?.also {
+                    functionParameters.request = null
+                } ?: return
                 InterProcessLogger.logDebug("receive calling ${request.javaClass}")
                 val response = this@FunctionReceiver.call(request)
                 functionParameters.response = response

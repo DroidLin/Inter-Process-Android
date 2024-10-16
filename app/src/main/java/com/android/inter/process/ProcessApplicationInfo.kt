@@ -17,8 +17,6 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
         get() = App.getProcessName(context)
 
     override suspend fun fetchProcessName(): String {
-        return withContext(Dispatchers.IO) {
-            App.getProcessName(context)
-        }
+        return App.getProcessName(context)
     }
 }

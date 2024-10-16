@@ -8,8 +8,8 @@ import com.android.inter.process.framework.metadata.SuspendContext
 import com.android.inter.process.framework.metadata.function
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 import kotlin.coroutines.resumeWithException
 
 /**
@@ -116,6 +116,7 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
                         }
                         (this::callSuspend as Function2<AndroidRequest, Continuation<*>, AndroidResponse>)(request, continuation)
                     } else this.call(request)
+
                     is BasicConnectionSelfRequest -> {
                         when (request.requestType) {
                             TYPE_SET_CONNECT_CONTEXT -> this.setConnectContext(requireNotNull(request.connectContext))

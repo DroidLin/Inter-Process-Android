@@ -1,18 +1,21 @@
 package com.android.inter.process.framework.reflect
 
 import com.android.inter.process.framework.InterProcessObjectPool
-import com.android.inter.process.framework.metadata.JvmMethodRequest
+import com.android.inter.process.framework.JvmReflectMethodRequest
 import com.android.inter.process.framework.objectPool
 import java.lang.reflect.Proxy
 
 fun interface InvocationCaller {
 
-    fun invoke(request: JvmMethodRequest): Any?
+    fun invoke(request: JvmReflectMethodRequest): Any?
 }
 
 
-fun interface InvocationReceiver<T> {
+interface InvocationReceiver<T> {
+
     fun invoke(invocationParameter: InvocationParameter): Any?
+
+    suspend fun invokeSuspend(invocationParameter: InvocationParameter): Any?
 }
 
 fun <T : Any> Class<T>.callerFunction(
