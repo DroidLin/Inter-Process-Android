@@ -1,28 +1,25 @@
 package com.android.inter.process.framework
 
 import com.android.inter.process.framework.metadata.function
-import com.android.inter.process.framework.reflect.DefaultInvocationReceiver
 import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
+import com.android.inter.process.framework.reflect.InvocationCaller
 import com.android.inter.process.framework.reflect.callerFunction
-import com.android.inter.process.framework.reflect.receiverFunction
 import kotlin.coroutines.Continuation
 
-/**
- * @author: liuzhongao
- * @since: 2024/9/16 15:55
- */
-
 internal fun <T : Any> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
-    return this.callerFunction(StandardInvocationCaller(connection = AndroidAutoConnection(BasicConnection(androidFunction))))
+    return this.callerFunction(InvocationCaller(connectionCommander = AndroidAutoConnectionCommander(BasicConnection(androidFunction))))
 }
 
+/**
+ * generate proxies for the passed in instance, this is only used for remote calling.
+ */
 internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
     return AndroidFunction(
         AndroidFunction { request ->
             if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)
-            val receiver = object : InvocationReceiver<T> by DefaultInvocationReceiver(instance) {}
+            val receiver = InvocationReceiver(instance = instance)
             val invokeParameter = InvocationParameter(
                 declaredClassFullName = request.declaredClassFullName,
                 methodName = request.methodName,
@@ -44,10 +41,10 @@ internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFun
     )
 }
 
-internal val Response.dataCompat: Any?
+internal val Response.dataOrThrow: Any?
     get() {
         if (this.throwable != null) {
-            throw requireNotNull(this.throwable)
+            throw requireNotNull(this.throwable) { "throw requires non-null throwable instance." }
         }
         return this.data
     }

@@ -100,6 +100,7 @@ fun GreetingPreview() {
 fun onClick(lifecycleOwner: LifecycleOwner, interProcess: InterProcess) {
     val function = interProcess.serviceCreate(ApplicationInfo::class.java)
     lifecycleOwner.lifecycleScope.launch {
-        println("processName: ${function.packageName}")
+        val result = function.callRemote(url = "Hello World.", parameterList = listOf(1, 2, 3, 4, 5))
+        println("call remote result: $result")
     }
 }

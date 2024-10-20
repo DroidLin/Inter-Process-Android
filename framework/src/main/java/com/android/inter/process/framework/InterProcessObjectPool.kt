@@ -1,6 +1,5 @@
 package com.android.inter.process.framework
 
-import com.android.inter.process.framework.reflect.DefaultInvocationReceiver
 import com.android.inter.process.framework.reflect.InvocationReceiver
 import java.lang.reflect.InvocationHandler
 import java.util.concurrent.ConcurrentHashMap
@@ -13,13 +12,11 @@ val objectPool: ObjectPool by lazy { object : ObjectPool by InterProcessObjectPo
 
 internal object InterProcessObjectPool : ObjectPool {
 
-    private val invocationHandlerCache: MutableMap<Class<*>, InvocationHandler> =
-        ConcurrentHashMap()
+    private val invocationHandlerCache: MutableMap<Class<*>, InvocationHandler> = ConcurrentHashMap()
 
-    private val interProcessCallerCacheBuilders: MutableMap<Class<*>, (Address) -> Any?> =
-        ConcurrentHashMap()
-    private val interProcessReceiverCache: MutableMap<Class<*>, InvocationReceiver<*>> =
-        ConcurrentHashMap()
+    private val callerCacheBuilders: MutableMap<Class<*>, (ConnectionCommander) -> Any?> = ConcurrentHashMap()
+    private val receiverBuilderCache: MutableMap<Class<*>, (Any) -> InvocationReceiver<Any>> = ConcurrentHashMap()
+    private val receiverCache: MutableMap<Class<*>, InvocationReceiver<*>> = ConcurrentHashMap()
 
     fun tryGetInvocationHandler(
         clazz: Class<*>,
@@ -31,31 +28,34 @@ internal object InterProcessObjectPool : ObjectPool {
         return requireNotNull(this.invocationHandlerCache[clazz])
     }
 
-    override fun <T : Any> putCallerBuilder(clazz: Class<T>, callerBuilder: (Address) -> T) {
-        if (this.interProcessCallerCacheBuilders[clazz] == null) {
-            this.interProcessCallerCacheBuilders[clazz] = callerBuilder
-        }
+    override fun <T : Any> putCallerBuilder(clazz: Class<T>, callerBuilder: (ConnectionCommander) -> T) {
+        this.callerCacheBuilders.putIfAbsent(clazz, callerBuilder)
     }
 
-    override fun <T : Any> getCaller(clazz: Class<T>, address: Address): T? {
-        return this.interProcessCallerCacheBuilders[clazz]?.invoke(address) as? T
+    override fun <T : Any> getCaller(clazz: Class<T>, commander: ConnectionCommander): T? {
+        return this.callerCacheBuilders[clazz]?.invoke(commander) as? T
     }
 
     override fun <T : Any> putReceiver(clazz: Class<T>, receiver: InvocationReceiver<T>) {
-        if (this.interProcessReceiverCache[clazz] == null) {
-            this.interProcessReceiverCache[clazz] = receiver
-        }
+        this.receiverCache.putIfAbsent(clazz, receiver)
     }
 
     override fun <T : Any> getReceiver(clazz: Class<T>): InvocationReceiver<T> {
-        return requireNotNull(this.interProcessReceiverCache[clazz] as? InvocationReceiver<T>)
+        return requireNotNull(this.receiverCache[clazz] as? InvocationReceiver<T>)
+    }
+
+    override fun <T : Any> putReceiverBuilder(clazz: Class<T>, receiverBuilder: (T) -> InvocationReceiver<T>) {
+        this.receiverBuilderCache.putIfAbsent(clazz, receiverBuilder as ((Any) -> InvocationReceiver<Any>))
     }
 
     override fun <T : Any> putInstance(clazz: Class<T>, instance: T) {
-        this.putReceiver(
-            clazz = clazz,
-            receiver = object : InvocationReceiver<T> by DefaultInvocationReceiver(instance) {}
-        )
+        val receiverBuilder = this.receiverBuilderCache.get(clazz)
+        if (receiverBuilder != null) {
+            val invocationReceiver = receiverBuilder(instance)
+            this.putReceiver(clazz, invocationReceiver as InvocationReceiver<T>)
+            return
+        }
+        this.putReceiver(clazz, InvocationReceiver(instance = instance))
     }
 
 }

@@ -3,6 +3,7 @@ package com.android.inter.process.framework
 import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.connector.AndroidConnectorFactory
 import com.android.inter.process.framework.metadata.ServiceCreateResource
+import com.android.inter.process.framework.reflect.InvocationCaller
 import com.android.inter.process.framework.reflect.callerFunction
 
 /**
@@ -15,15 +16,17 @@ import com.android.inter.process.framework.reflect.callerFunction
 internal class InterProcessAndroidComponent : InterProcessComponent<AndroidAddress> {
 
     override fun <T : Any> serviceCreate(serviceCreateResource: ServiceCreateResource<T, AndroidAddress>): T {
-        val newGeneratedInstance = objectPool.getCaller(serviceCreateResource.clazz, serviceCreateResource.interProcessAddress)
+        val commander = ConnectionCommander {
+            val address = serviceCreateResource.interProcessAddress
+            val connector = AndroidConnectorFactory.connectorCreate(address)
+            AndroidAutoConnectionCommander(connector.tryConnect())
+        }
+        val newGeneratedInstance = objectPool.getCaller(
+            clazz = serviceCreateResource.clazz,
+            commander = commander
+        )
         return newGeneratedInstance ?: serviceCreateResource.clazz.callerFunction(
-            StandardInvocationCaller(
-                connection = Connection {
-                    val address = serviceCreateResource.interProcessAddress
-                    val connector = AndroidConnectorFactory.connectorCreate(address)
-                    AndroidAutoConnection(connector.tryConnect())
-                }
-            )
+            InvocationCaller(connectionCommander = commander)
         )
     }
 }

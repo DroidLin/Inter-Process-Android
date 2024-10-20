@@ -1,0 +1,86 @@
+package com.android.inter.process.compiler.ksp
+
+import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFunctionDeclaration
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSTypeReference
+import com.google.devtools.ksp.symbol.KSVisitorVoid
+import com.google.devtools.ksp.symbol.Modifier
+
+internal val KSTypeReference.qualifiedName: String
+    get() = requireNotNull(this.resolve().declaration.qualifiedName).asString()
+
+internal val KSTypeReference.simpleName: String
+    get() {
+        val ksType = this.resolve()
+        return StringBuilder()
+            .append(requireNotNull(ksType.declaration.simpleName).asString())
+            .apply {
+                val typeArguments = ksType.arguments
+                if (typeArguments.isNotEmpty()) {
+                    try {
+                        append("<")
+                        typeArguments.forEachIndexed { index, ksTypeArgument ->
+                            if (index != 0) {
+                                append(", ")
+                            }
+                            append(requireNotNull(ksTypeArgument.type).simpleName)
+                        }
+                    } finally {
+                        append(">")
+                    }
+                }
+                if (ksType.isMarkedNullable) {
+                    append("?")
+                }
+            }
+            .toString()
+    }
+
+//internal fun KSTypeReference.simpleName(ignoreTypeParameter: Boolean = false): String {
+//
+//}
+internal val KSFunctionDeclaration.isSuspend: Boolean
+    get() = this.modifiers.contains(Modifier.SUSPEND)
+
+
+internal val KSFunctionDeclaration.identifier: String
+    get() {
+        val functionParameters = this.parameters
+        return "${if (this.isSuspend) "suspend " else "" }fun ${this.extensionReceiver?.let { "${it.simpleName}." } ?: ""}${this.simpleName.asString()}${
+            functionParameters.joinToString(separator = ", ", prefix = "(", postfix = ")") { ksValueParameter ->
+                "${(requireNotNull(ksValueParameter.name).asString())}: ${ksValueParameter.type.simpleName}"
+            }
+        }${this.returnType?.let { returnType -> ": ${returnType.simpleName}" } ?: ""}"
+    }
+
+internal fun KSPropertyDeclaration.identifier(isSetter: Boolean = false, isGetter: Boolean = false): String {
+    if (isSetter) {
+        return "setter ${if (this.isMutable) "var" else "val"} ${this.extensionReceiver?.let { "${it.simpleName}." } ?: ""}${this.simpleName.asString()}: ${this.type.simpleName}"
+    }
+    if (isGetter) {
+        return "getter ${if (this.isMutable) "var" else "val"} ${this.extensionReceiver?.let { "${it.simpleName}." } ?: ""}${this.simpleName.asString()}: ${this.type.simpleName}"
+    }
+    return ""
+}
+
+internal val KSFunctionDeclaration.functionTypeParameters: String
+    get() = this.typeParameters.takeIf { it.isNotEmpty() }?.let { it.joinToString(", ", prefix = "<", postfix = "> ") { it.simpleName.asString() } } ?: ""
+
+internal val KSFunctionDeclaration.extensionReceiverDeclaration: String
+    get() = this.extensionReceiver?.let { "${it.simpleName}." } ?: ""
+
+
+internal fun List<KSAnnotated>.findAnnotatedClassDeclarations(): List<KSClassDeclaration> {
+    val list = arrayListOf<KSClassDeclaration>()
+    forEach { ksAnnotated ->
+        val visitor = object : KSVisitorVoid() {
+            override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+                list += classDeclaration
+            }
+        }
+        ksAnnotated.accept(visitor, Unit)
+    }
+    return list
+}

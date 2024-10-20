@@ -13,6 +13,8 @@ kotlinxCoroutines = "1.8.1"
 appcompat = "1.6.1"
 material = "1.10.0"
 
+ksp-compiler = "1.9.0-1.0.13"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -33,9 +35,13 @@ kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutin
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 
+ksp-compiler = { group = "com.google.devtools.ksp", name = "symbol-processing-api", version.ref = "ksp-compiler" }
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+kotlin-kapt = { id = "kotlin-kapt" }
+ksp-compiler = { id = "com.google.devtools.ksp", version.ref = "ksp-compiler" }
 

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -47,6 +48,11 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    kotlin {
+        sourceSets.forEach { sourceSet ->
+            sourceSet.kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}${sourceSet.name}${File.separator}kotlin")
+        }
+    }
 }
 
 dependencies {
@@ -68,4 +74,5 @@ dependencies {
 
     implementation(project(":framework"))
     implementation(project(":framework-jvm-android"))
+    ksp(project(":compiler"))
 }

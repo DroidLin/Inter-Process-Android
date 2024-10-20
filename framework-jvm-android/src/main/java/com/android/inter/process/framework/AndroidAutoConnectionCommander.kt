@@ -4,7 +4,7 @@ package com.android.inter.process.framework
  * @author liuzhongao
  * @since 2024/9/18 16:17
  */
-internal class AndroidAutoConnection(private val basicConnection: BasicConnection) : Connection {
+internal class AndroidAutoConnectionCommander(private val basicConnection: BasicConnection) : ConnectionCommander {
 
     override suspend fun call(request: Request): Any? {
         return when (request) {

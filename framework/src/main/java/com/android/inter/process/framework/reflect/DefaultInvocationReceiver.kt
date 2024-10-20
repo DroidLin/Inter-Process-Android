@@ -4,14 +4,12 @@ import com.android.inter.process.framework.stringType2ClassType
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.Continuation
-import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
 
 /**
- * @author: liuzhongao
- * @since: 2024/9/16 15:09
+ * invoker in remote process, this will only be instantiate for the interface implementations.
  */
-class DefaultInvocationReceiver<T>(private val instance: T) : InvocationReceiver<T> {
+internal class DefaultInvocationReceiver<T>(private val instance: T) : InvocationReceiver<T> {
 
     private val jvmMethodCache: MutableMap<String, Method> by lazy { ConcurrentHashMap() }
 

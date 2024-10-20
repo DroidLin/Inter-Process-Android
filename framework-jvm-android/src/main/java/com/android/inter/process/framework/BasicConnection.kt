@@ -58,7 +58,7 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
     override val version: Long
         get() {
             val request = BasicConnectionSelfRequest(TYPE_FETCH_BASIC_CONNECTION_VERSION)
-            return this.androidFunction.call(request).dataCompat as Long
+            return this.androidFunction.call(request).dataOrThrow as Long
         }
 
     override fun setConnectContext(connectContext: ConnectContext) {
@@ -68,7 +68,7 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
     }
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
-        return this.androidFunction.call(request).dataCompat
+        return this.androidFunction.call(request).dataOrThrow
     }
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
@@ -90,7 +90,7 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
             var data: Any? = null
             try {
                 this@BasicConnectionCaller.androidFunction.addDeathListener(deathListener)
-                data = this@BasicConnectionCaller.androidFunction.call(newRequest).dataCompat
+                data = this@BasicConnectionCaller.androidFunction.call(newRequest).dataOrThrow
             } finally {
                 if (data != COROUTINE_SUSPENDED) {
                     this@BasicConnectionCaller.androidFunction.removeDeathListener(deathListener)

@@ -23,3 +23,5 @@ rootProject.name = "Inter-Process-Android"
 include(":app")
 include(":framework")
 include(":framework-jvm-android")
+include(":compiler")
+include(":compiler")

@@ -11,12 +11,34 @@ import kotlinx.coroutines.withContext
 class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
 
     override val packageName: String
-        get() = this.context.applicationInfo.packageName
+        get() {
+            return this.context.applicationInfo.packageName
+        }
 
-    override val processName: String
+    override var String?.processName: String
+        set(value) {}
         get() = App.getProcessName(context)
+
+    override suspend fun callRemote(url: String, parameterList: List<Int?>): Int {
+        return 0
+    }
 
     override suspend fun fetchProcessName(): String {
         return App.getProcessName(context)
+    }
+
+    override fun String.isAwesome(): Boolean {
+        return this.length > 10
+    }
+
+    override fun callLocal(url: String, key: Int, value: Long): Boolean {
+        return url.isEmpty()
+    }
+
+    override fun isRight(): Boolean {
+        return false
+    }
+
+    override fun recordLeft() {
     }
 }

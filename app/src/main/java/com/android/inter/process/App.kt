@@ -27,6 +27,8 @@ class App : Application() {
             val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_main_ipc))
             InterProcessCenter.installAndroid(androidAddress)
         }
+        objectPool.putCallerBuilder(ApplicationInfo::class.java) { ApplicationInfoCaller(it) }
+        objectPool.putReceiverBuilder(ApplicationInfo::class.java) { ApplicationInfoReceiver(it) }
         objectPool.putInstance(ApplicationInfo::class.java, ProcessApplicationInfo(this))
     }
 
