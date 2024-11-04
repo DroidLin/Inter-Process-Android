@@ -7,8 +7,4 @@ package com.android.inter.process.framework
 fun interface Connector<A : Address, F> {
 
     suspend fun tryConnect(): F
-
-    fun interface Factory<A : Address, F> {
-        fun connectorCreate(address: A): F
-    }
 }

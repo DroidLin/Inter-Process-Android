@@ -6,5 +6,5 @@ package com.android.inter.process.framework
  */
 fun interface IFunction<P : Request, R : Response> {
 
-    fun call(parameter: P): R
+    fun call(request: P): R
 }

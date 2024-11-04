@@ -10,5 +10,7 @@ import com.android.inter.process.framework.address.AndroidAddress
  */
 internal interface AndroidConnector<A : AndroidAddress> : Connector<A, BasicConnection> {
 
+    val address: A
+
     override suspend fun tryConnect(): BasicConnection
 }
