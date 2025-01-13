@@ -8,7 +8,9 @@ import com.android.inter.process.framework.reflect.callerFunction
 import kotlin.coroutines.Continuation
 
 internal fun <T : Any> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
-    return this.callerFunction(InvocationCaller(connectionCommander = AndroidAutoConnectionCommander(BasicConnection(androidFunction))))
+    return this.callerFunction(InvocationCaller(connectionCommander = AndroidAutoConnectionCommander(
+        BasicConnectionProxy(androidFunction)
+    )))
 }
 
 /**
@@ -16,7 +18,7 @@ internal fun <T : Any> Class<T>.callerAndroidFunction(androidFunction: AndroidFu
  */
 internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
-    return AndroidFunction(
+    return AndroidFunctionStub(
         AndroidFunction { request ->
             if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)
             val receiver = InvocationReceiver(instance = instance)

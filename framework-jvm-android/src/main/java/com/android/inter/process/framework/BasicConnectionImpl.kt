@@ -1,11 +1,18 @@
 package com.android.inter.process.framework
 
+import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.reflect.InvocationParameter
 
-internal object BasicConnectionImpl : BasicConnection {
+internal fun BasicConnection(sourceAddress: ParcelableAndroidAddress): BasicConnection {
+    return BasicConnectionImpl(sourceAddress)
+}
+
+internal class BasicConnectionImpl(sourceAddress: ParcelableAndroidAddress) : BasicConnection {
 
     override val version: Long get() = BuildConfig.version
+
+    override val remoteAddress: ParcelableAndroidAddress = sourceAddress
 
     override fun setConnectContext(connectContext: ConnectContext) {}
 

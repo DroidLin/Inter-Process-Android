@@ -78,6 +78,7 @@ internal data class AndroidJvmMethodRequest(
 
 internal const val TYPE_SET_CONNECT_CONTEXT = "type_set_connect_context"
 internal const val TYPE_FETCH_BASIC_CONNECTION_VERSION = "type_fetch_basic_connection_version"
+internal const val TYPE_FETCH_REMOTE_CONNECTION_ADDRESS = "type_fetch_remote_connection_address"
 
 /**
  * extensions fulfill better usage of kotlin types instead of String Parameter Access.

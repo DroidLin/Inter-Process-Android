@@ -1,6 +1,7 @@
 package com.android.inter.process.framework
 
 import android.os.IBinder
+import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.exceptions.BinderDisconnectedException
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.FunctionParameter
@@ -24,13 +25,15 @@ import kotlin.coroutines.resumeWithException
 internal interface BasicConnection {
 
     /**
-     * get version of [BasicConnection] tool kit.
+     * get version of [BasicConnectionStub] tool kit.
      *
      * encode method like: (000)(000)(000).
      *
      * example: (1.2.1) -> (001002001), (1.20.1) -> (001020001)
      */
     val version: Long
+
+    val remoteAddress: ParcelableAndroidAddress
 
     /**
      * set handle to remote process.
@@ -49,7 +52,7 @@ internal val BasicConnection.iBinder: IBinder
         else -> throw IllegalArgumentException("unknown basic connection type: ${this.javaClass}.")
     }
 
-internal fun BasicConnection(androidFunction: AndroidFunction): BasicConnection {
+internal fun BasicConnectionProxy(androidFunction: AndroidFunction): BasicConnection {
     return BasicConnectionCaller(androidFunction)
 }
 
@@ -59,6 +62,12 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
         get() {
             val request = BasicConnectionSelfRequest(TYPE_FETCH_BASIC_CONNECTION_VERSION)
             return this.androidFunction.call(request).dataOrThrow as Long
+        }
+
+    override val remoteAddress: ParcelableAndroidAddress
+        get() {
+            val request = BasicConnectionSelfRequest(TYPE_FETCH_REMOTE_CONNECTION_ADDRESS)
+            return this.androidFunction.call(request).dataOrThrow as ParcelableAndroidAddress
         }
 
     override fun setConnectContext(connectContext: ConnectContext) {
@@ -101,12 +110,12 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
     }
 }
 
-internal fun BasicConnection(basicConnection: BasicConnection): BasicConnection {
+internal fun BasicConnectionStub(basicConnection: BasicConnection): BasicConnection {
     return BasicConnectionReceiver(basicConnection)
 }
 
 private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicConnection by basicConnection {
-    val androidFunction = AndroidFunction(
+    val androidFunction = AndroidFunctionStub(
         AndroidFunction { request ->
             val result = kotlin.runCatching {
                 when (request) {
@@ -121,6 +130,7 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
                         when (request.requestType) {
                             TYPE_SET_CONNECT_CONTEXT -> this.setConnectContext(requireNotNull(request.connectContext))
                             TYPE_FETCH_BASIC_CONNECTION_VERSION -> this.version
+                            TYPE_FETCH_REMOTE_CONNECTION_ADDRESS -> this.remoteAddress
                             else -> null
                         }
                     }

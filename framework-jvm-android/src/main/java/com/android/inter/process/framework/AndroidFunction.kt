@@ -31,6 +31,9 @@ internal fun interface AndroidFunction : IFunction<AndroidRequest, AndroidRespon
 
     fun interface DeathListener {
 
+        /**
+         * called when iBinder called [IBinder.DeathRecipient.binderDied]
+         */
         fun onDead()
     }
 }
@@ -45,16 +48,16 @@ internal val AndroidFunction.function: Function
         else -> throw IllegalArgumentException("unknown AndroidFunction Type: ${this.javaClass}")
     }
 
-internal fun AndroidFunction(function: Function): AndroidFunction {
+internal fun AndroidFunctionProxy(function: Function): AndroidFunction {
     return FunctionCaller(function)
 }
 
-internal fun AndroidFunction(function: AndroidFunction): AndroidFunction {
+internal fun AndroidFunctionStub(function: AndroidFunction): AndroidFunction {
     return FunctionReceiver(function)
 }
 
 /**
- * implementation of [AndroidFunction] for calling remote method.
+ * implementation of [AndroidFunctionStub] for calling remote method.
  */
 private class FunctionCaller(val binderFunction: Function) : AndroidFunction {
 

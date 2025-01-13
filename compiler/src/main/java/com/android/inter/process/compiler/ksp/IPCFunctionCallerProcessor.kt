@@ -98,7 +98,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
 
             val bodyDeclarationBuilder = StringBuilder()
             bodyDeclarationBuilder
-                .appendLine("\toverride ${if (ksFunctionDeclaration.isSuspend) "suspend" else ""} fun ${ksFunctionDeclaration.functionTypeParameters}${ksFunctionDeclaration.extensionReceiverDeclaration}${ksFunctionDeclaration.simpleName.asString()}${ksFunctionDeclaration.parameters.joinToString(separator = ", ", prefix = "(", postfix = ")") { valueParameter -> addImport(valueParameter.type.qualifiedName);"${requireNotNull(valueParameter.name).asString()}: ${valueParameter.type.simpleName}" }}${ksFunctionDeclaration.returnType?.let { ": ${it.simpleName}" } ?: ""} {")
+                .appendLine("\toverride${if (ksFunctionDeclaration.isSuspend) " suspend" else ""} fun ${ksFunctionDeclaration.functionTypeParameters}${ksFunctionDeclaration.extensionReceiverDeclaration}${ksFunctionDeclaration.simpleName.asString()}${ksFunctionDeclaration.parameters.joinToString(separator = ", ", prefix = "(", postfix = ")") { valueParameter -> addImport(valueParameter.type.qualifiedName);"${requireNotNull(valueParameter.name).asString()}: ${valueParameter.type.simpleName}" }}${ksFunctionDeclaration.returnType?.let { ": ${it.simpleName}" } ?: ""} {")
                 .appendLine("\t\t${ksFunctionDeclaration.returnType?.let { "return " } ?: ""}this@${classDeclaration.simpleName.asString()}Caller.connectionCommander.${if (ksFunctionDeclaration.isSuspend) "call" else "syncCall"}(")
                 .appendLine("\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
                 .appendLine("\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")

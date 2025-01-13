@@ -27,6 +27,10 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
         return App.getProcessName(context)
     }
 
+    override suspend fun getData(type: String): List<String>? {
+        return emptyList()
+    }
+
     override fun String.isAwesome(): Boolean {
         return this.length > 10
     }

@@ -27,7 +27,7 @@ internal class InterProcessAndroidComponent : InterProcessComponent<AndroidAddre
             commander = commander
         )
         return newGeneratedInstance ?: serviceCreateResource.clazz.callerFunction(
-            InvocationCaller(connectionCommander = commander)
+            invocationCaller = InvocationCaller(connectionCommander = commander)
         )
     }
 }

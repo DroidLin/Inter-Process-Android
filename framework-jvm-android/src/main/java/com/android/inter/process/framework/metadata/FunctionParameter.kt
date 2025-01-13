@@ -3,6 +3,7 @@ package com.android.inter.process.framework.metadata
 import android.os.Parcel
 import android.os.Parcelable
 import com.android.inter.process.framework.AndroidFunction
+import com.android.inter.process.framework.AndroidFunctionProxy
 import com.android.inter.process.framework.Function
 import com.android.inter.process.framework.function
 import com.android.inter.process.framework.stringType2ClassType
@@ -20,7 +21,7 @@ internal data class FunctionParameter(
 
     constructor(parcel: Parcel) : this(
         requireNotNull(parcel.readString()).stringType2ClassType,
-        AndroidFunction(Function.Stub.asInterface(parcel.readStrongBinder()))
+        AndroidFunctionProxy(Function.Stub.asInterface(parcel.readStrongBinder()))
     )
 
     override fun describeContents(): Int {

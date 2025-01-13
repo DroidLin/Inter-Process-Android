@@ -17,6 +17,8 @@ interface ApplicationInfo {
 
     suspend fun fetchProcessName(): String
 
+    suspend fun getData(type: String): List<String>?
+
     fun String.isAwesome(): Boolean
 
     fun callLocal(url: String, key: Int, value: Long): Boolean

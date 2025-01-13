@@ -3,7 +3,7 @@ package com.android.inter.process.framework.connector
 import android.content.Intent
 import android.os.Build
 import com.android.inter.process.framework.BasicConnection
-import com.android.inter.process.framework.BasicConnectionImpl
+import com.android.inter.process.framework.BasicConnectionStub
 import com.android.inter.process.framework.FunctionConnectionPool
 import com.android.inter.process.framework.InterProcessCenter
 import com.android.inter.process.framework.InterProcessLogger
@@ -94,8 +94,9 @@ internal suspend fun doConnectInner(
             delay(connectTimeout)
             safeContinuation.resumeWithException(ConnectTimeoutException("failed to connect to remote due to connect timeout."))
         }
-        val basicConnection = BasicConnection(
-            object : BasicConnection by BasicConnectionImpl {
+        val sourceAddress = (InterProcessCenter.currentAddress as AndroidAddress).toParcelableAddress()
+        val basicConnection = BasicConnectionStub(
+            object : BasicConnection by BasicConnection(sourceAddress) {
                 override fun setConnectContext(connectContext: ConnectContext) {
                     timeoutJob.cancel()
                     if (destAddress == connectContext.sourceAddress) {
@@ -105,7 +106,7 @@ internal suspend fun doConnectInner(
             }
         )
         val connectContext = ConnectContext(
-            sourceAddress = (InterProcessCenter.currentAddress as AndroidAddress).toParcelableAddress(),
+            sourceAddress = sourceAddress,
             basicConnection = basicConnection
         )
         typeOfConnection(connectContext)

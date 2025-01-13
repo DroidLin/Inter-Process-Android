@@ -2,8 +2,9 @@ package com.android.inter.process.framework.metadata
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.android.inter.process.framework.AndroidFunction
+import com.android.inter.process.framework.AndroidFunctionProxy
 import com.android.inter.process.framework.BasicConnection
+import com.android.inter.process.framework.BasicConnectionProxy
 import com.android.inter.process.framework.Function
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.iBinder
@@ -24,7 +25,7 @@ internal data class ConnectContext(
 
     constructor(parcel: Parcel) : this(
         requireNotNull(parcel.readCompatParcelable(ConnectContext::class.java.classLoader)),
-        BasicConnection(AndroidFunction(Function.Stub.asInterface(parcel.readStrongBinder())))
+        BasicConnectionProxy(AndroidFunctionProxy(Function.Stub.asInterface(parcel.readStrongBinder())))
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
