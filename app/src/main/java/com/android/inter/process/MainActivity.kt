@@ -22,15 +22,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import com.android.inter.process.framework.InterProcess
+import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
 import com.android.inter.process.ui.theme.InterProcessAndroidTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private val interProcess by lazy {
-        InterProcess.with(
+    private val iPCProvider by lazy {
+        IPCProvider.on(
             broadcast(
                 context = this,
                 broadcastAction = getString(R.string.broadcast_action_lib_ipc)
@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                                     onClick = {
                                         onClick(
                                             this@MainActivity,
-                                            this@MainActivity.interProcess
+                                            this@MainActivity.iPCProvider
                                         )
                                     },
                                 )
@@ -97,8 +97,8 @@ fun GreetingPreview() {
     }
 }
 
-fun onClick(lifecycleOwner: LifecycleOwner, interProcess: InterProcess) {
-    val function = interProcess.serviceCreate(ApplicationInfo::class.java)
+fun onClick(lifecycleOwner: LifecycleOwner, iPCProvider: IPCProvider) {
+    val function = iPCProvider.serviceCreate(ApplicationInfo::class.java)
     lifecycleOwner.lifecycleScope.launch {
         val result = function.packageName
         println("call remote result: $result")

@@ -4,12 +4,12 @@ package com.android.inter.process.framework
  * @author liuzhongao
  * @since 2024/9/18 16:17
  */
-internal class AndroidAutoConnectionCommander(private val basicConnection: BasicConnection) : ConnectionCommander {
+internal class AndroidFunctionCallTransformer(private val basicConnection: BasicConnection) : FunctionCallTransformer {
 
-    override suspend fun call(request: Request): Any? {
+    override suspend fun transform(request: Request): Any? {
         return when (request) {
             is JvmReflectMethodRequest -> {
-                val androidRequest = AndroidJvmMethodRequest(
+                val jvmRequest = AndroidJvmMethodRequest(
                     declaredClassFullName = request.declaredClassFullName,
                     methodName = request.methodName,
                     methodParameterTypeFullNames = request.methodParameterTypeFullNames,
@@ -17,14 +17,14 @@ internal class AndroidAutoConnectionCommander(private val basicConnection: Basic
                     uniqueId = request.uniqueId,
                 )
                 if (request.continuation != null) {
-                    this.basicConnection.callSuspend(androidRequest)
+                    this.basicConnection.callSuspend(jvmRequest)
                 } else {
-                    this.basicConnection.call(androidRequest)
+                    this.basicConnection.call(jvmRequest)
                 }
             }
 
             is JvmMethodRequest -> {
-                val androidRequest = AndroidJvmMethodRequest(
+                val jvmRequest = AndroidJvmMethodRequest(
                     declaredClassFullName = request.clazz.name,
                     methodName = "",
                     methodParameterTypeFullNames = emptyList(),
@@ -32,9 +32,9 @@ internal class AndroidAutoConnectionCommander(private val basicConnection: Basic
                     uniqueId = request.functionIdentifier,
                 )
                 if (request.isSuspend) {
-                    this.basicConnection.callSuspend(androidRequest)
+                    this.basicConnection.callSuspend(jvmRequest)
                 } else {
-                    this.basicConnection.call(androidRequest)
+                    this.basicConnection.call(jvmRequest)
                 }
             }
 

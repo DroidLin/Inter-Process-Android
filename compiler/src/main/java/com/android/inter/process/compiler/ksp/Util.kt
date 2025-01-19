@@ -7,6 +7,9 @@ import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.google.devtools.ksp.symbol.KSTypeReference
 import com.google.devtools.ksp.symbol.KSVisitorVoid
 import com.google.devtools.ksp.symbol.Modifier
+import java.math.BigInteger
+import java.security.MessageDigest
+import java.util.UUID
 
 internal val KSTypeReference.qualifiedName: String
     get() = requireNotNull(this.resolve().declaration.qualifiedName).asString()
@@ -83,4 +86,33 @@ internal fun List<KSAnnotated>.findAnnotatedClassDeclarations(): List<KSClassDec
         ksAnnotated.accept(visitor, Unit)
     }
     return list
+}
+
+internal val KSClassDeclaration.classPackageName: String
+    get() = packageName.asString()
+
+internal val KSClassDeclaration.callerClassName: String
+    get() = "${classPackageName}.${callerFileName}"
+
+internal val KSClassDeclaration.callerFileName: String
+    get() = "${simpleName.asString()}Caller"
+
+internal val KSClassDeclaration.receiverClassName: String
+    get() = "${classPackageName}.${receiverFileName}"
+
+internal val KSClassDeclaration.receiverFileName: String
+    get() = "${simpleName.asString()}Receiver"
+
+internal val RandomHash: String
+    get() {
+        val messageDigest = MessageDigest.getInstance("MD5")
+        messageDigest.update(UUID.randomUUID().toString().encodeToByteArray())
+        return BigInteger(1, messageDigest.digest()).toString(16)
+    }
+
+internal val GeneratedPackageName: String
+    get() = "com.android.inter.process.generated"
+
+internal fun StringBuilder.import(className: String): StringBuilder = apply {
+    append("import").append(' ').appendLine(className)
 }

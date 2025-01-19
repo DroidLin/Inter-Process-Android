@@ -99,11 +99,11 @@ private class FunctionCaller(val binderFunction: Function) : AndroidFunction {
     }
 
     override fun call(request: AndroidRequest): AndroidResponse {
-        InterProcessLogger.logDebug(">>>>>>>>>>>>>>>>>>>>>>>>> Start Inter Process Call <<<<<<<<<<<<<<<<<<<<<<<<<<<")
+        Logger.logDebug(">>>>>>>>>>>>>>>>>>>>>>>>> Start Inter Process Call <<<<<<<<<<<<<<<<<<<<<<<<<<<")
         var response: AndroidResponse? = null
         when {
             !this.binderFunction.asBinder().pingBinder() -> {
-                InterProcessLogger.logDebug("remote process not connected yet.")
+                Logger.logDebug("remote process not connected yet.")
                 response = DefaultResponse(
                     data = null,
                     throwable = BinderNotConnectedException("binder not connected yet.")
@@ -114,25 +114,25 @@ private class FunctionCaller(val binderFunction: Function) : AndroidFunction {
                 val functionParameters = FunctionParameters.obtain()
                 try {
                     functionParameters.request = request
-                    InterProcessLogger.logDebug("calling ${request.javaClass.name}")
+                    Logger.logDebug("calling ${request.javaClass.name}")
                     this.binderFunction.call(functionParameters)
                     response = functionParameters.response
                     if (response == null) {
-                        InterProcessLogger.logDebug("fail to get response after request call: ${request.javaClass}")
+                        Logger.logDebug("fail to get response after request call: ${request.javaClass}")
                         response = DefaultResponse(null, null)
                     }
                 } catch (e: RemoteException) {
-                    InterProcessLogger.logError(e)
+                    Logger.logError(e)
                     response = DefaultResponse(null, RemoteProcessFailureException(e.cause))
                 } catch (throwable: Throwable) {
-                    InterProcessLogger.logError(throwable)
+                    Logger.logError(throwable)
                     response = DefaultResponse(null, throwable)
                 } finally {
                     functionParameters.recycle()
                 }
             }
         }
-        InterProcessLogger.logDebug(">>>>>>>>>>>>>>>>>>>>>>>>> End Inter Process Call <<<<<<<<<<<<<<<<<<<<<<<<<")
+        Logger.logDebug(">>>>>>>>>>>>>>>>>>>>>>>>> End Inter Process Call <<<<<<<<<<<<<<<<<<<<<<<<<")
         return requireNotNull(response)
     }
 }
@@ -143,15 +143,14 @@ private class FunctionReceiver(androidFunction: AndroidFunction) :
     val binderFunction = object : Function.Stub() {
         override fun call(functionParameters: FunctionParameters?) {
             try {
-                InterProcessLogger.logDebug("========================= Receiver Start Inter Process Call =========================")
-                val request = functionParameters?.request?.also {
-                    functionParameters.request = null
-                } ?: return
-                InterProcessLogger.logDebug("receive calling ${request.javaClass}")
+                Logger.logDebug("========================= Receiver Start Inter Process Call =========================")
+                val request = functionParameters?.request ?: return
+                functionParameters.request = null
+                Logger.logDebug("receive calling ${request.javaClass}")
                 val response = this@FunctionReceiver.call(request)
                 functionParameters.response = response
             } finally {
-                InterProcessLogger.logDebug("========================= Receiver Start Inter Process Call =========================")
+                Logger.logDebug("========================= Receiver Start Inter Process Call =========================")
             }
         }
     }

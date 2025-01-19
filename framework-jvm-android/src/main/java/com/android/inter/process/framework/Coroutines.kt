@@ -23,7 +23,7 @@ internal fun <T> SafeContinuation(continuation: Continuation<T>): Continuation<T
         override fun resumeWith(result: Result<T>) {
             val consumed = this.continuationResumed.get()
             if (consumed) {
-                InterProcessLogger.logDebug("SafeContinuation resume skipped, result: ${result}.")
+                Logger.logDebug("SafeContinuation resume skipped, result: ${result}.")
                 return
             }
             if (this.continuationResumed.compareAndSet(false, true)) {

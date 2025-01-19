@@ -5,8 +5,8 @@ import android.os.Build
 import com.android.inter.process.framework.BasicConnection
 import com.android.inter.process.framework.BasicConnectionStub
 import com.android.inter.process.framework.FunctionConnectionPool
-import com.android.inter.process.framework.InterProcessCenter
-import com.android.inter.process.framework.InterProcessLogger
+import com.android.inter.process.framework.IPCManager
+import com.android.inter.process.framework.Logger
 import com.android.inter.process.framework.SafeContinuation
 import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.address.AndroidAddress.Companion.toParcelableAddress
@@ -45,38 +45,43 @@ internal suspend fun doConnect(
     val newParcelableAddress = address.toParcelableAddress()
     val basicConnection = FunctionConnectionPool[newParcelableAddress]
     if (basicConnection != null) {
-        InterProcessLogger.logDebug("android function already exist and alive, just return the value.")
+        Logger.logDebug("android function already exist and alive, just return the value.")
         return basicConnection
     }
 
-    val runningTask = FunctionConnectionPool.getRecord(newParcelableAddress)
-    if (runningTask != null) {
-        InterProcessLogger.logDebug("another connection task is running, wait until finished.")
-        return runningTask.deferred.await()
-    }
+    return FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
+        // we need to wait if there is an existing task.
+        val runningTask = FunctionConnectionPool.getRecord(newParcelableAddress)
+        if (runningTask != null) {
+            Logger.logDebug("another connection task is running, wait until finished.")
+            return runningTask.deferred.await()
+        }
 
-    return withConnectionScope connectionScope@{
-        FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
-            try {
-                InterProcessLogger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
-                InterProcessLogger.logDebug("trying connect to remote: ${newParcelableAddress}.")
-                val connectRecord = ConnectRunningTask(
-                    deferred = async {
-                        doConnectInner(
-                            coroutineScope = this@connectionScope,
-                            destAddress = newParcelableAddress,
-                            connectTimeout = 10_000,
-                            typeOfConnection = typeOfConnection
-                        )
-                    }
-                )
-                FunctionConnectionPool.addRecord(newParcelableAddress, connectRecord)
-                connectRecord.deferred.await().also { basicConnection ->
-                    FunctionConnectionPool[newParcelableAddress] = basicConnection
+        // or just launch connection logics.
+        withConnectionScope connectionScope@{
+            FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
+                try {
+                    Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
+                    Logger.logDebug("trying connect to remote: ${newParcelableAddress}.")
+                    val newTask = ConnectRunningTask(
+                        deferred = async {
+                            doConnectInner(
+                                coroutineScope = this@connectionScope,
+                                destAddress = newParcelableAddress,
+                                connectTimeout = 10_000,
+                                typeOfConnection = typeOfConnection
+                            )
+                        }
+                    )
+                    FunctionConnectionPool.addRecord(newParcelableAddress, newTask)
+
+                    val newConnection = newTask.deferred.await()
+                    FunctionConnectionPool[newParcelableAddress] = newConnection
+                    newConnection
+                } finally {
+                    FunctionConnectionPool.removeRecord(newParcelableAddress)
+                    Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner Finished >>>>>>>>>>>>>>>>>>>>>>>>>")
                 }
-            } finally {
-                FunctionConnectionPool.removeRecord(newParcelableAddress)
-                InterProcessLogger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner Finished >>>>>>>>>>>>>>>>>>>>>>>>>")
             }
         }
     }
@@ -94,7 +99,7 @@ internal suspend fun doConnectInner(
             delay(connectTimeout)
             safeContinuation.resumeWithException(ConnectTimeoutException("failed to connect to remote due to connect timeout."))
         }
-        val sourceAddress = (InterProcessCenter.currentAddress as AndroidAddress).toParcelableAddress()
+        val sourceAddress = (IPCManager.currentAddress as AndroidAddress).toParcelableAddress()
         val basicConnection = BasicConnectionStub(
             object : BasicConnection by BasicConnection(sourceAddress) {
                 override fun setConnectContext(connectContext: ConnectContext) {

@@ -16,8 +16,9 @@ class KspFunctionProvider : SymbolProcessorProvider {
 private class Processor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation(IPCInterface::class.java.name).toList()
-        handleCallerFunction(symbols, resolver, this.environment.codeGenerator)
-        handleReceiverFunction(symbols, resolver, this.environment.codeGenerator)
+        buildCallerFunction(symbols, resolver, this.environment.codeGenerator)
+        buildReceiverFunction(symbols, resolver, this.environment.codeGenerator)
+        buildFunctionCollector(symbols, resolver, this.environment.codeGenerator)
         return emptyList()
     }
 }

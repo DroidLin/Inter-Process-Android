@@ -13,6 +13,11 @@ fun <T> InvocationReceiver(instance: T): InvocationReceiver<T> {
     return object : InvocationReceiver<T> by DefaultInvocationReceiver(instance) {}
 }
 
+fun <T : Any, R : T> Class<T>.InvocationReceiver(instance: T): InvocationReceiver<T> {
+    return objectPool.getReceiverBuilder(this)?.invoke(instance)
+        ?: object : InvocationReceiver<T> by DefaultInvocationReceiver(instance) {}
+}
+
 fun <T : Any> Class<T>.receiverFunction(): InvocationReceiver<T> {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
     return objectPool.getReceiver(this)

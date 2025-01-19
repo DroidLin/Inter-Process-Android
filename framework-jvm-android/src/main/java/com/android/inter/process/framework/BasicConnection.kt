@@ -47,8 +47,8 @@ internal interface BasicConnection {
 
 internal val BasicConnection.iBinder: IBinder
     get() = when (this) {
-        is BasicConnectionCaller -> this.androidFunction.function.asBinder()
-        is BasicConnectionReceiver -> this.androidFunction.function.asBinder()
+        is BasicConnectionCaller -> this.function.function.asBinder()
+        is BasicConnectionReceiver -> this.function.function.asBinder()
         else -> throw IllegalArgumentException("unknown basic connection type: ${this.javaClass}.")
     }
 
@@ -56,28 +56,28 @@ internal fun BasicConnectionProxy(androidFunction: AndroidFunction): BasicConnec
     return BasicConnectionCaller(androidFunction)
 }
 
-private class BasicConnectionCaller(val androidFunction: AndroidFunction) : BasicConnection {
+private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnection {
 
     override val version: Long
         get() {
             val request = BasicConnectionSelfRequest(TYPE_FETCH_BASIC_CONNECTION_VERSION)
-            return this.androidFunction.call(request).dataOrThrow as Long
+            return this.function.call(request).dataOrThrow as Long
         }
 
     override val remoteAddress: ParcelableAndroidAddress
         get() {
             val request = BasicConnectionSelfRequest(TYPE_FETCH_REMOTE_CONNECTION_ADDRESS)
-            return this.androidFunction.call(request).dataOrThrow as ParcelableAndroidAddress
+            return this.function.call(request).dataOrThrow as ParcelableAndroidAddress
         }
 
     override fun setConnectContext(connectContext: ConnectContext) {
         val request = BasicConnectionSelfRequest(requestType = TYPE_SET_CONNECT_CONTEXT)
         request.connectContext = connectContext
-        this.androidFunction.call(request)
+        this.function.call(request)
     }
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
-        return this.androidFunction.call(request).dataOrThrow
+        return this.function.call(request).dataOrThrow
     }
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
@@ -90,19 +90,25 @@ private class BasicConnectionCaller(val androidFunction: AndroidFunction) : Basi
                     )
                 )
             )
-            val deathListener = object : AndroidFunction.DeathListener {
-                override fun onDead() {
-                    this@BasicConnectionCaller.androidFunction.removeDeathListener(this)
-                    continuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
-                }
-            }
+            var deathListener: AndroidFunction.DeathListener? = null
             var data: Any? = null
             try {
-                this@BasicConnectionCaller.androidFunction.addDeathListener(deathListener)
-                data = this@BasicConnectionCaller.androidFunction.call(newRequest).dataOrThrow
-            } finally {
-                if (data != COROUTINE_SUSPENDED) {
-                    this@BasicConnectionCaller.androidFunction.removeDeathListener(deathListener)
+                val isSuspendFunction = request.suspendContext != null
+                if (isSuspendFunction) {
+                    deathListener = object : AndroidFunction.DeathListener {
+                        override fun onDead() {
+                            function.removeDeathListener(this)
+                            continuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
+                        }
+                    }
+                    function.addDeathListener(deathListener)
+                }
+
+                // call remote
+                data = function.call(newRequest).dataOrThrow
+            }finally {
+                if (deathListener != null && data != COROUTINE_SUSPENDED) {
+                    function.removeDeathListener(deathListener)
                 }
             }
             data
@@ -115,7 +121,7 @@ internal fun BasicConnectionStub(basicConnection: BasicConnection): BasicConnect
 }
 
 private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicConnection by basicConnection {
-    val androidFunction = AndroidFunctionStub(
+    val function = AndroidFunctionStub(
         AndroidFunction { request ->
             val result = kotlin.runCatching {
                 when (request) {
@@ -136,7 +142,7 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
                     }
                     else -> null
                 }
-            }.onFailure { InterProcessLogger.logError(it) }
+            }.onFailure { Logger.logError(it) }
             DefaultResponse(result.getOrNull(), result.exceptionOrNull())
         }
     )

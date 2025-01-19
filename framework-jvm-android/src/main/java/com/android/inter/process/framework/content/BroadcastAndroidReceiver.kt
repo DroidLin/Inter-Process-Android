@@ -6,7 +6,7 @@ import android.content.Intent
 import com.android.inter.process.framework.BasicConnection
 import com.android.inter.process.framework.BasicConnectionStub
 import com.android.inter.process.framework.FunctionConnectionPool
-import com.android.inter.process.framework.InterProcessCenter
+import com.android.inter.process.framework.IPCManager
 import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.address.AndroidAddress.Companion.toParcelableAddress
 import com.android.inter.process.framework.connector.connectContext
@@ -21,7 +21,7 @@ abstract class BroadcastAndroidReceiver : BroadcastReceiver() {
     final override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
         val connectContext = intent?.connectContext ?: return
-        val sourceAddress = (InterProcessCenter.currentAddress as AndroidAddress).toParcelableAddress()
+        val sourceAddress = (IPCManager.currentAddress as AndroidAddress).toParcelableAddress()
         val newConnectContext = ConnectContext(
             sourceAddress = sourceAddress,
             basicConnection = BasicConnectionStub(BasicConnection(sourceAddress))

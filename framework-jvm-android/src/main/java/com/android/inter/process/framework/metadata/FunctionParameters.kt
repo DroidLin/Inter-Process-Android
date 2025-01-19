@@ -53,6 +53,7 @@ internal class FunctionParameters private constructor() : Parcelable {
     }
 
     fun recycle() {
+        this.innerParameters.clear()
         FunctionParameters.recycle(this)
     }
 

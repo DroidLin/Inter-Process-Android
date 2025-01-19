@@ -4,7 +4,7 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.os.Process
-import com.android.inter.process.framework.InterProcessCenter
+import com.android.inter.process.framework.IPCManager
 import com.android.inter.process.framework.address.broadcast
 import com.android.inter.process.framework.installAndroid
 import com.android.inter.process.framework.objectPool
@@ -22,10 +22,10 @@ class App : Application() {
         println("process name: ${packageName}.")
         if (packageName.endsWith(":lib")) { // lib进程
             val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_lib_ipc))
-            InterProcessCenter.installAndroid(androidAddress)
+            IPCManager.installAndroid(androidAddress)
         } else if (!packageName.contains(":")) { // main进程
             val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_main_ipc))
-            InterProcessCenter.installAndroid(androidAddress)
+            IPCManager.installAndroid(androidAddress)
         }
         objectPool.putCallerBuilder(ApplicationInfo::class.java) { ApplicationInfoCaller(it) }
         objectPool.putReceiverBuilder(ApplicationInfo::class.java) { ApplicationInfoReceiver(it) }

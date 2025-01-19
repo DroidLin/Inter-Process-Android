@@ -11,10 +11,9 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-import kotlin.math.abs
 
 
-internal fun handleReceiverFunction(
+internal fun buildReceiverFunction(
     ksAnnotatedList: List<KSAnnotated>,
     resolver: Resolver,
     codeGenerator: CodeGenerator
@@ -28,8 +27,8 @@ internal fun handleReceiverFunction(
                 aggregating = true,
                 sources = arrayOf(requireNotNull(classDeclarations[index].containingFile))
             ),
-            packageName = classDeclarations[index].packageName.asString(),
-            fileName = "${classDeclarations[index].simpleName.asString()}Receiver"
+            packageName = classDeclarations[index].classPackageName,
+            fileName = classDeclarations[index].receiverFileName
         ).bufferedWriter()
             .use { it.append(s).flush() }
     }
@@ -54,7 +53,7 @@ private fun buildReceiverStructure(classDeclaration: KSClassDeclaration): String
         .appendLine()
         .appendLine(importNames.joinToString("\n") { "import $it" })
         .appendLine()
-        .appendLine("class ${classDeclaration.simpleName.asString()}Receiver constructor(private val rawInstance: ${classDeclaration.simpleName.asString()}): ${InvocationReceiver::class.java.simpleName}<${classDeclaration.simpleName.asString()}> {")
+        .appendLine("internal class ${classDeclaration.simpleName.asString()}Receiver constructor(private val rawInstance: ${classDeclaration.simpleName.asString()}): ${InvocationReceiver::class.java.simpleName}<${classDeclaration.simpleName.asString()}> {")
         .appendLine()
         .appendLine("\toverride fun invoke(invocationParameter: InvocationParameter): Any? {")
         .also { stringBuilder ->

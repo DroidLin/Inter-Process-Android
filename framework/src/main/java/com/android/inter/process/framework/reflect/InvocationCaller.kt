@@ -1,7 +1,7 @@
 package com.android.inter.process.framework.reflect
 
-import com.android.inter.process.framework.ConnectionCommander
-import com.android.inter.process.framework.InterProcessObjectPool
+import com.android.inter.process.framework.FunctionCallTransformer
+import com.android.inter.process.framework.IPCObjectPool
 import com.android.inter.process.framework.JvmReflectMethodRequest
 import java.lang.reflect.Proxy
 
@@ -10,8 +10,8 @@ fun interface InvocationCaller {
     fun invoke(request: JvmReflectMethodRequest): Any?
 }
 
-fun InvocationCaller(connectionCommander: ConnectionCommander): InvocationCaller {
-    return object : InvocationCaller by DefaultInvocationCaller(connectionCommander = connectionCommander) {}
+fun InvocationCaller(functionCallTransformer: FunctionCallTransformer): InvocationCaller {
+    return object : InvocationCaller by DefaultInvocationCaller(functionCallTransformer = functionCallTransformer) {}
 }
 
 fun <T : Any> Class<T>.callerFunction(
@@ -21,7 +21,7 @@ fun <T : Any> Class<T>.callerFunction(
     return Proxy.newProxyInstance(
         this.classLoader,
         arrayOf(this),
-        InterProcessObjectPool.tryGetInvocationHandler(this) {
+        IPCObjectPool.tryGetInvocationHandler(this) {
             DefaultInvocationHandler(invocationCaller)
         }
     ) as T

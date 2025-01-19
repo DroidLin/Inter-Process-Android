@@ -9,7 +9,7 @@ import com.android.inter.process.framework.metadata.ServiceCreateResource
  * @author: liuzhongao
  * @since: 2024/9/10 23:30
  */
-interface InterProcessComponent<A : Address> {
+interface Component<A : Address> {
 
     fun <T : Any> serviceCreate(serviceCreateResource: ServiceCreateResource<T, A>): T
 }

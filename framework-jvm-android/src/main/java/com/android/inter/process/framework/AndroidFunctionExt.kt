@@ -8,7 +8,7 @@ import com.android.inter.process.framework.reflect.callerFunction
 import kotlin.coroutines.Continuation
 
 internal fun <T : Any> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
-    return this.callerFunction(InvocationCaller(connectionCommander = AndroidAutoConnectionCommander(
+    return this.callerFunction(InvocationCaller(functionCallTransformer = AndroidFunctionCallTransformer(
         BasicConnectionProxy(androidFunction)
     )))
 }
@@ -37,7 +37,7 @@ internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFun
                 } else {
                     receiver.invoke(invokeParameter)
                 }
-            }.onFailure { InterProcessLogger.logError(it) }
+            }.onFailure { Logger.logError(it) }
             DefaultResponse(result.getOrNull(), result.exceptionOrNull())
         }
     )

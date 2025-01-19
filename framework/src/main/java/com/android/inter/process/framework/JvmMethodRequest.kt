@@ -14,7 +14,7 @@ data class JvmMethodRequest(
      */
     val clazz: Class<*>,
     /**
-     * special identifier in [clazz] and is unique in this class declaration.
+     * special identifier in [clazz] and is unique in it`s class declaration.
      */
     val functionIdentifier: String,
     /**

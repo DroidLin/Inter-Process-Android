@@ -10,11 +10,13 @@ import com.android.inter.process.framework.address.ContentProviderAndroidAddress
  * @author: liuzhongao
  * @since: 2024/9/15 01:25
  */
-fun InterProcessCenter.installAndroid(address: AndroidAddress) {
+fun IPCManager.installAndroid(address: AndroidAddress) {
     installAddress(address)
 
-    val androidComponent = InterProcessAndroidComponent()
+    val androidComponent = AndroidComponent()
     installComponent(AndroidAddress::class.java, androidComponent)
     installComponent(BroadcastAndroidAddress::class.java, androidComponent)
     installComponent(ContentProviderAndroidAddress::class.java, androidComponent)
+
+
 }

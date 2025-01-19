@@ -8,7 +8,7 @@ import java.util.logging.Logger
  * @author: liuzhongao
  * @since: 2024/9/11 23:01
  */
-object InterProcessLogger {
+object Logger {
 
     private const val TAG = "InterProcess"
 

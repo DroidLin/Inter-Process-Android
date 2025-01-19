@@ -3,13 +3,13 @@ package com.android.inter.process.framework
 import com.android.inter.process.framework.metadata.ServiceCreateResource
 
 /**
- * delegate to [InterProcessComponent] by creating callers for interfaces.
+ * delegate to [Component] by creating callers for interfaces.
  *
  * @author: liuzhongao
  * @since: 2024/9/8 18:27
  */
-class InterProcess private constructor(
-    private val component: InterProcessComponent<Address>,
+class IPCProvider private constructor(
+    private val component: Component<Address>,
     private val address: Address,
 ) {
 
@@ -27,9 +27,9 @@ class InterProcess private constructor(
     companion object {
 
         @JvmStatic
-        fun with(address: Address): InterProcess {
-            val component = InterProcessCenter.findComponent(address.javaClass)
-            return InterProcess(component, address)
+        fun on(address: Address): IPCProvider {
+            val component = IPCManager.findComponent(address.javaClass)
+            return IPCProvider(component, address)
         }
     }
 }
