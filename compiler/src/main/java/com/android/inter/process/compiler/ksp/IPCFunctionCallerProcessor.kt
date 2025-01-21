@@ -82,7 +82,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                 .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this@${classDeclaration.simpleName.asString()}Caller" } ?: ""}),")
                 .appendLine("\t\t\t\t\tisSuspend = false")
                 .appendLine("\t\t\t\t)")
-                .appendLine("\t\t\t) ${if (ksPropertyDeclaration.type.resolve().isMarkedNullable) "as? ${ksPropertyDeclaration.type.simpleName}" else "as ${ksPropertyDeclaration.type.simpleName}"}")
+                .appendLine("\t\t\t) ${if (ksPropertyDeclaration.type.resolve().isMarkedNullable) "as? ${ksPropertyDeclaration.type.typeOfQualifiedName}" else "as ${ksPropertyDeclaration.type.typeOfQualifiedName}"}")
                 .appendLine("\t\t}")
             bodyDeclarationBuilder.appendLine("")
 
@@ -98,14 +98,14 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
             val bodyDeclarationBuilder = StringBuilder()
             bodyDeclarationBuilder
                 .appendLine("\toverride${if (ksFunctionDeclaration.isSuspend) " suspend" else ""} fun ${ksFunctionDeclaration.functionTypeParameters}${ksFunctionDeclaration.extensionReceiverDeclaration}${ksFunctionDeclaration.simpleName.asString()}${ksFunctionDeclaration.parameters.joinToString(separator = ", ", prefix = "(", postfix = ")") { valueParameter -> addImport(valueParameter.type.qualifiedName);"${requireNotNull(valueParameter.name).asString()}: ${valueParameter.type.simpleName}" }}${ksFunctionDeclaration.returnType?.let { ": ${it.simpleName}" } ?: ""} {")
-                .appendLine("\t\t${ksFunctionDeclaration.returnType?.let { "return " } ?: ""}this@${classDeclaration.simpleName.asString()}Caller.transformer.${if (ksFunctionDeclaration.isSuspend) "transform" else "syncTransform"}(")
+                .appendLine("\t\t${ksFunctionDeclaration.filterReturnType?.let { "return " } ?: ""}this@${classDeclaration.simpleName.asString()}Caller.transformer.${if (ksFunctionDeclaration.isSuspend) "transform" else "syncTransform"}(")
                 .appendLine("\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
                 .appendLine("\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\tfunctionIdentifier = \"${ksFunctionDeclaration.identifier}\",")
                 .appendLine("\t\t\t\tfunctionParameters = listOf(${ksFunctionDeclaration.extensionReceiver?.let { "this@${classDeclaration.simpleName.asString()}Caller, " } ?: ""}${ksFunctionDeclaration.parameters.joinToString(separator = ", ") { requireNotNull(it.name).asString() }}),")
                 .appendLine("\t\t\t\tisSuspend = ${ksFunctionDeclaration.isSuspend}")
                 .appendLine("\t\t\t)")
-                .appendLine("\t\t) ${ksFunctionDeclaration.returnType?.let { if (it.resolve().isMarkedNullable) "as? ${it.simpleName}" else "as ${it.simpleName}" } ?: ""}")
+                .appendLine("\t\t) ${ksFunctionDeclaration.filterReturnType?.let { if (it.resolve().isMarkedNullable) "as? ${it.typeOfQualifiedName}" else "as ${it.typeOfQualifiedName}" } ?: ""}")
                 .appendLine("\t}")
 
             bodyDeclarations += bodyDeclarationBuilder

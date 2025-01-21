@@ -10,19 +10,16 @@ import com.android.inter.process.framework.readCompatSerializable
  * @since: 2024/9/16 16:13
  */
 internal data class SuspendContext(
-    val coroutineDispatcher: CoroutineDispatcher = CoroutineDispatcher.None,
     val functionParameter: FunctionParameter
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
-        requireNotNull(parcel.readCompatSerializable()),
         requireNotNull(parcel.readCompatParcelable(SuspendContext::class.java.classLoader))
     )
 
     override fun describeContents(): Int = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeSerializable(this.coroutineDispatcher)
         dest.writeParcelable(this.functionParameter, 0)
     }
 

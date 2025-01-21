@@ -11,8 +11,23 @@ import java.math.BigInteger
 import java.security.MessageDigest
 import java.util.UUID
 
+internal val KSFunctionDeclaration.filterReturnType: KSTypeReference?
+    get() {
+        val returnTypeQualifiedName = this.returnType?.qualifiedName ?: return null
+        return when (returnTypeQualifiedName) {
+            Unit::class.java.name,
+            Void::class.java.name,
+            Unit::class.javaPrimitiveType?.name,
+            Void::class.javaPrimitiveType?.name -> null
+            else -> this.returnType
+        }
+    }
+
 internal val KSTypeReference.qualifiedName: String
     get() = requireNotNull(this.resolve().declaration.qualifiedName).asString()
+
+internal val KSTypeReference.typeOfQualifiedName: String
+    get() = "${this.resolve().declaration.packageName.asString()}.${simpleName}"
 
 internal val KSTypeReference.simpleName: String
     get() {

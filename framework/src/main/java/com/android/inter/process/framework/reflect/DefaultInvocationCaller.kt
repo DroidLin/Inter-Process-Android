@@ -3,7 +3,7 @@ package com.android.inter.process.framework.reflect
 import com.android.inter.process.framework.FunctionCallTransformer
 import com.android.inter.process.framework.JvmReflectMethodRequest
 import com.android.inter.process.framework.Request
-import kotlinx.coroutines.runBlocking
+import com.android.inter.process.framework.syncTransform
 import kotlin.coroutines.Continuation
 
 /**
@@ -14,6 +14,6 @@ internal class DefaultInvocationCaller(private val functionCallTransformer: Func
     override fun invoke(request: JvmReflectMethodRequest): Any? {
         return if (request.continuation != null) {
             (this.functionCallTransformer::transform as Function2<Request, Continuation<Any?>, Any?>).invoke(request, requireNotNull(request.continuation))
-        } else runBlocking { this@DefaultInvocationCaller.functionCallTransformer.transform(request) }
+        } else functionCallTransformer.syncTransform(request)
     }
 }

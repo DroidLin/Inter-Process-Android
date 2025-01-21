@@ -20,17 +20,6 @@ fun Any?.typeSafe(): Any? {
     return this
 }
 
-fun Any?.containsFileDescriptor(): Boolean {
-    if (this == null) return false
-    if (this is FileDescriptor) return true
-    return when (this) {
-        is Map<*, *> -> this.any { (key, value) -> (key.containsFileDescriptor() || value.containsFileDescriptor()) }
-        is Iterable<*> -> this.any { it.containsFileDescriptor() }
-        is Array<*> -> this.any { it.containsFileDescriptor() }
-        else -> false
-    }
-}
-
 val Array<String>.stringType2ClassType: Array<Class<*>>
     get() = this.map { className -> className.stringType2ClassType }.toTypedArray()
 

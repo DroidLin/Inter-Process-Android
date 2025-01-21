@@ -2,6 +2,7 @@ package com.android.inter.process
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.ParcelFileDescriptor
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +27,8 @@ import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
 import com.android.inter.process.ui.theme.InterProcessAndroidTheme
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : ComponentActivity() {
 
@@ -97,10 +100,14 @@ fun GreetingPreview() {
     }
 }
 
-fun onClick(lifecycleOwner: LifecycleOwner, iPCProvider: IPCProvider) {
+fun onClick(activity: ComponentActivity, iPCProvider: IPCProvider) {
     val function = iPCProvider.serviceCreate(ApplicationInfo::class.java)
-    lifecycleOwner.lifecycleScope.launch {
-        val result = function.packageName
-        println("call remote result: $result")
+    activity.lifecycleScope.launch {
+        val file = File(activity.cacheDir, "tempFile.txt")
+        FileOutputStream(file).bufferedWriter().use { outputStream ->
+            outputStream.write("Hello world.")
+            outputStream.flush()
+        }
+        function.writeData(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY))
     }
 }

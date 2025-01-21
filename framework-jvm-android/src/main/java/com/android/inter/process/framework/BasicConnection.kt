@@ -52,6 +52,9 @@ internal val BasicConnection.iBinder: IBinder
         else -> throw IllegalArgumentException("unknown basic connection type: ${this.javaClass}.")
     }
 
+internal val BasicConnection.isConnected: Boolean
+    get() = iBinder.isBinderAlive && iBinder.pingBinder()
+
 internal fun BasicConnectionProxy(androidFunction: AndroidFunction): BasicConnection {
     return BasicConnectionCaller(androidFunction)
 }

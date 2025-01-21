@@ -41,14 +41,14 @@ internal fun interface AndroidFunction : IFunction<AndroidRequest, AndroidRespon
 /**
  * fast way to get aidl function [IFunction] instance.
  */
-internal val AndroidFunction.function: Function
+internal val AndroidFunction.function: AIDLFunction
     get() = when (this) {
         is FunctionCaller -> this.binderFunction
         is FunctionReceiver -> this.binderFunction
         else -> throw IllegalArgumentException("unknown AndroidFunction Type: ${this.javaClass}")
     }
 
-internal fun AndroidFunctionProxy(function: Function): AndroidFunction {
+internal fun AndroidFunctionProxy(function: AIDLFunction): AndroidFunction {
     return FunctionCaller(function)
 }
 
@@ -59,7 +59,7 @@ internal fun AndroidFunctionStub(function: AndroidFunction): AndroidFunction {
 /**
  * implementation of [AndroidFunctionStub] for calling remote method.
  */
-private class FunctionCaller(val binderFunction: Function) : AndroidFunction {
+private class FunctionCaller(val binderFunction: AIDLFunction) : AndroidFunction {
 
     private val deathListenerList = LinkedList<AndroidFunction.DeathListener>()
 
@@ -140,11 +140,11 @@ private class FunctionCaller(val binderFunction: Function) : AndroidFunction {
 private class FunctionReceiver(androidFunction: AndroidFunction) :
     AndroidFunction by androidFunction {
 
-    val binderFunction = object : Function.Stub() {
-        override fun call(functionParameters: FunctionParameters?) {
+    val binderFunction = object : AIDLFunction.Stub() {
+        override fun call(functionParameters: FunctionParameters) {
             try {
                 Logger.logDebug("========================= Receiver Start Inter Process Call =========================")
-                val request = functionParameters?.request ?: return
+                val request = functionParameters.request ?: return
                 functionParameters.request = null
                 Logger.logDebug("receive calling ${request.javaClass}")
                 val response = this@FunctionReceiver.call(request)

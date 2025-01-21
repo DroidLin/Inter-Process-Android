@@ -12,6 +12,7 @@ import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.address.AndroidAddress.Companion.toParcelableAddress
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.exceptions.ConnectTimeoutException
+import com.android.inter.process.framework.isConnected
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.ConnectRunningTask
 import com.android.inter.process.framework.withConnectionScope
@@ -44,44 +45,46 @@ internal suspend fun doConnect(
 ): BasicConnection {
     val newParcelableAddress = address.toParcelableAddress()
     val basicConnection = FunctionConnectionPool[newParcelableAddress]
-    if (basicConnection != null) {
+    if (basicConnection != null && basicConnection.isConnected) {
         Logger.logDebug("android function already exist and alive, just return the value.")
         return basicConnection
     }
-
+    // we need to wait if there is an existing task.
+    val firstCheckTask = FunctionConnectionPool.getRecord(newParcelableAddress)
+    if (firstCheckTask != null) {
+        Logger.logDebug("another connection task is running, wait until finished.")
+        return firstCheckTask.deferred.await()
+    }
     return FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
-        // we need to wait if there is an existing task.
-        val runningTask = FunctionConnectionPool.getRecord(newParcelableAddress)
-        if (runningTask != null) {
-            Logger.logDebug("another connection task is running, wait until finished.")
-            return runningTask.deferred.await()
+        // now we check the connection again.
+        val newBasicConnection = FunctionConnectionPool[newParcelableAddress]
+        if (newBasicConnection != null && newBasicConnection.isConnected) {
+            Logger.logDebug("double check android function already exist and alive, just return the value.")
+            return@withLock newBasicConnection
         }
-
         // or just launch connection logics.
         withConnectionScope connectionScope@{
-            FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
-                try {
-                    Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
-                    Logger.logDebug("trying connect to remote: ${newParcelableAddress}.")
-                    val newTask = ConnectRunningTask(
-                        deferred = async {
-                            doConnectInner(
-                                coroutineScope = this@connectionScope,
-                                destAddress = newParcelableAddress,
-                                connectTimeout = 10_000,
-                                typeOfConnection = typeOfConnection
-                            )
-                        }
-                    )
-                    FunctionConnectionPool.addRecord(newParcelableAddress, newTask)
+            try {
+                Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
+                Logger.logDebug("trying connect to remote: ${newParcelableAddress}.")
+                val newTask = ConnectRunningTask(
+                    deferred = async {
+                        doConnectInner(
+                            coroutineScope = this@connectionScope,
+                            destAddress = newParcelableAddress,
+                            connectTimeout = 10_000,
+                            typeOfConnection = typeOfConnection
+                        )
+                    }
+                )
+                FunctionConnectionPool.addRecord(newParcelableAddress, newTask)
 
-                    val newConnection = newTask.deferred.await()
-                    FunctionConnectionPool[newParcelableAddress] = newConnection
-                    newConnection
-                } finally {
-                    FunctionConnectionPool.removeRecord(newParcelableAddress)
-                    Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner Finished >>>>>>>>>>>>>>>>>>>>>>>>>")
-                }
+                val newConnection = newTask.deferred.await()
+                FunctionConnectionPool[newParcelableAddress] = newConnection
+                newConnection
+            } finally {
+                FunctionConnectionPool.removeRecord(newParcelableAddress)
+                Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner Finished >>>>>>>>>>>>>>>>>>>>>>>>>")
             }
         }
     }

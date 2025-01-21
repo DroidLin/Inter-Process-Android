@@ -1,8 +1,12 @@
 package com.android.inter.process
 
 import android.content.Context
+import android.os.ParcelFileDescriptor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileDescriptor
+import java.io.FileInputStream
 
 /**
  * @author: liuzhongao
@@ -27,8 +31,14 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
         return App.getProcessName(context)
     }
 
+    override suspend fun writeData(fileDescriptor: ParcelFileDescriptor) {
+        FileInputStream(fileDescriptor.fileDescriptor).bufferedReader().use { inputStream ->
+            println(inputStream.readText())
+        }
+    }
+
     override suspend fun getData(type: String): List<String>? {
-        return emptyList()
+        return listOf("hello", "world", "!")
     }
 
     override fun String.isAwesome(): Boolean {

@@ -1,6 +1,8 @@
 package com.android.inter.process
 
+import android.os.ParcelFileDescriptor
 import com.android.inter.process.framework.annotation.IPCInterface
+import java.io.FileDescriptor
 
 /**
  * @author: liuzhongao
@@ -16,6 +18,8 @@ interface ApplicationInfo {
     suspend fun callRemote(url: String, parameterList: List<Int?>): Int
 
     suspend fun fetchProcessName(): String
+
+    suspend fun writeData(fileDescriptor: ParcelFileDescriptor)
 
     suspend fun getData(type: String): List<String>?
 

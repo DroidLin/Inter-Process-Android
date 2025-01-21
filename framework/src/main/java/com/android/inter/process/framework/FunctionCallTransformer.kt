@@ -1,5 +1,6 @@
 package com.android.inter.process.framework
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 /**
@@ -18,7 +19,7 @@ fun FunctionCallTransformer(function: suspend () -> FunctionCallTransformer): Fu
 }
 
 fun FunctionCallTransformer.syncTransform(request: Request): Any? {
-    return runBlocking { transform(request) }
+    return runBlocking(Dispatchers.Unconfined) { transform(request) }
 }
 
 private class AutoFunctionCallTransformer(val tryConnect: suspend () -> FunctionCallTransformer) : FunctionCallTransformer {

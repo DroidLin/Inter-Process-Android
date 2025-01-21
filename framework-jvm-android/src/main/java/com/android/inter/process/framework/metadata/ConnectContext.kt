@@ -5,7 +5,7 @@ import android.os.Parcelable
 import com.android.inter.process.framework.AndroidFunctionProxy
 import com.android.inter.process.framework.BasicConnection
 import com.android.inter.process.framework.BasicConnectionProxy
-import com.android.inter.process.framework.Function
+import com.android.inter.process.framework.AIDLFunction
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.iBinder
 import com.android.inter.process.framework.readCompatParcelable
@@ -25,7 +25,7 @@ internal data class ConnectContext(
 
     constructor(parcel: Parcel) : this(
         requireNotNull(parcel.readCompatParcelable(ConnectContext::class.java.classLoader)),
-        BasicConnectionProxy(AndroidFunctionProxy(Function.Stub.asInterface(parcel.readStrongBinder())))
+        BasicConnectionProxy(AndroidFunctionProxy(requireNotNull(AIDLFunction.Stub.asInterface(parcel.readStrongBinder()))))
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
