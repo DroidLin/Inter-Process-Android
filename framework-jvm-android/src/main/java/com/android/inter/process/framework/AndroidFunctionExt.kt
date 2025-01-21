@@ -18,10 +18,10 @@ internal fun <T : Any> Class<T>.callerAndroidFunction(androidFunction: AndroidFu
  */
 internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
+    val receiver = InvocationReceiver(instance = instance)
     return AndroidFunctionStub(
         AndroidFunction { request ->
             if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)
-            val receiver = InvocationReceiver(instance = instance)
             val invokeParameter = InvocationParameter(
                 declaredClassFullName = request.declaredClassFullName,
                 methodName = request.methodName,

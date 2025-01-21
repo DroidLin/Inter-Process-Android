@@ -3,6 +3,7 @@ package com.android.inter.process.framework
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.reflect.InvocationParameter
+import com.android.inter.process.framework.reflect.InvocationReceiver
 
 internal fun BasicConnection(sourceAddress: ParcelableAndroidAddress): BasicConnection {
     return BasicConnectionImpl(sourceAddress)

@@ -4,7 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 
 /**
- * used to transform an unspecified request to a specific ipc-request
+ * transform an unspecified request to a specific ipc-request
  *
  * @author liuzhongao
  * @since 2024/9/18 16:55
