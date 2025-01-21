@@ -8,8 +8,8 @@ import com.android.inter.process.framework.objectPool
  * @since: 2024/9/17 23:38
  */
 
-internal fun <T : Any> FunctionParameter.function(): T {
-    return this.functionType.callerAndroidFunction(this.androidFunction) as T
+internal fun <T> FunctionParameter.function(): T {
+    return (this.functionType as Class<T>).callerAndroidFunction(this.androidFunction)
 }
 
 

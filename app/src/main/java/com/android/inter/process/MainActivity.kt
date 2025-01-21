@@ -103,6 +103,6 @@ fun GreetingPreview() {
 fun onClick(activity: ComponentActivity, iPCProvider: IPCProvider) {
     val function = iPCProvider.serviceCreate(ApplicationInfo::class.java)
     activity.lifecycleScope.launch {
-        function.fetchProcessName()
+        function.getData("hello world.")
     }
 }

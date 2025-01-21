@@ -8,7 +8,7 @@ import java.io.FileDescriptor
  * @author: liuzhongao
  * @since: 2024/9/17 16:00
  */
-@IPCInterface
+//@IPCInterface
 interface ApplicationInfo {
 
     val packageName: String?

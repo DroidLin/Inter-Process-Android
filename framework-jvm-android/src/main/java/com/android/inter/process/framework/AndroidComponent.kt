@@ -4,7 +4,7 @@ import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.connector.AndroidConnectorHandle
 import com.android.inter.process.framework.connector.functionAndroidConnectionHandle
 import com.android.inter.process.framework.metadata.ServiceCreateResource
-import com.android.inter.process.framework.reflect.InvocationCaller
+import com.android.inter.process.framework.reflect.InvocationCallerAndroid
 import com.android.inter.process.framework.reflect.callerFunction
 
 /**
@@ -27,7 +27,7 @@ internal class AndroidComponent : Component<AndroidAddress> {
             commander = transformer
         )
         return newGeneratedInstance ?: serviceCreateResource.clazz.callerFunction(
-            invocationCaller = InvocationCaller(functionCallTransformer = transformer)
+            invocationCaller = InvocationCallerAndroid(functionCallTransformer = transformer)
         )
     }
 }

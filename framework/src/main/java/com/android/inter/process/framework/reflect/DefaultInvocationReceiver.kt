@@ -11,39 +11,40 @@ import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
  */
 internal class DefaultInvocationReceiver<T>(private val instance: T) : InvocationReceiver<T> {
 
-    private val jvmMethodCache: MutableMap<String, Method> by lazy { ConcurrentHashMap() }
+    private val jvmMethodCache by lazy { ConcurrentHashMap<String, Method>() }
 
     override fun invoke(invocationParameter: InvocationParameter): Any? {
-        val jvmFunction = this.jvmMethodCache[invocationParameter.methodUniqueId] ?: run {
-            val hostClass = invocationParameter.declaredClassFullName.stringType2ClassType
-            val functionName = invocationParameter.methodName
-            val parameterTypes = invocationParameter.methodParameterTypeFullNames.stringType2ClassType
-            val declaredMethod = hostClass.getDeclaredMethod(functionName, *parameterTypes.toTypedArray())
-            jvmMethodCache[invocationParameter.methodUniqueId] = declaredMethod
-            declaredMethod
-        }
-
-        requireNotNull(jvmFunction) { "do not found method satisfied with name: ${invocationParameter.methodName} in class: ${invocationParameter.declaredClassFullName}" }
-
+        val jvmFunction = invocationParameter.declaredClassFullName.stringType2ClassType
+            .findMethod(
+                uniqueId = invocationParameter.methodUniqueId,
+                functionName = invocationParameter.methodName,
+                clazz = arrayOf(*invocationParameter.methodParameterTypeFullNames.stringType2ClassType.toTypedArray())
+            )
         val parameterValues = invocationParameter.methodParameterValues
         return jvmFunction.invoke(this.instance, *parameterValues.toTypedArray())
     }
 
     override suspend fun invokeSuspend(invocationParameter: InvocationParameter): Any? {
         return suspendCoroutineUninterceptedOrReturn { continuation ->
-            val jvmFunction = this.jvmMethodCache[invocationParameter.methodUniqueId] ?: run {
-                val hostClass = invocationParameter.declaredClassFullName.stringType2ClassType
-                val functionName = invocationParameter.methodName
-                val parameterTypes = invocationParameter.methodParameterTypeFullNames.stringType2ClassType
-                val declaredMethod = hostClass.getDeclaredMethod(functionName, *parameterTypes.toTypedArray(), Continuation::class.java)
-                jvmMethodCache[invocationParameter.methodUniqueId] = declaredMethod
-                declaredMethod
-            }
-
-            requireNotNull(jvmFunction) { "do not found method satisfied with name: ${invocationParameter.methodName} in class: ${invocationParameter.declaredClassFullName}" }
-
+            val jvmFunction = invocationParameter.declaredClassFullName.stringType2ClassType
+                .findMethod(
+                    uniqueId = invocationParameter.methodUniqueId,
+                    functionName = invocationParameter.methodName,
+                    clazz = arrayOf(
+                        *invocationParameter.methodParameterTypeFullNames.stringType2ClassType.toTypedArray(),
+                        Continuation::class.java
+                    )
+                )
             val parameterValues = invocationParameter.methodParameterValues
             jvmFunction.invoke(this.instance, *parameterValues.toTypedArray(), continuation)
+        }
+    }
+
+    private fun Class<*>.findMethod(uniqueId: String, functionName: String, vararg clazz: Class<*>): Method {
+        return this@DefaultInvocationReceiver.jvmMethodCache[uniqueId] ?: run {
+            val declaredMethod = getDeclaredMethod(functionName, *clazz)
+            jvmMethodCache[uniqueId] = declaredMethod
+            declaredMethod
         }
     }
 }

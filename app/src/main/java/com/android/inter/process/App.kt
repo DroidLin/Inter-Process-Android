@@ -8,6 +8,7 @@ import com.android.inter.process.framework.IPCManager
 import com.android.inter.process.framework.address.broadcast
 import com.android.inter.process.framework.installAndroid
 import com.android.inter.process.framework.objectPool
+import com.android.inter.process.framework.reflect.InvocationReceiverAndroid
 
 /**
  * @author: liuzhongao
@@ -27,9 +28,9 @@ class App : Application() {
             val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_main_ipc))
             IPCManager.installAndroid(androidAddress)
         }
-        objectPool.putCallerBuilder(ApplicationInfo::class.java) { ApplicationInfoCaller(it) }
-        objectPool.putReceiverBuilder(ApplicationInfo::class.java) { ApplicationInfoReceiver(it) }
-        objectPool.putInstance(ApplicationInfo::class.java, ProcessApplicationInfo(this))
+//        objectPool.putCallerBuilder(ApplicationInfo::class.java) { ApplicationInfoCaller(it) }
+//        objectPool.putReceiverBuilder(ApplicationInfo::class.java) { ApplicationInfoReceiver(it) }
+        objectPool.putReceiver(ApplicationInfo::class.java, InvocationReceiverAndroid(ProcessApplicationInfo(this)))
     }
 
     companion object {

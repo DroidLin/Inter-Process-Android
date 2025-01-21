@@ -1,22 +1,26 @@
 package com.android.inter.process.framework
 
 import com.android.inter.process.framework.metadata.function
+import com.android.inter.process.framework.reflect.InvocationCallerAndroid
 import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
-import com.android.inter.process.framework.reflect.InvocationCaller
 import com.android.inter.process.framework.reflect.callerFunction
 import kotlin.coroutines.Continuation
 
-internal fun <T : Any> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
-    return this.callerFunction(InvocationCaller(functionCallTransformer = AndroidFunctionCallTransformer(
-        BasicConnectionProxy(androidFunction)
-    )))
+internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
+    return this.callerFunction(
+        invocationCaller = InvocationCallerAndroid(
+            functionCallTransformer = AndroidFunctionCallTransformer(
+                basicConnection = BasicConnectionProxy(androidFunction)
+            )
+        )
+    )
 }
 
 /**
  * generate proxies for the passed in instance, this is only used for remote calling.
  */
-internal fun <T : Any> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
+internal fun <T> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
     val receiver = InvocationReceiver(instance = instance)
     return AndroidFunctionStub(

@@ -31,7 +31,7 @@ data class InvocationParameter(
     val methodParameterValues: List<Any?>,
 )
 
-internal val InvocationParameter.methodUniqueId: String
+val InvocationParameter.methodUniqueId: String
     get() = "${declaredClassFullName}#${methodName}${
         methodParameterTypeFullNames.joinToString(
             ",",
