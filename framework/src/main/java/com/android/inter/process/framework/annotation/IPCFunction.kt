@@ -5,21 +5,23 @@ package com.android.inter.process.framework.annotation
  *
  * sample code:
  * ```
- * @IPCInterface
+ * @IPCService
  * fun interface Callback {
  *     fun callback(data: Any)
  * }
  *
- * @IPCInterface
+ * @IPCService
  * interface MyInterface {
  *     fun requestInformation(
  *         id: String,
- *         @IPCMethod
+ *         @IPCFunction
  *         callback: Callback
  *     )
  * }
  * ```
+ *
+ * see [IPCService], [IPCFunction] for more information.
  */
 @Retention(value = AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class IPCMethod
+annotation class IPCFunction

@@ -2,6 +2,12 @@ package com.android.inter.process.framework.reflect
 
 import com.android.inter.process.framework.objectPool
 
+/**
+ * function call destination, the next step is call real instance the business logic passed in.
+ *
+ * was divided into two different functions, kotlin suspend function runs differently with the
+ * default jvm function.
+ */
 interface InvocationReceiver<T> {
 
     fun invoke(invocationParameter: InvocationParameter): Any?
@@ -32,10 +38,4 @@ data class InvocationParameter(
 )
 
 val InvocationParameter.methodUniqueId: String
-    get() = "${declaredClassFullName}#${methodName}${
-        methodParameterTypeFullNames.joinToString(
-            ",",
-            prefix = "(",
-            postfix = ")"
-        )
-    }"
+    get() = "${declaredClassFullName}#${methodName}${methodParameterTypeFullNames.joinToString(",", prefix = "(", postfix = ")")}"

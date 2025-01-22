@@ -1,10 +1,10 @@
 package com.android.inter.process.framework
 
-import com.android.inter.process.framework.annotation.IPCInterface
+import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.annotation.IPCServiceFactory
 
 /**
- * factory to create implementation instance of interface [IPCInterface]
+ * factory to create implementation instance of interface [IPCService]
  * is annotated with.
  *
  * see [IPCServiceFactory] for more information.

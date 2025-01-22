@@ -1,10 +1,10 @@
 package com.android.inter.process
 
 import com.android.inter.process.framework.ServiceFactory
-import com.android.inter.process.framework.annotation.IPCInterface
+import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.annotation.IPCServiceFactory
 
-@IPCInterface
+@IPCService
 interface ApplicationTest {
 }
 

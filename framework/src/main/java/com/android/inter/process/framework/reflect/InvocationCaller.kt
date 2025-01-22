@@ -3,6 +3,7 @@ package com.android.inter.process.framework.reflect
 import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.IPCObjectPool
 import com.android.inter.process.framework.JvmReflectMethodRequest
+import com.android.inter.process.framework.Request
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import kotlin.coroutines.Continuation
@@ -12,6 +13,9 @@ fun interface InvocationCaller {
     fun invoke(method: Method, parameters: Array<Any?>?): Any?
 
     companion object {
+        /**
+         * parse jvm method into a structured [Request] object.
+         */
         @JvmStatic
         fun parseRequest(method: Method, parameters: Array<Any?>?): JvmReflectMethodRequest {
             val methodParameterTypes: Array<Class<*>> = method.parameterTypes

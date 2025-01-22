@@ -40,6 +40,10 @@ interface ObjectPool {
      * do not forget to annotated your own collector with [CustomCollector]
      */
     interface Collector {
+
+        /**
+         * collect objects from implementations, will be called at initialization.
+         */
         fun collect()
     }
 }

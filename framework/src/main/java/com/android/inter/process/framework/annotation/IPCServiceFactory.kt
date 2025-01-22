@@ -4,7 +4,7 @@ import kotlin.reflect.KClass
 import com.android.inter.process.framework.ServiceFactory
 
 /**
- * collect implementations of interfaces annotated with [IPCInterface].
+ * collect implementations of interfaces annotated with [IPCService].
  *
  * see [ServiceFactory] for more information.
  *

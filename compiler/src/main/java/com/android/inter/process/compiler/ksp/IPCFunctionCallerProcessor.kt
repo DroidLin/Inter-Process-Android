@@ -3,7 +3,7 @@ package com.android.inter.process.compiler.ksp
 import com.android.inter.process.framework.Address
 import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.JvmMethodRequest
-import com.android.inter.process.framework.annotation.IPCMethod
+import com.android.inter.process.framework.annotation.IPCFunction
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
@@ -99,7 +99,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
 
             val parameters =
                 ksFunctionDeclaration.parameters.mapIndexed { index, ksValueParameter ->
-                    if (ksValueParameter.annotations.find { it.shortName.asString() == IPCMethod::class.java.simpleName } != null) {
+                    if (ksValueParameter.annotations.find { it.shortName.asString() == IPCFunction::class.java.simpleName } != null) {
                         "newBinderFunctionParameter(${ksValueParameter.type.resolve().declaration.simpleName.asString()}::class.java, ${
                             requireNotNull(
                                 ksValueParameter.name

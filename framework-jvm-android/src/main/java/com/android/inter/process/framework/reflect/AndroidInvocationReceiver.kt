@@ -12,6 +12,10 @@ fun <T : Any> InvocationReceiverAndroid(instance: T): InvocationReceiver<T> {
 
 private class AndroidInvocationReceiver<T : Any>(val instance: T) : InvocationReceiver<T> {
 
+    /**
+     * we provide the service method to improve running performance, and
+     * avoid expensive costs in [java.lang.Class.getDeclaredMethod]
+     */
     private val serviceMethodCache by lazy { ConcurrentHashMap<String, AndroidReceiverServiceMethod>() }
 
     override fun invoke(invocationParameter: InvocationParameter): Any? {

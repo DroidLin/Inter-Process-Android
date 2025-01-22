@@ -1,9 +1,8 @@
 package com.android.inter.process.framework.reflect
 
-import com.android.inter.process.framework.annotation.IPCMethod
+import com.android.inter.process.framework.annotation.IPCFunction
 import com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter
 import com.android.inter.process.framework.metadata.newBinderFunctionParameter
-import com.android.inter.process.framework.receiverAndroidFunction
 
 internal abstract class CallerValueTransform<P, T> : ValueTransform<P, T> {
 
@@ -19,7 +18,7 @@ internal abstract class CallerValueTransform<P, T> : ValueTransform<P, T> {
         @JvmStatic
         fun <P, T> parseAnnotation(annotation: Annotation, clazz: Class<P>): ValueTransform<P, T>? {
             return when (annotation) {
-                is IPCMethod -> InterfaceStubToFunctionParameterTransform(clazz) as ValueTransform<P, T>
+                is IPCFunction -> InterfaceStubToFunctionParameterTransform(clazz) as ValueTransform<P, T>
                 else -> null
             }
         }

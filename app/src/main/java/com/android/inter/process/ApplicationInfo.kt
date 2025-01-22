@@ -1,14 +1,14 @@
 package com.android.inter.process
 
 import android.os.ParcelFileDescriptor
-import com.android.inter.process.framework.annotation.IPCInterface
-import com.android.inter.process.framework.annotation.IPCMethod
+import com.android.inter.process.framework.annotation.IPCService
+import com.android.inter.process.framework.annotation.IPCFunction
 
 /**
  * @author: liuzhongao
  * @since: 2024/9/17 16:00
  */
-@IPCInterface
+@IPCService
 interface ApplicationInfo {
 
     val packageName: String?
@@ -19,13 +19,13 @@ interface ApplicationInfo {
 
     suspend fun fetchProcessName(): String
 
-    suspend fun emptyFunction(@IPCMethod callback: () -> Unit)
+    suspend fun emptyFunction(@IPCFunction callback: () -> Unit)
 
-    suspend fun String.emptyFunction(@IPCMethod callback: () -> Unit)
+    suspend fun String.emptyFunction(@IPCFunction callback: () -> Unit)
 
-    fun emptyCallbackFunction(@IPCMethod callback: () -> Unit)
+    fun emptyCallbackFunction(@IPCFunction callback: () -> Unit)
 
-    fun String.emptyCallbackFunction(@IPCMethod callback: () -> Unit)
+    fun String.emptyCallbackFunction(@IPCFunction callback: () -> Unit)
 
     suspend fun writeData(fileDescriptor: ParcelFileDescriptor)
 

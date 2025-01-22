@@ -1,7 +1,7 @@
 package com.android.inter.process.compiler.ksp
 
 import com.android.inter.process.framework.annotation.CustomCollector
-import com.android.inter.process.framework.annotation.IPCInterface
+import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.annotation.IPCServiceFactory
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
@@ -17,7 +17,7 @@ class KspFunctionProvider : SymbolProcessorProvider {
 
 private class Processor(private val environment: SymbolProcessorEnvironment) : SymbolProcessor {
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        val interfaceSymbols = resolver.getSymbolsWithAnnotation(IPCInterface::class.java.name).toList()
+        val interfaceSymbols = resolver.getSymbolsWithAnnotation(IPCService::class.java.name).toList()
         buildCallerFunction(interfaceSymbols, resolver, this.environment.codeGenerator)
         buildReceiverFunction(interfaceSymbols, resolver, this.environment.codeGenerator)
 
