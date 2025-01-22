@@ -44,6 +44,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val applicationInfo = iPCProvider.serviceCreate(ApplicationInfo::class.java)
         setContent {
             InterProcessAndroidTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -64,10 +65,7 @@ class MainActivity : ComponentActivity() {
                                     },
                                     indication = null,
                                     onClick = {
-                                        onClick(
-                                            this@MainActivity,
-                                            this@MainActivity.iPCProvider
-                                        )
+                                        onClick(this@MainActivity, applicationInfo)
                                     },
                                 )
                         )
@@ -100,11 +98,8 @@ fun GreetingPreview() {
     }
 }
 
-fun onClick(activity: ComponentActivity, iPCProvider: IPCProvider) {
-    val function = iPCProvider.serviceCreate(ApplicationInfo::class.java)
+fun onClick(activity: ComponentActivity, applicationInfo: ApplicationInfo) {
     activity.lifecycleScope.launch {
-        function.emptyFunction {
-            println("callback success.")
-        }
+        applicationInfo.getData("hello world.")
     }
 }
