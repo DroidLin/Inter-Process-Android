@@ -1,6 +1,7 @@
 package com.android.inter.process.framework
 
 import com.android.inter.process.framework.metadata.InitializeConfig
+import java.util.ServiceLoader
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -57,7 +58,8 @@ object IPCManager {
     }
 
     @JvmStatic
-    fun installObjects() {
-
+    fun installDependencies() {
+        ServiceLoader.load(ObjectPool.Collector::class.java)
+            .forEach(ObjectPool.Collector::collect)
     }
 }

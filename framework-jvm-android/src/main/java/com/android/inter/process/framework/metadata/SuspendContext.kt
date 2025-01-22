@@ -3,14 +3,13 @@ package com.android.inter.process.framework.metadata
 import android.os.Parcel
 import android.os.Parcelable
 import com.android.inter.process.framework.readCompatParcelable
-import com.android.inter.process.framework.readCompatSerializable
 
 /**
  * @author: liuzhongao
  * @since: 2024/9/16 16:13
  */
 internal data class SuspendContext(
-    val functionParameter: FunctionParameter
+    val androidBinderFunctionParameter: AndroidBinderFunctionParameter
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -20,7 +19,7 @@ internal data class SuspendContext(
     override fun describeContents(): Int = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeParcelable(this.functionParameter, 0)
+        dest.writeParcelable(this.androidBinderFunctionParameter, 0)
     }
 
     companion object CREATOR : Parcelable.Creator<SuspendContext> {

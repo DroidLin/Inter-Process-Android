@@ -3,12 +3,10 @@ package com.android.inter.process.framework
 import android.os.Binder
 import android.os.IBinder
 import android.os.IInterface
-import android.os.MemoryFile
 import android.os.Parcel
 import android.os.Parcelable
 import com.android.inter.process.framework.exceptions.ParcelableToLargeException
 import com.android.inter.process.framework.metadata.FunctionParameters
-import java.util.Locale
 
 /**
  * @author liuzhongao
@@ -78,9 +76,7 @@ internal interface AIDLFunction : IInterface {
                     if (dataSize > PARCEL_MAX_COUNT_THRESHOLD) {
                         throw ParcelableToLargeException("data count: ${dataSize} reaches max limit.")
                     }
-                    Logger.logDebug("call data size: ${String.format(Locale.getDefault(), "%.2f", (dataSize / 1024f))}kb")
                     val status = this.remote.transact(TRANSACTION_CALL, data, reply, 0)
-                    Logger.logDebug("reply data size: ${String.format(Locale.getDefault(), "%.2f", (reply.dataSize() / 1024f))}kb")
                     reply.readException()
                     if (reply.readInt() != 0) {
                         functionParameters.readFromParcel(reply)

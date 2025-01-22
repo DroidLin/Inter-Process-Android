@@ -46,7 +46,7 @@ internal suspend fun doConnect(
     val newParcelableAddress = address.toParcelableAddress()
     val basicConnection = FunctionConnectionPool[newParcelableAddress]
     if (basicConnection != null && basicConnection.isConnected) {
-        Logger.logDebug("android function already exist and alive, just return the value.")
+        Logger.logDebug("function already exist and alive, just return the value.")
         return basicConnection
     }
     // we need to wait if there is an existing task.
@@ -59,7 +59,7 @@ internal suspend fun doConnect(
         // now we check the connection again.
         val newBasicConnection = FunctionConnectionPool[newParcelableAddress]
         if (newBasicConnection != null && newBasicConnection.isConnected) {
-            Logger.logDebug("double check android function already exist and alive, just return the value.")
+            Logger.logDebug("double check function already exist and alive, just return the value.")
             return@withLock newBasicConnection
         }
         // or just launch connection logics.

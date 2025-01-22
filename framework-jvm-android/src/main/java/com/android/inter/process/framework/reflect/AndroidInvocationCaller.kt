@@ -1,33 +1,36 @@
 package com.android.inter.process.framework.reflect
 
-import com.android.inter.process.framework.FunctionCallTransformer
+import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.Request
-import com.android.inter.process.framework.syncTransform
+import com.android.inter.process.framework.syncCall
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.Continuation
 import com.android.inter.process.framework.reflect.AndroidServiceMethod.AndroidCallerServiceMethod
 
-fun InvocationCallerAndroid(functionCallTransformer: FunctionCallTransformer): InvocationCaller {
-    return AndroidInvocationCaller(functionCallTransformer = functionCallTransformer)
+fun InvocationCallerAndroid(functionCallAdapter: FunctionCallAdapter): InvocationCaller {
+    return AndroidInvocationCaller(functionCallAdapter = functionCallAdapter)
 }
 
 private class AndroidInvocationCaller(
-    private val functionCallTransformer: FunctionCallTransformer
+    private val functionCallAdapter: FunctionCallAdapter
 ) : InvocationCaller {
 
     private val serviceMethodCache by lazy { ConcurrentHashMap<String, AndroidCallerServiceMethod>() }
 
     override fun invoke(method: Method, parameters: Array<Any?>?): Any? {
+        // parameters directly from invocation handler, including suspend function parameter Continuation
         val serviceMethod = this.serviceMethodCache.getOrPut(method.toGenericString()) {
             AndroidServiceMethod.parseCallerServiceMethod(method)
         }
+        // for now, service method is running for annotation [IPCMethod],
+        // and is created for further use.
         val transformedParameters = serviceMethod.invoke(parameters ?: emptyArray())
         val request = InvocationCaller.parseRequest(method, transformedParameters)
         val isSuspend = request.continuation != null
         return if (isSuspend) {
-            (this.functionCallTransformer::transform as Function2<Request, Continuation<Any?>, Any?>)
+            (this.functionCallAdapter::call as Function2<Request, Continuation<Any?>, Any?>)
                 .invoke(request, requireNotNull(request.continuation))
-        } else functionCallTransformer.syncTransform(request)
+        } else functionCallAdapter.syncCall(request)
     }
 }

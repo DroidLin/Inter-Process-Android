@@ -4,7 +4,7 @@ import android.os.IBinder
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.exceptions.BinderDisconnectedException
 import com.android.inter.process.framework.metadata.ConnectContext
-import com.android.inter.process.framework.metadata.FunctionParameter
+import com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter
 import com.android.inter.process.framework.metadata.SuspendContext
 import com.android.inter.process.framework.metadata.function
 import kotlin.coroutines.Continuation
@@ -87,7 +87,7 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
         return suspendCoroutineUninterceptedOrReturn { continuation ->
             val newRequest = request.copy(
                 suspendContext = SuspendContext(
-                    functionParameter = FunctionParameter(
+                    androidBinderFunctionParameter = AndroidBinderFunctionParameter(
                         functionType = Continuation::class.java,
                         androidFunction = Continuation::class.java.receiverAndroidFunction(SafeContinuation(continuation))
                     )
@@ -129,7 +129,7 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
             val result = kotlin.runCatching {
                 when (request) {
                     is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
-                        val continuation = object : Continuation<Any?> by request.suspendContext.functionParameter.function() {
+                        val continuation = object : Continuation<Any?> by request.suspendContext.androidBinderFunctionParameter.function() {
                             override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
                         }
                         (this::callSuspend as Function2<AndroidRequest, Continuation<*>, AndroidResponse>)(request, continuation)

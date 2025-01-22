@@ -118,13 +118,6 @@ internal val KSClassDeclaration.receiverClassName: String
 internal val KSClassDeclaration.receiverFileName: String
     get() = "${simpleName.asString()}Receiver"
 
-internal val RandomHash: String
-    get() {
-        val messageDigest = MessageDigest.getInstance("MD5")
-        messageDigest.update(UUID.randomUUID().toString().encodeToByteArray())
-        return BigInteger(1, messageDigest.digest()).toString(16)
-    }
-
 internal val GeneratedPackageName: String
     get() = "com.android.inter.process.generated"
 

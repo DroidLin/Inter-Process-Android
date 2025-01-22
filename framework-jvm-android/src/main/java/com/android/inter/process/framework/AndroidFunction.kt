@@ -150,7 +150,7 @@ private class FunctionReceiver(androidFunction: AndroidFunction) :
                 val response = this@FunctionReceiver.call(request)
                 functionParameters.response = response
             } finally {
-                Logger.logDebug("========================= Receiver Start Inter Process Call =========================")
+                Logger.logDebug("========================= Receiver End Inter Process Call =========================")
             }
         }
     }

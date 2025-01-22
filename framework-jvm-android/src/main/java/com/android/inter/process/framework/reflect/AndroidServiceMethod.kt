@@ -23,7 +23,13 @@ internal abstract class AndroidServiceMethod : ServiceMethod {
             check(parameters.size == parameterValueTransforms.size) {
                 "input parameters size invalid, requireSize: ${parameterValueTransforms.size}, now: ${parameters.size}."
             }
-            TODO()
+            for (index in parameters.indices) {
+                val valueTransform = this.parameterValueTransforms[index]
+                val sourceValue = parameters[index]
+                val transformedValue = valueTransform.map(sourceValue)
+                parameters[index] = transformedValue
+            }
+            return parameters
         }
     }
 
@@ -49,7 +55,23 @@ internal abstract class AndroidServiceMethod : ServiceMethod {
     companion object {
         @JvmStatic
         fun parseCallerServiceMethod(method: Method): AndroidCallerServiceMethod {
-            TODO()
+            val parameterTypes = method.parameterTypes
+            val parameterAnnotations = method.parameterAnnotations
+            val parameterValueTransforms = LinkedList<ValueTransform<Any?, Any?>>()
+            for (index in parameterAnnotations.indices) {
+                var valueParameterAnnotationTransform: ValueTransform<*, *>? = null
+                for (parameterAnnotationIndex in parameterAnnotations[index].indices) {
+                    val annotation = parameterAnnotations[index][parameterAnnotationIndex]
+                    val parameterClass = parameterTypes[index]
+                    val valueTransform = CallerValueTransform.parseAnnotation<Any?, Any?>(annotation, parameterClass as Class<Any?>) ?: continue
+                    if (valueParameterAnnotationTransform != null) {
+                        error("multiple ipc annotations found, only one allowed.")
+                    }
+                    valueParameterAnnotationTransform = valueTransform
+                }
+                parameterValueTransforms += ((valueParameterAnnotationTransform ?: ValueTransform.nullableTransform()) as ValueTransform<Any?, Any?>)
+            }
+            return ReflectCallerServiceMethod(method, parameterValueTransforms)
         }
 
         @JvmStatic

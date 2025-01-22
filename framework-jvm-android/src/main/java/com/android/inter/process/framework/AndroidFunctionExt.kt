@@ -8,13 +8,10 @@ import com.android.inter.process.framework.reflect.callerFunction
 import kotlin.coroutines.Continuation
 
 internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
-    return this.callerFunction(
-        invocationCaller = InvocationCallerAndroid(
-            functionCallTransformer = AndroidFunctionCallTransformer(
-                basicConnection = BasicConnectionProxy(androidFunction)
-            )
-        )
-    )
+    val connectionProxy = BasicConnectionProxy(androidFunction)
+    val functionCall = AndroidFunctionCallAdapter(basicConnection = connectionProxy)
+    return (objectPool.getCaller(clazz = this, functionCallAdapter = functionCall)
+        ?: this.callerFunction(invocationCaller = InvocationCallerAndroid(functionCallAdapter = functionCall)))
 }
 
 /**
@@ -34,7 +31,7 @@ internal fun <T> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction 
                 methodParameterValues = request.methodParameterValues,
             )
             val result = kotlin.runCatching {
-                val continuation = request.suspendContext?.functionParameter?.function<Continuation<Any?>>()
+                val continuation = request.suspendContext?.androidBinderFunctionParameter?.function<Continuation<Any?>>()
                 if (continuation != null) {
                     val suspendFunction = receiver::invokeSuspend as Function2<InvocationParameter, Continuation<Any?>, Any?>
                     suspendFunction(invokeParameter, continuation)

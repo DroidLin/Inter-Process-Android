@@ -6,6 +6,7 @@ import com.android.inter.process.framework.AndroidFunction
 import com.android.inter.process.framework.AndroidFunctionProxy
 import com.android.inter.process.framework.AIDLFunction
 import com.android.inter.process.framework.function
+import com.android.inter.process.framework.receiverAndroidFunction
 import com.android.inter.process.framework.stringType2ClassType
 
 /**
@@ -14,9 +15,9 @@ import com.android.inter.process.framework.stringType2ClassType
  * @author: liuzhongao
  * @since: 2024/9/17 23:11
  */
-internal data class FunctionParameter(
+data class AndroidBinderFunctionParameter internal constructor(
     val functionType: Class<*>,
-    val androidFunction: AndroidFunction
+    internal val androidFunction: AndroidFunction
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -33,14 +34,19 @@ internal data class FunctionParameter(
         dest.writeStrongBinder(this.androidFunction.function.asBinder())
     }
 
-    companion object CREATOR : Parcelable.Creator<FunctionParameter> {
-        override fun createFromParcel(parcel: Parcel): FunctionParameter {
-            return FunctionParameter(parcel)
+    companion object CREATOR : Parcelable.Creator<AndroidBinderFunctionParameter> {
+        override fun createFromParcel(parcel: Parcel): AndroidBinderFunctionParameter {
+            return AndroidBinderFunctionParameter(parcel)
         }
 
-        override fun newArray(size: Int): Array<FunctionParameter?> {
+        override fun newArray(size: Int): Array<AndroidBinderFunctionParameter?> {
             return arrayOfNulls(size)
         }
     }
+}
 
+fun newBinderFunctionParameter(clazz: Class<*>, instance: Any?): AndroidBinderFunctionParameter? {
+    if (instance == null) return null
+    if (!clazz.isInstance(instance)) error("${instance.javaClass} is not the instance of ${clazz.name}.")
+    return AndroidBinderFunctionParameter(clazz, (clazz as Class<Any>).receiverAndroidFunction(instance))
 }

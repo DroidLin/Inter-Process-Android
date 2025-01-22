@@ -18,5 +18,5 @@ fun IPCManager.installAndroid(address: AndroidAddress) {
     installComponent(BroadcastAndroidAddress::class.java, androidComponent)
     installComponent(ContentProviderAndroidAddress::class.java, androidComponent)
 
-
+    installDependencies()
 }

@@ -1,6 +1,6 @@
 package com.android.inter.process.framework.reflect
 
-import com.android.inter.process.framework.FunctionCallTransformer
+import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.IPCObjectPool
 import com.android.inter.process.framework.JvmReflectMethodRequest
 import java.lang.reflect.Method
@@ -25,7 +25,7 @@ fun interface InvocationCaller {
             val newMethodParameters = (if (isSuspend && parameters != null) {
                 parameters.copyOf(parameters.size - 1)
             } else if (isSuspend) {
-                throw IllegalArgumentException("suspend function with null origin parameters in invocation handler.")
+                throw IllegalArgumentException("suspend function with invalid parameters.")
             } else parameters)?.toList() ?: emptyList()
 
             return JvmReflectMethodRequest(
@@ -40,10 +40,13 @@ fun interface InvocationCaller {
     }
 }
 
-fun InvocationCaller(functionCallTransformer: FunctionCallTransformer): InvocationCaller {
-    return object : InvocationCaller by DefaultInvocationCaller(functionCallTransformer = functionCallTransformer) {}
+fun InvocationCaller(functionCallAdapter: FunctionCallAdapter): InvocationCaller {
+    return object : InvocationCaller by DefaultInvocationCaller(functionCallAdapter = functionCallAdapter) {}
 }
 
+/**
+ * dynamic proxy to delegate interface use.
+ */
 fun <T> Class<T>.callerFunction(
     invocationCaller: InvocationCaller
 ): T {

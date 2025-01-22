@@ -3,9 +3,9 @@ package com.android.inter.process.framework
 import com.android.inter.process.framework.annotation.CustomCollector
 import com.android.inter.process.framework.reflect.InvocationReceiver
 
-typealias CallerBuilder<T> = (FunctionCallTransformer) -> T
+typealias CallerFactory<T> = (FunctionCallAdapter) -> T
 
-typealias ReceiverBuilder<T> = (T) -> InvocationReceiver<T>
+typealias ReceiverFactory<T> = (T) -> InvocationReceiver<T>
 
 /**
  * @author: liuzhongao
@@ -13,19 +13,23 @@ typealias ReceiverBuilder<T> = (T) -> InvocationReceiver<T>
  */
 interface ObjectPool {
 
-    fun <T : Any> putCallerBuilder(clazz: Class<T>, callerBuilder: CallerBuilder<T>)
+    fun <T> putCallerFactory(clazz: Class<T>, callerFactory: CallerFactory<T>)
 
-    fun <T : Any> getCaller(clazz: Class<T>, commander: FunctionCallTransformer): T?
+    fun <T> getCaller(clazz: Class<T>, functionCallAdapter: FunctionCallAdapter): T?
 
-    fun <T : Any> putReceiver(clazz: Class<T>, receiver: InvocationReceiver<T>)
+    fun <T> putReceiver(clazz: Class<T>, receiver: InvocationReceiver<T>)
 
-    fun <T : Any> getReceiver(clazz: Class<T>): InvocationReceiver<T>
+    fun <T> getReceiver(clazz: Class<T>): InvocationReceiver<T>
 
-    fun <T : Any> putReceiverBuilder(clazz: Class<T>, receiverBuilder: ReceiverBuilder<T>)
+    fun <T> putReceiverFactory(clazz: Class<T>, receiverFactory: ReceiverFactory<T>)
 
-    fun <T : Any> getReceiverBuilder(clazz: Class<T>): ReceiverBuilder<T>?
+    fun <T> getReceiverBuilder(clazz: Class<T>): ReceiverFactory<T>?
 
-    fun <T : Any> putInstance(clazz: Class<T>, instance: T)
+    fun <T> putInstance(clazz: Class<T>, instance: T)
+
+    fun <T> putInstance(clazz: Class<T>, instance: T, receiverFactory: ReceiverFactory<T>)
+
+    fun <T> putInstanceFactory(clazz: Class<T>, serviceFactory: ServiceFactory<T>)
 
     /**
      * called and generated automatically by java spi.

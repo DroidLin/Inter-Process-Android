@@ -1,38 +1,64 @@
 package com.android.inter.process.compiler.ksp
 
+import com.android.inter.process.compiler.utils.RandomHash
 import com.android.inter.process.framework.ObjectPool
+import com.android.inter.process.framework.annotation.IPCServiceFactory
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSType
+import java.util.LinkedList
 
 internal fun buildFunctionCollector(
-    ksAnnotatedList: List<KSAnnotated>,
+    iPCInterfaceSymbols: List<KSAnnotated>,
+    serviceFactorySymbols: List<KSAnnotated>,
     resolver: Resolver,
     codeGenerator: CodeGenerator
-) {
-    if (ksAnnotatedList.isEmpty()) return
-    val classDeclarations = ksAnnotatedList.findAnnotatedClassDeclarations()
+): List<String> {
+    if (iPCInterfaceSymbols.isEmpty() && serviceFactorySymbols.isEmpty()) return emptyList()
+    val iPCInterfaceClassDeclarations = iPCInterfaceSymbols.findAnnotatedClassDeclarations()
+    val serviceFactoryClassDeclarations = serviceFactorySymbols.findAnnotatedClassDeclarations()
     val generatedClassName = "${ObjectPool.Collector::class.java.simpleName}_${RandomHash}"
 
-    val stringBuilder = StringBuilder()
+    val importList = LinkedList<String>()
+    val importAppend = { value: String ->
+        if (!importList.contains(value)) {
+            importList += value
+        }
+    }
 
+    iPCInterfaceClassDeclarations.forEach { classDeclaration ->
+        importAppend(requireNotNull(classDeclaration.qualifiedName).asString())
+        importAppend(classDeclaration.callerClassName)
+        importAppend(classDeclaration.receiverClassName)
+    }
+    importAppend("com.android.inter.process.framework.objectPool")
+    importAppend("com.android.inter.process.framework.ObjectPool.Collector")
+    serviceFactoryClassDeclarations.forEach { classDeclaration ->
+        importAppend(requireNotNull(classDeclaration.qualifiedName).asString())
+    }
+
+    val stringBuilder = StringBuilder()
     stringBuilder.appendLine("package $GeneratedPackageName")
     stringBuilder.appendLine()
-    classDeclarations.forEach { classDeclaration ->
-        stringBuilder.import(requireNotNull(classDeclaration.qualifiedName).asString())
-        stringBuilder.import(classDeclaration.callerClassName)
-        stringBuilder.import(classDeclaration.receiverClassName)
-    }
-    stringBuilder.import("com.android.inter.process.framework.objectPool")
-    stringBuilder.import("com.android.inter.process.framework.ObjectPool.Collector")
+    importList.forEach(stringBuilder::import)
     stringBuilder.appendLine()
     stringBuilder.appendLine("internal class $generatedClassName : ${ObjectPool.Collector::class.java.simpleName} {")
     stringBuilder.appendLine()
     stringBuilder.append('\t').appendLine("override fun collect() {")
-    classDeclarations.forEach { ksClassDeclaration ->
-        stringBuilder.append('\t').append('\t').appendLine("objectPool.putCallerBuilder(${ksClassDeclaration.simpleName.asString()}::class.java) { ${ksClassDeclaration.callerFileName}(it) }")
-        stringBuilder.append('\t').append('\t').appendLine("objectPool.putReceiverBuilder(${ksClassDeclaration.simpleName.asString()}::class.java) { ${ksClassDeclaration.receiverFileName}(it) }")
+    iPCInterfaceClassDeclarations.forEach { ksClassDeclaration ->
+        stringBuilder.append('\t').append('\t').appendLine("objectPool.putCallerFactory(${ksClassDeclaration.simpleName.asString()}::class.java) { ${ksClassDeclaration.callerFileName}(it) }")
+        stringBuilder.append('\t').append('\t').appendLine("objectPool.putReceiverFactory(${ksClassDeclaration.simpleName.asString()}::class.java) { ${ksClassDeclaration.receiverFileName}(it) }")
+    }
+    serviceFactoryClassDeclarations.forEach { ksClassDeclaration ->
+        val annotation = ksClassDeclaration.annotations.find { it.shortName.asString() == IPCServiceFactory::class.java.simpleName }
+        if (annotation != null) {
+            val interfaceClazz = annotation.arguments.find { it.name?.asString() == "interfaceClazz" }?.value
+            if (interfaceClazz is KSType) {
+                stringBuilder.append('\t').append('\t').appendLine("objectPool.putInstanceFactory(${requireNotNull(interfaceClazz.declaration.qualifiedName).asString()}::class.java, ${ksClassDeclaration.simpleName.asString()}())")
+            }
+        }
     }
     stringBuilder.append('\t').appendLine('}')
     stringBuilder.append('}')
@@ -46,12 +72,5 @@ internal fun buildFunctionCollector(
     collectorWriter.flush()
     collectorWriter.close()
 
-    val resourceWriter = codeGenerator.createNewFileByPath(
-        dependencies = Dependencies(false),
-        path = "META-INF/services/${ObjectPool.Collector::class.java.name}",
-        extensionName = ""
-    ).bufferedWriter()
-    resourceWriter.appendLine("${GeneratedPackageName}.${generatedClassName}")
-    resourceWriter.flush()
-    resourceWriter.close()
+    return listOf("${GeneratedPackageName}.${generatedClassName}")
 }

@@ -17,17 +17,13 @@ import com.android.inter.process.framework.reflect.callerFunction
 internal class AndroidComponent : Component<AndroidAddress> {
 
     override fun <T : Any> serviceCreate(serviceCreateResource: ServiceCreateResource<T, AndroidAddress>): T {
-        val transformer = FunctionCallTransformer {
+        val functionCall = FunctionCallAdapter {
             val address = serviceCreateResource.interProcessAddress
             val connector = AndroidConnectorHandle(address, ::functionAndroidConnectionHandle)
-            AndroidFunctionCallTransformer(connector.tryConnect())
+            AndroidFunctionCallAdapter(connector.tryConnect())
         }
-        val newGeneratedInstance = objectPool.getCaller(
-            clazz = serviceCreateResource.clazz,
-            commander = transformer
-        )
-        return newGeneratedInstance ?: serviceCreateResource.clazz.callerFunction(
-            invocationCaller = InvocationCallerAndroid(functionCallTransformer = transformer)
-        )
+        val clazz = serviceCreateResource.clazz
+        return objectPool.getCaller(clazz = clazz, functionCallAdapter = functionCall)
+            ?: clazz.callerFunction(InvocationCallerAndroid(functionCallAdapter = functionCall))
     }
 }

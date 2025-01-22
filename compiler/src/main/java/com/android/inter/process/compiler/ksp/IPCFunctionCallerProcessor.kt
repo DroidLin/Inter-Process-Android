@@ -1,8 +1,9 @@
 package com.android.inter.process.compiler.ksp
 
 import com.android.inter.process.framework.Address
-import com.android.inter.process.framework.FunctionCallTransformer
+import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.JvmMethodRequest
+import com.android.inter.process.framework.annotation.IPCMethod
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
@@ -12,7 +13,6 @@ import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
-
 
 internal fun buildCallerFunction(
     ksAnnotatedList: List<KSAnnotated>,
@@ -46,7 +46,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
         }
     }
     addImport(Address::class.java.name)
-    addImport(FunctionCallTransformer::class.java.name)
+    addImport(FunctionCallAdapter::class.java.name)
     addImport(requireNotNull(classDeclaration.qualifiedName).asString())
 
     val bodyDeclarations = arrayListOf<StringBuilder>()
@@ -56,14 +56,14 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                 addImport(ksTypeReference.qualifiedName)
             }
             addImport(ksPropertyDeclaration.type.qualifiedName)
-            addImport("com.android.inter.process.framework.syncTransform")
+            addImport("com.android.inter.process.framework.syncCall")
             addImport(JvmMethodRequest::class.java.name)
             val bodyDeclarationBuilder = StringBuilder()
             bodyDeclarationBuilder.appendLine("\toverride ${if (ksPropertyDeclaration.isMutable) "var" else "val"} ${if (ksPropertyDeclaration.extensionReceiver != null) "${requireNotNull(ksPropertyDeclaration.extensionReceiver).simpleName}." else ""}${ksPropertyDeclaration.simpleName.asString()}: ${ksPropertyDeclaration.type.simpleName}")
             if (ksPropertyDeclaration.isMutable) {
                 bodyDeclarationBuilder
                     .appendLine("\t\tset(value) {")
-                    .appendLine("\t\t\tthis@${classDeclaration.simpleName.asString()}Caller.transformer.syncTransform(")
+                    .appendLine("\t\t\tthis@${classDeclaration.simpleName.asString()}Caller.transformer.syncCall(")
                     .appendLine("\t\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
                     .appendLine("\t\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                     .appendLine("\t\t\t\t\tfunctionIdentifier = \"${ksPropertyDeclaration.identifier(isSetter = true)}\",")
@@ -75,7 +75,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
             }
             bodyDeclarationBuilder
                 .appendLine("\t\tget() {")
-                .appendLine("\t\t\treturn this@${classDeclaration.simpleName.asString()}Caller.transformer.syncTransform(")
+                .appendLine("\t\t\treturn this@${classDeclaration.simpleName.asString()}Caller.transformer.syncCall(")
                 .appendLine("\t\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
                 .appendLine("\t\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\t\tfunctionIdentifier = \"${ksPropertyDeclaration.identifier(isGetter = true)}\",")
@@ -88,21 +88,35 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
 
             bodyDeclarations += bodyDeclarationBuilder
         },
-        buildFunction = {  ksFunctionDeclaration ->
+        buildFunction = { ksFunctionDeclaration ->
             ksFunctionDeclaration.extensionReceiver?.let { ksTypeReference ->
                 addImport(ksTypeReference.qualifiedName)
             }
-            addImport("com.android.inter.process.framework.syncTransform")
+            addImport("com.android.inter.process.framework.syncCall")
             addImport(JvmMethodRequest::class.java.name)
+            addImport("com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter")
+            addImport("com.android.inter.process.framework.metadata.newBinderFunctionParameter")
 
+            val parameters =
+                ksFunctionDeclaration.parameters.mapIndexed { index, ksValueParameter ->
+                    if (ksValueParameter.annotations.find { it.shortName.asString() == IPCMethod::class.java.simpleName } != null) {
+                        "newBinderFunctionParameter(${ksValueParameter.type.resolve().declaration.simpleName.asString()}::class.java, ${
+                            requireNotNull(
+                                ksValueParameter.name
+                            ).asString()
+                        })"
+                    } else {
+                        requireNotNull(ksValueParameter.name).asString()
+                    }
+                }.joinToString(separator = ", ")
             val bodyDeclarationBuilder = StringBuilder()
             bodyDeclarationBuilder
                 .appendLine("\toverride${if (ksFunctionDeclaration.isSuspend) " suspend" else ""} fun ${ksFunctionDeclaration.functionTypeParameters}${ksFunctionDeclaration.extensionReceiverDeclaration}${ksFunctionDeclaration.simpleName.asString()}${ksFunctionDeclaration.parameters.joinToString(separator = ", ", prefix = "(", postfix = ")") { valueParameter -> addImport(valueParameter.type.qualifiedName);"${requireNotNull(valueParameter.name).asString()}: ${valueParameter.type.simpleName}" }}${ksFunctionDeclaration.returnType?.let { ": ${it.simpleName}" } ?: ""} {")
-                .appendLine("\t\t${ksFunctionDeclaration.filterReturnType?.let { "return " } ?: ""}this@${classDeclaration.simpleName.asString()}Caller.transformer.${if (ksFunctionDeclaration.isSuspend) "transform" else "syncTransform"}(")
+                .appendLine("\t\t${ksFunctionDeclaration.filterReturnType?.let { "return " } ?: ""}this@${classDeclaration.simpleName.asString()}Caller.transformer.${if (ksFunctionDeclaration.isSuspend) "call" else "syncCall"}(")
                 .appendLine("\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
                 .appendLine("\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\tfunctionIdentifier = \"${ksFunctionDeclaration.identifier}\",")
-                .appendLine("\t\t\t\tfunctionParameters = listOf(${ksFunctionDeclaration.extensionReceiver?.let { "this@${classDeclaration.simpleName.asString()}Caller, " } ?: ""}${ksFunctionDeclaration.parameters.joinToString(separator = ", ") { requireNotNull(it.name).asString() }}),")
+                .appendLine("\t\t\t\tfunctionParameters = listOf(${ksFunctionDeclaration.extensionReceiver?.let { "this@${classDeclaration.simpleName.asString()}Caller, " } ?: ""}${parameters}),")
                 .appendLine("\t\t\t\tisSuspend = ${ksFunctionDeclaration.isSuspend}")
                 .appendLine("\t\t\t)")
                 .appendLine("\t\t) ${ksFunctionDeclaration.filterReturnType?.let { if (it.resolve().isMarkedNullable) "as? ${it.typeOfQualifiedName}" else "as ${it.typeOfQualifiedName}" } ?: ""}")
@@ -124,7 +138,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
         }
         .appendLine()
         .appendLine("internal class ${classDeclaration.simpleName.asString()}Caller constructor(")
-        .appendLine("\tprivate val transformer: ${FunctionCallTransformer::class.java.simpleName}")
+        .appendLine("\tprivate val transformer: ${FunctionCallAdapter::class.java.simpleName}")
         .appendLine(") : ${classDeclaration.simpleName.asString()} {")
         .apply {
             bodyDeclarations.forEach { bodyDeclaration ->

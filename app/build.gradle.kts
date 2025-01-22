@@ -51,6 +51,7 @@ android {
     kotlin {
         sourceSets.forEach { sourceSet ->
             sourceSet.kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}${sourceSet.name}${File.separator}kotlin")
+            sourceSet.kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}${sourceSet.name}${File.separator}resources")
         }
     }
 }

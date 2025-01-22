@@ -4,9 +4,9 @@ package com.android.inter.process.framework
  * @author liuzhongao
  * @since 2024/9/18 16:17
  */
-internal class AndroidFunctionCallTransformer(private val basicConnection: BasicConnection) : FunctionCallTransformer {
+internal class AndroidFunctionCallAdapter(private val basicConnection: BasicConnection) : FunctionCallAdapter {
 
-    override suspend fun transform(request: Request): Any? {
+    override suspend fun call(request: Request): Any? {
         return when (request) {
             is JvmReflectMethodRequest -> {
                 val jvmRequest = AndroidJvmMethodRequest(

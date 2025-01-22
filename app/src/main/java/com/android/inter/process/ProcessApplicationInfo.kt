@@ -2,11 +2,23 @@ package com.android.inter.process
 
 import android.content.Context
 import android.os.ParcelFileDescriptor
+import com.android.inter.process.framework.ServiceFactory
+import com.android.inter.process.framework.annotation.IPCServiceFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileDescriptor
 import java.io.FileInputStream
+
+@IPCServiceFactory(interfaceClazz = ApplicationInfo::class)
+class ProcessApplicationInfoFactory : ServiceFactory<ApplicationInfo> {
+    override fun serviceCreate(): ApplicationInfo {
+        return ProcessApplicationInfo(App.context)
+    }
+}
 
 /**
  * @author: liuzhongao
@@ -19,7 +31,7 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
             return this.context.applicationInfo.packageName
         }
 
-    override var String?.processName: String
+    override var ParcelFileDescriptor?.processName: String
         set(value) {}
         get() = App.getProcessName(context)
 
@@ -29,6 +41,25 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
 
     override suspend fun fetchProcessName(): String {
         return App.getProcessName(context)
+    }
+
+    override suspend fun emptyFunction(callback: () -> Unit) {
+        GlobalScope.launch {
+            delay(3000)
+            callback()
+        }
+    }
+
+    override suspend fun String.emptyFunction(callback: () -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun emptyCallbackFunction(callback: () -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun String.emptyCallbackFunction(callback: () -> Unit) {
+        TODO("Not yet implemented")
     }
 
     override suspend fun writeData(fileDescriptor: ParcelFileDescriptor) {
