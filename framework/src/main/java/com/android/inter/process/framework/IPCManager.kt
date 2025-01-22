@@ -59,7 +59,9 @@ object IPCManager {
 
     @JvmStatic
     fun installDependencies() {
-        ServiceLoader.load(ObjectPool.Collector::class.java)
-            .forEach(ObjectPool.Collector::collect)
+        kotlin.runCatching {
+            ServiceLoader.load(ObjectPool.Collector::class.java)
+                .forEach(ObjectPool.Collector::collect)
+        }.onFailure { Logger.logError(it) }
     }
 }

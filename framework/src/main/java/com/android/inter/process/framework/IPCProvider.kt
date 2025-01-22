@@ -27,9 +27,7 @@ class IPCProvider private constructor(
     companion object {
 
         @JvmStatic
-        fun on(address: Address): IPCProvider {
-            val component = IPCManager.findComponent(address.javaClass)
-            return IPCProvider(component, address)
-        }
+        fun on(address: Address): IPCProvider =
+            IPCProvider(IPCManager.findComponent(address.javaClass), address)
     }
 }

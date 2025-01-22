@@ -37,6 +37,13 @@ internal fun buildFunctionCollector(
     importAppend("com.android.inter.process.framework.ObjectPool.Collector")
     serviceFactoryClassDeclarations.forEach { classDeclaration ->
         importAppend(requireNotNull(classDeclaration.qualifiedName).asString())
+        val annotation = classDeclaration.annotations.find { it.shortName.asString() == IPCServiceFactory::class.java.simpleName }
+        if (annotation != null) {
+            val interfaceClazz = annotation.arguments.find { it.name?.asString() == "interfaceClazz" }?.value
+            if (interfaceClazz is KSType) {
+                importAppend(requireNotNull(interfaceClazz.declaration.qualifiedName).asString())
+            }
+        }
     }
 
     val stringBuilder = StringBuilder()
@@ -56,7 +63,7 @@ internal fun buildFunctionCollector(
         if (annotation != null) {
             val interfaceClazz = annotation.arguments.find { it.name?.asString() == "interfaceClazz" }?.value
             if (interfaceClazz is KSType) {
-                stringBuilder.append('\t').append('\t').appendLine("objectPool.putInstanceFactory(${requireNotNull(interfaceClazz.declaration.qualifiedName).asString()}::class.java, ${ksClassDeclaration.simpleName.asString()}())")
+                stringBuilder.append('\t').append('\t').appendLine("objectPool.putInstanceFactory(${interfaceClazz.declaration.simpleName.asString()}::class.java, ${ksClassDeclaration.simpleName.asString()}())")
             }
         }
     }
