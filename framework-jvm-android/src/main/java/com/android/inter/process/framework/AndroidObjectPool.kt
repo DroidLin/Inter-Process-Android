@@ -1,16 +1,11 @@
 package com.android.inter.process.framework
 
 import com.android.inter.process.framework.reflect.InvocationReceiver
+import com.android.inter.process.framework.reflect.InvocationReceiverAndroid
 import java.lang.reflect.InvocationHandler
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * @author: liuzhongao
- * @since: 2024/9/8 23:34
- */
-val objectPool: ObjectPool by lazy { object : ObjectPool by IPCObjectPool {} }
-
-internal object IPCObjectPool : ObjectPool {
+internal class AndroidObjectPool : ObjectPool {
 
     private val invocationHandlerCache: MutableMap<Class<*>, InvocationHandler> = ConcurrentHashMap()
 
@@ -19,7 +14,7 @@ internal object IPCObjectPool : ObjectPool {
     private val receiverCache: MutableMap<Class<*>, InvocationReceiver<*>> = ConcurrentHashMap()
     private val instanceFactoryCache: MutableMap<Class<*>, ServiceFactory<*>> = ConcurrentHashMap()
 
-    fun tryGetInvocationHandler(
+    override fun tryGetInvocationHandler(
         clazz: Class<*>,
         factory: () -> InvocationHandler
     ): InvocationHandler {
@@ -49,7 +44,7 @@ internal object IPCObjectPool : ObjectPool {
         val cacheInInstanceFactory = this.instanceFactoryCache.get(clazz) as? ServiceFactory<T>
             ?: error("there is no receiver or the instance factory registered in object pool.")
         val receiverFactory = this.receiverBuilderCache.get(clazz) as? ReceiverFactory<T>
-            ?: ::InvocationReceiver
+            ?: ::InvocationReceiverAndroid
         val invocationReceiver = receiverFactory(cacheInInstanceFactory.serviceCreate())
         this.putReceiver(clazz, invocationReceiver)
         return invocationReceiver
@@ -64,7 +59,7 @@ internal object IPCObjectPool : ObjectPool {
     }
 
     override fun <T> putInstance(clazz: Class<T>, instance: T) {
-        this.putInstance(clazz, instance, ::InvocationReceiver)
+        this.putInstance(clazz, instance, ::InvocationReceiverAndroid)
     }
 
     override fun <T> putInstance(

@@ -2,6 +2,13 @@ package com.android.inter.process.framework
 
 import com.android.inter.process.framework.annotation.CustomCollector
 import com.android.inter.process.framework.reflect.InvocationReceiver
+import java.lang.reflect.InvocationHandler
+import java.util.ServiceLoader
+
+val objectPool: ObjectPool by lazy {
+    val objectPool = ServiceLoader.load(ObjectPool::class.java).firstOrNull() ?: error("no object pool dependencies exist in project.")
+    object : ObjectPool by objectPool {}
+}
 
 typealias CallerFactory<T> = (FunctionCallAdapter) -> T
 
@@ -12,6 +19,11 @@ typealias ReceiverFactory<T> = (T) -> InvocationReceiver<T>
  * @since: 2024/9/17 16:08
  */
 interface ObjectPool {
+
+    fun tryGetInvocationHandler(
+        clazz: Class<*>,
+        factory: () -> InvocationHandler
+    ): InvocationHandler
 
     fun <T> putCallerFactory(clazz: Class<T>, callerFactory: CallerFactory<T>)
 

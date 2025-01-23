@@ -3,7 +3,7 @@ package com.android.inter.process.framework
 import com.android.inter.process.framework.metadata.function
 import com.android.inter.process.framework.reflect.InvocationCallerAndroid
 import com.android.inter.process.framework.reflect.InvocationParameter
-import com.android.inter.process.framework.reflect.InvocationReceiver
+import com.android.inter.process.framework.reflect.InvocationReceiverAndroid
 import com.android.inter.process.framework.reflect.callerFunction
 import kotlin.coroutines.Continuation
 
@@ -19,7 +19,7 @@ internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction
  */
 internal fun <T> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
-    val receiver = InvocationReceiver(instance = instance)
+    val receiver = InvocationReceiverAndroid(instance = instance)
     return AndroidFunctionStub(
         AndroidFunction { request ->
             if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)

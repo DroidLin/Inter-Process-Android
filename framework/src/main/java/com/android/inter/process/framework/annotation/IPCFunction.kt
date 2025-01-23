@@ -22,6 +22,6 @@ package com.android.inter.process.framework.annotation
  *
  * see [IPCService], [IPCFunction] for more information.
  */
-@Retention(value = AnnotationRetention.SOURCE)
+@Retention(value = AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.VALUE_PARAMETER)
 annotation class IPCFunction

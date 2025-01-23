@@ -6,8 +6,6 @@ import android.os.ParcelFileDescriptor
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,20 +13,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
 import com.android.inter.process.ui.theme.InterProcessAndroidTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileOutputStream
 
 class MainActivity : ComponentActivity() {
 
@@ -55,20 +53,56 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-
-                        Text(
-                            text = "call process name",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                                .clickable(
-                                    interactionSource = remember {
-                                        MutableInteractionSource()
-                                    },
-                                    indication = null,
-                                    onClick = {
-                                        onClick(this@MainActivity, applicationInfo)
-                                    },
-                                )
-                        )
+                        val coroutineScope = rememberCoroutineScope()
+                        val startLauncher: ApplicationInfo.(suspend ApplicationInfo.() -> Unit) -> Unit = { suspendFunction ->
+                            coroutineScope.launch {
+                                suspendFunction()
+                            }
+                        }
+                        TextButton(
+                            onClick = {
+                                applicationInfo.startLauncher { packageName }
+                            }
+                        ) {
+                            Text(text = "packageName")
+                        }
+                        TextButton(
+                            onClick = {
+                                applicationInfo.startLauncher { callRemote("hello world", listOf(0, 0, 0, 0)) }
+                            }
+                        ) {
+                            Text(text = "callRemote")
+                        }
+                        TextButton(
+                            onClick = {
+                                applicationInfo.startLauncher {
+                                    emptyCallbackFunction {
+                                        println("emptyCallbackFunction")
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(text = "emptyCallbackFunction")
+                        }
+                        TextButton(
+                            onClick = {
+                                applicationInfo.startLauncher {
+                                    withContext(Dispatchers.IO) {
+                                        val file = File(cacheDir, "tmp.txt").also { file ->
+                                            file.bufferedWriter().use { writer ->
+                                                writer.write("hello world write data.")
+                                                writer.flush()
+                                            }
+                                        }
+                                        ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                                            writeData(descriptor)
+                                        }
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(text = "Parcel fileDescriptor writeData")
+                        }
                         Button(onClick = {
                             val intent = Intent(this@MainActivity, LibActivity::class.java)
                             startActivity(intent)
@@ -99,7 +133,5 @@ fun GreetingPreview() {
 }
 
 fun onClick(activity: ComponentActivity, applicationInfo: ApplicationInfo) {
-    activity.lifecycleScope.launch {
-        applicationInfo.getData("hello world.")
-    }
+    applicationInfo.isRight()
 }

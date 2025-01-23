@@ -50,21 +50,23 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
         }
     }
 
-    override suspend fun String.emptyFunction(callback: () -> Unit) {
+    override suspend fun String.emptyFunction(callback: Callback) {
         TODO("Not yet implemented")
     }
 
-    override fun emptyCallbackFunction(callback: () -> Unit) {
-        TODO("Not yet implemented")
+    override fun emptyCallbackFunction(callback: Callback) {
+        callback()
     }
 
-    override fun String.emptyCallbackFunction(callback: () -> Unit) {
+    override fun String.emptyCallbackFunction(callback: Callback) {
         TODO("Not yet implemented")
     }
 
     override suspend fun writeData(fileDescriptor: ParcelFileDescriptor) {
-        FileInputStream(fileDescriptor.fileDescriptor).bufferedReader().use { inputStream ->
-            println(inputStream.readText())
+        fileDescriptor.use {
+            FileInputStream(it.fileDescriptor).bufferedReader().use { inputStream ->
+                println(inputStream.readText())
+            }
         }
     }
 

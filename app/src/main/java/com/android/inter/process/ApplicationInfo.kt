@@ -21,11 +21,11 @@ interface ApplicationInfo {
 
     suspend fun emptyFunction(@IPCFunction callback: () -> Unit)
 
-    suspend fun String.emptyFunction(@IPCFunction callback: () -> Unit)
+    suspend fun String.emptyFunction(@IPCFunction callback: Callback)
 
-    fun emptyCallbackFunction(@IPCFunction callback: () -> Unit)
+    fun emptyCallbackFunction(@IPCFunction callback: Callback)
 
-    fun String.emptyCallbackFunction(@IPCFunction callback: () -> Unit)
+    fun String.emptyCallbackFunction(@IPCFunction callback: Callback)
 
     suspend fun writeData(fileDescriptor: ParcelFileDescriptor)
 
