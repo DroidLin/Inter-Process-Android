@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.internal.Kapt3GradleSubplugin.Companion.isIncrementalKapt
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -54,6 +56,9 @@ android {
             sourceSet.kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}${sourceSet.name}${File.separator}resources")
         }
     }
+}
+
+ksp {
 }
 
 dependencies {

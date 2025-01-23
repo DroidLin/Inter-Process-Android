@@ -3,16 +3,19 @@ package com.android.inter.process.compiler.ksp
 import com.android.inter.process.compiler.utils.RandomHash
 import com.android.inter.process.framework.ObjectPool
 import com.android.inter.process.framework.annotation.IPCServiceFactory
+import com.google.devtools.ksp.containingFile
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSAnnotated
+import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSType
 import java.util.LinkedList
 
 internal fun buildFunctionCollector(
     iPCInterfaceSymbols: List<KSAnnotated>,
     serviceFactorySymbols: List<KSAnnotated>,
+    dependenciesFiles: List<KSFile>,
     resolver: Resolver,
     codeGenerator: CodeGenerator
 ): List<String> {
@@ -47,6 +50,8 @@ internal fun buildFunctionCollector(
     }
 
     val stringBuilder = StringBuilder()
+    stringBuilder.appendLine(" // number of serviceFactorySymbols: ${serviceFactorySymbols.size}, number of serviceFactoryClassDeclarations: ${serviceFactoryClassDeclarations.size}")
+    stringBuilder.appendLine(" // number of iPCInterfaceSymbols: ${iPCInterfaceSymbols.size}, number of iPCInterfaceClassDeclarations: ${iPCInterfaceClassDeclarations.size}")
     stringBuilder.appendLine("package $GeneratedPackageName")
     stringBuilder.appendLine()
     importList.forEach(stringBuilder::import)
@@ -71,7 +76,7 @@ internal fun buildFunctionCollector(
     stringBuilder.append('}')
 
     val collectorWriter = codeGenerator.createNewFile(
-        dependencies = Dependencies(false),
+        dependencies = Dependencies(false, *dependenciesFiles.toTypedArray()),
         packageName = GeneratedPackageName,
         fileName = generatedClassName
     ).bufferedWriter()
