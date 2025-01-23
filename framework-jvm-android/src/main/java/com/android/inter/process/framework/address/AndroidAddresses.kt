@@ -11,8 +11,8 @@ import com.android.inter.process.framework.Address
 @JvmOverloads
 fun broadcast(
     context: Context,
-    packageName: String? = null,
-    broadcastAction: String
+    broadcastAction: String,
+    packageName: String? = null
 ): AndroidAddress {
     return BroadcastAndroidAddress(
         context = context,

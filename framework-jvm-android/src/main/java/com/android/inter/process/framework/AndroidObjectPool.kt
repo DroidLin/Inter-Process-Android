@@ -42,7 +42,7 @@ internal class AndroidObjectPool : ObjectPool {
             return cacheInReceiver
         }
         val cacheInInstanceFactory = this.instanceFactoryCache.get(clazz) as? ServiceFactory<T>
-            ?: error("there is no receiver or the instance factory registered in object pool.")
+            ?: error("there is no receiver or the instance ${clazz} factory registered in object pool.")
         val receiverFactory = this.receiverBuilderCache.get(clazz) as? ReceiverFactory<T>
             ?: ::InvocationReceiverAndroid
         val invocationReceiver = receiverFactory(cacheInInstanceFactory.serviceCreate())
