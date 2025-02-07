@@ -19,7 +19,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.lifecycleScope
 import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
 import com.android.inter.process.ui.theme.InterProcessAndroidTheme
@@ -31,12 +30,7 @@ import java.io.File
 class MainActivity : ComponentActivity() {
 
     private val iPCProvider by lazy {
-        IPCProvider.on(
-            broadcast(
-                context = this,
-                broadcastAction = getString(R.string.broadcast_action_lib_ipc)
-            )
-        )
+        IPCProvider.on(broadcast(this, getString(R.string.broadcast_action_lib_ipc)))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
