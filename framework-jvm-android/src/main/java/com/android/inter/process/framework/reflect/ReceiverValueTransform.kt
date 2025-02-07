@@ -4,7 +4,7 @@ import com.android.inter.process.framework.annotation.IPCFunction
 import com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter
 import com.android.inter.process.framework.metadata.function
 
-internal abstract class ReceiverValueTransform<P, T> : ValueTransform<P, T> {
+internal sealed class ReceiverValueTransform<P, T> : ValueTransform<P, T> {
 
     private class FunctionParameterToProxyInstanceTransform<T> : ReceiverValueTransform<AndroidBinderFunctionParameter?, T?>() {
         override fun map(param: AndroidBinderFunctionParameter?): T? {

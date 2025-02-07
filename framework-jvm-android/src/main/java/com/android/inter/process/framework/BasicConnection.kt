@@ -4,9 +4,9 @@ import android.os.IBinder
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.exceptions.BinderDisconnectedException
 import com.android.inter.process.framework.metadata.ConnectContext
-import com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter
 import com.android.inter.process.framework.metadata.SuspendContext
 import com.android.inter.process.framework.metadata.function
+import com.android.inter.process.framework.metadata.newBinderFunctionParameter
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
@@ -87,8 +87,8 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
         return suspendCoroutineUninterceptedOrReturn { continuation ->
             val newRequest = request.copy(
                 suspendContext = SuspendContext(
-                    androidBinderFunctionParameter = AndroidBinderFunctionParameter(
-                        functionType = Continuation::class.java,
+                    androidBinderFunctionParameter = newBinderFunctionParameter(
+                        clazz = Continuation::class.java,
                         androidFunction = Continuation::class.java.receiverAndroidFunction(SafeContinuation(continuation))
                     )
                 )

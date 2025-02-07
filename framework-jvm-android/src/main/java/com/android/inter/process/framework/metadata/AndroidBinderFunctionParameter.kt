@@ -48,5 +48,9 @@ data class AndroidBinderFunctionParameter internal constructor(
 fun newBinderFunctionParameter(clazz: Class<*>, instance: Any?): AndroidBinderFunctionParameter? {
     if (instance == null) return null
     if (!clazz.isInstance(instance)) error("${instance.javaClass} is not the instance of ${clazz.name}.")
-    return AndroidBinderFunctionParameter(clazz, (clazz as Class<Any>).receiverAndroidFunction(instance))
+    return newBinderFunctionParameter(clazz, (clazz as Class<Any>).receiverAndroidFunction(instance))
+}
+
+internal fun newBinderFunctionParameter(clazz: Class<*>, androidFunction: AndroidFunction): AndroidBinderFunctionParameter {
+    return AndroidBinderFunctionParameter(clazz, androidFunction)
 }

@@ -4,7 +4,14 @@ import com.android.inter.process.framework.annotation.IPCFunction
 import com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter
 import com.android.inter.process.framework.metadata.newBinderFunctionParameter
 
-internal abstract class CallerValueTransform<P, T> : ValueTransform<P, T> {
+/**
+ * convert parameter value to another value.
+ *
+ * only called in context of caller service method.
+ *
+ * see [AndroidServiceMethod] for more information.
+ */
+internal sealed class CallerValueTransform<P, T> : ValueTransform<P, T> {
 
     internal class InterfaceStubToFunctionParameterTransform<T>(
         private val clazz: Class<T>
