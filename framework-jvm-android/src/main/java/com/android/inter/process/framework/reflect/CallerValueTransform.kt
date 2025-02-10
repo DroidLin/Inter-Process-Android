@@ -1,8 +1,8 @@
 package com.android.inter.process.framework.reflect
 
 import com.android.inter.process.framework.annotation.IPCFunction
-import com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter
-import com.android.inter.process.framework.metadata.newBinderFunctionParameter
+import com.android.inter.process.framework.metadata.AndroidBinderFunctionMetadata
+import com.android.inter.process.framework.metadata.newBinderFunctionMetadata
 
 /**
  * convert parameter value to another value.
@@ -15,9 +15,9 @@ internal sealed class CallerValueTransform<P, T> : ValueTransform<P, T> {
 
     internal class InterfaceStubToFunctionParameterTransform<T>(
         private val clazz: Class<T>
-    ) : CallerValueTransform<T?, AndroidBinderFunctionParameter?>() {
-        override fun map(param: T?): AndroidBinderFunctionParameter? {
-            return newBinderFunctionParameter(clazz, param as? Any)
+    ) : CallerValueTransform<T?, AndroidBinderFunctionMetadata?>() {
+        override fun map(param: T?): AndroidBinderFunctionMetadata? {
+            return newBinderFunctionMetadata(clazz, param as? Any)
         }
     }
 

@@ -15,7 +15,7 @@ import com.android.inter.process.framework.stringType2ClassType
  * @author: liuzhongao
  * @since: 2024/9/17 23:11
  */
-data class AndroidBinderFunctionParameter internal constructor(
+data class AndroidBinderFunctionMetadata internal constructor(
     val functionType: Class<*>,
     internal val androidFunction: AndroidFunction
 ) : Parcelable {
@@ -34,23 +34,23 @@ data class AndroidBinderFunctionParameter internal constructor(
         dest.writeStrongBinder(this.androidFunction.function.asBinder())
     }
 
-    companion object CREATOR : Parcelable.Creator<AndroidBinderFunctionParameter> {
-        override fun createFromParcel(parcel: Parcel): AndroidBinderFunctionParameter {
-            return AndroidBinderFunctionParameter(parcel)
+    companion object CREATOR : Parcelable.Creator<AndroidBinderFunctionMetadata> {
+        override fun createFromParcel(parcel: Parcel): AndroidBinderFunctionMetadata {
+            return AndroidBinderFunctionMetadata(parcel)
         }
 
-        override fun newArray(size: Int): Array<AndroidBinderFunctionParameter?> {
+        override fun newArray(size: Int): Array<AndroidBinderFunctionMetadata?> {
             return arrayOfNulls(size)
         }
     }
 }
 
-fun newBinderFunctionParameter(clazz: Class<*>, instance: Any?): AndroidBinderFunctionParameter? {
+fun newBinderFunctionMetadata(clazz: Class<*>, instance: Any?): AndroidBinderFunctionMetadata? {
     if (instance == null) return null
     if (!clazz.isInstance(instance)) error("${instance.javaClass} is not the instance of ${clazz.name}.")
-    return newBinderFunctionParameter(clazz, (clazz as Class<Any>).receiverAndroidFunction(instance))
+    return newBinderFunctionMetadata(clazz, (clazz as Class<Any>).receiverAndroidFunction(instance))
 }
 
-internal fun newBinderFunctionParameter(clazz: Class<*>, androidFunction: AndroidFunction): AndroidBinderFunctionParameter {
-    return AndroidBinderFunctionParameter(clazz, androidFunction)
+internal fun newBinderFunctionMetadata(clazz: Class<*>, androidFunction: AndroidFunction): AndroidBinderFunctionMetadata {
+    return AndroidBinderFunctionMetadata(clazz, androidFunction)
 }

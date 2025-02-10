@@ -6,7 +6,7 @@ import com.android.inter.process.framework.exceptions.BinderDisconnectedExceptio
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.SuspendContext
 import com.android.inter.process.framework.metadata.function
-import com.android.inter.process.framework.metadata.newBinderFunctionParameter
+import com.android.inter.process.framework.metadata.newBinderFunctionMetadata
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
@@ -87,7 +87,7 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
         return suspendCoroutineUninterceptedOrReturn { continuation ->
             val newRequest = request.copy(
                 suspendContext = SuspendContext(
-                    androidBinderFunctionParameter = newBinderFunctionParameter(
+                    androidBinderFunctionMetadata = newBinderFunctionMetadata(
                         clazz = Continuation::class.java,
                         androidFunction = Continuation::class.java.receiverAndroidFunction(SafeContinuation(continuation))
                     )
@@ -129,7 +129,7 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
             val result = kotlin.runCatching {
                 when (request) {
                     is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
-                        val continuation = object : Continuation<Any?> by request.suspendContext.androidBinderFunctionParameter.function() {
+                        val continuation = object : Continuation<Any?> by request.suspendContext.androidBinderFunctionMetadata.function() {
                             override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
                         }
                         (this::callSuspend as Function2<AndroidRequest, Continuation<*>, AndroidResponse>)(request, continuation)

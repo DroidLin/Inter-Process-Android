@@ -13,6 +13,7 @@ internal class AndroidObjectPool : ObjectPool {
     private val receiverBuilderCache: MutableMap<Class<*>, (Any) -> InvocationReceiver<Any>> = ConcurrentHashMap()
     private val receiverCache: MutableMap<Class<*>, InvocationReceiver<*>> = ConcurrentHashMap()
     private val instanceFactoryCache: MutableMap<Class<*>, ServiceFactory<*>> = ConcurrentHashMap()
+    private val instanceCache: MutableMap<Class<*>, Any> = ConcurrentHashMap()
 
     override fun tryGetInvocationHandler(
         clazz: Class<*>,
@@ -41,11 +42,10 @@ internal class AndroidObjectPool : ObjectPool {
         if (cacheInReceiver != null) {
             return cacheInReceiver
         }
-        val cacheInInstanceFactory = this.instanceFactoryCache.get(clazz) as? ServiceFactory<T>
-            ?: error("there is no receiver or the instance ${clazz} factory registered in object pool.")
-        val receiverFactory = this.receiverBuilderCache.get(clazz) as? ReceiverFactory<T>
-            ?: ::InvocationReceiverAndroid
-        val invocationReceiver = receiverFactory(cacheInInstanceFactory.serviceCreate())
+        val serviceInstance = this.getInstance(clazz)
+        val invocationReceiver =
+            (this.receiverBuilderCache.getOrPut(clazz) { ::InvocationReceiverAndroid } as ReceiverFactory<T>)
+                .invoke(serviceInstance)
         this.putReceiver(clazz, invocationReceiver)
         return invocationReceiver
     }
@@ -78,5 +78,13 @@ internal class AndroidObjectPool : ObjectPool {
 
     override fun <T> putInstanceFactory(clazz: Class<T>, serviceFactory: ServiceFactory<T>) {
         instanceFactoryCache.putIfAbsent(clazz, serviceFactory)
+    }
+
+    override fun <T> getInstance(clazz: Class<T>): T {
+        return this.instanceCache.getOrPut(clazz) {
+            val cacheInInstanceFactory = this.instanceFactoryCache.get(clazz) as? ServiceFactory<T>
+                ?: error("there is no receiver or the instance ${clazz} factory registered in object pool.")
+            cacheInInstanceFactory.serviceCreate() as Any
+        } as T
     }
 }

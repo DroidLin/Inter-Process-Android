@@ -106,7 +106,6 @@ internal interface AIDLFunction : IInterface {
 
     companion object {
         private const val DESCRIPTOR = "com.android.inter.process.framework.AIDLFunction"
-
         private const val PARCEL_MAX_COUNT_THRESHOLD = 2 * (1 shl 10 shl 10)
     }
 }
