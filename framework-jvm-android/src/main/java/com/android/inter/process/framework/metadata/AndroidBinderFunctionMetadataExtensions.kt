@@ -2,7 +2,7 @@ package com.android.inter.process.framework.metadata
 
 import com.android.inter.process.framework.callerAndroidFunction
 
-fun <T> AndroidBinderFunctionParameter.function(): T {
+fun <T> AndroidBinderFunctionMetadata.function(): T {
     return (this.functionType as Class<T>).callerAndroidFunction(this.androidFunction)
 }
 

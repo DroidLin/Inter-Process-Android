@@ -56,4 +56,14 @@ internal object FunctionConnectionPool {
     operator fun get(androidAddress: ParcelableAndroidAddress): BasicConnection? {
         return this.basicConnectionMutableMap[androidAddress]
     }
+
+    fun getOrPut(address: ParcelableAndroidAddress, put: () -> BasicConnection): BasicConnection {
+        val existInstance = this.basicConnectionMutableMap[address]
+        if (existInstance != null) {
+            return existInstance
+        }
+        val newConnection = put()
+        this.basicConnectionMutableMap[address] = newConnection
+        return newConnection
+    }
 }

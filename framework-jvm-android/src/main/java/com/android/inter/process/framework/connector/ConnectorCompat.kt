@@ -24,11 +24,6 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-/**
- * @author: liuzhongao
- * @since: 2024/9/16 18:00
- */
-
 private const val KEY_CONNECT_CONTEXT = "key_connect_context"
 
 internal var Intent.connectContext: ConnectContext?

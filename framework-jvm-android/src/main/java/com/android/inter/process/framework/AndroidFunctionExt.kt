@@ -31,7 +31,7 @@ internal fun <T> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction 
                 methodParameterValues = request.methodParameterValues,
             )
             val result = kotlin.runCatching {
-                val continuation = request.suspendContext?.androidBinderFunctionParameter?.function<Continuation<Any?>>()
+                val continuation = request.suspendContext?.androidBinderFunctionMetadata?.function<Continuation<Any?>>()
                 if (continuation != null) {
                     val suspendFunction = receiver::invokeSuspend as Function2<InvocationParameter, Continuation<Any?>, Any?>
                     suspendFunction(invokeParameter, continuation)

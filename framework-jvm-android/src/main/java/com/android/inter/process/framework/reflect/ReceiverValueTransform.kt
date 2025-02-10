@@ -1,13 +1,13 @@
 package com.android.inter.process.framework.reflect
 
 import com.android.inter.process.framework.annotation.IPCFunction
-import com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter
+import com.android.inter.process.framework.metadata.AndroidBinderFunctionMetadata
 import com.android.inter.process.framework.metadata.function
 
 internal sealed class ReceiverValueTransform<P, T> : ValueTransform<P, T> {
 
-    private class FunctionParameterToProxyInstanceTransform<T> : ReceiverValueTransform<AndroidBinderFunctionParameter?, T?>() {
-        override fun map(param: AndroidBinderFunctionParameter?): T? {
+    private class FunctionParameterToProxyInstanceTransform<T> : ReceiverValueTransform<AndroidBinderFunctionMetadata?, T?>() {
+        override fun map(param: AndroidBinderFunctionMetadata?): T? {
             return param?.function<T>()
         }
     }

@@ -43,6 +43,8 @@ interface ObjectPool {
 
     fun <T> putInstanceFactory(clazz: Class<T>, serviceFactory: ServiceFactory<T>)
 
+    fun <T> getInstance(clazz: Class<T>): T
+
     /**
      * called and generated automatically by java spi.
      *
