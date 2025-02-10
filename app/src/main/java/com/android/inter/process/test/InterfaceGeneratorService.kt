@@ -3,12 +3,14 @@ package com.android.inter.process.test
 import android.os.ParcelFileDescriptor
 import com.android.inter.process.framework.ServiceFactory
 import com.android.inter.process.framework.annotation.IPCFunction
+import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.annotation.IPCServiceFactory
 import com.android.inter.process.test.metadata.ParcelableMetadata
 import com.android.inter.process.test.metadata.SerializableMetadata
 import java.io.FileInputStream
 
-interface InterfaceReflectionService {
+@IPCService
+interface InterfaceGeneratorService {
 
     val versionNumber: Int
     val versionName: String
@@ -64,14 +66,14 @@ interface InterfaceReflectionService {
     suspend fun suspendNoReturnFourValueCallback(@IPCFunction callback: (number: Int, str: String, serializableMetadata: SerializableMetadata, parcelableMetadata: ParcelableMetadata) -> Unit)
 }
 
-@IPCServiceFactory(interfaceClazz = InterfaceReflectionService::class)
-class InterfaceReflectionServiceFactory : ServiceFactory<InterfaceReflectionService> {
-    override fun serviceCreate(): InterfaceReflectionService {
-        return InterfaceReflectionServiceImplementation()
+@IPCServiceFactory(interfaceClazz = InterfaceGeneratorService::class)
+class InterfaceGeneratorServiceFactory : ServiceFactory<InterfaceGeneratorService> {
+    override fun serviceCreate(): InterfaceGeneratorService {
+        return InterfaceGeneratorServiceImplementation()
     }
 }
 
-class InterfaceReflectionServiceImplementation : InterfaceReflectionService {
+class InterfaceGeneratorServiceImplementation : InterfaceGeneratorService {
 
     override val versionNumber: Int get() = 100
     override val versionName: String get() = "100"

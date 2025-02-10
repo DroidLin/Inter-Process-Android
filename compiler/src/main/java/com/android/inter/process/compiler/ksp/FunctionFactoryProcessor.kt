@@ -2,6 +2,7 @@ package com.android.inter.process.compiler.ksp
 
 import com.android.inter.process.compiler.utils.RandomHash
 import com.android.inter.process.framework.ObjectPool
+import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.annotation.IPCServiceFactory
 import com.google.devtools.ksp.containingFile
 import com.google.devtools.ksp.processing.CodeGenerator
@@ -12,18 +13,20 @@ import com.google.devtools.ksp.symbol.KSFile
 import com.google.devtools.ksp.symbol.KSType
 import java.util.LinkedList
 
-internal fun buildFunctionCollector(
-    iPCInterfaceSymbols: List<KSAnnotated>,
-    serviceFactorySymbols: List<KSAnnotated>,
-    dependenciesFiles: List<KSFile>,
+internal fun processCustomFunctionCollector(
     resolver: Resolver,
     codeGenerator: CodeGenerator
 ): List<String> {
-    if (iPCInterfaceSymbols.isEmpty() && serviceFactorySymbols.isEmpty()) return emptyList()
-    val iPCInterfaceClassDeclarations = iPCInterfaceSymbols.findAnnotatedClassDeclarations()
-    val serviceFactoryClassDeclarations = serviceFactorySymbols.findAnnotatedClassDeclarations()
-    val generatedClassName = "${ObjectPool.Collector::class.java.simpleName}_${RandomHash}"
+    val iPCInterfaceClassDeclarations = resolver.getSymbolsWithAnnotation(IPCService::class.java.name)
+        .toList()
+        .findAnnotatedClassDeclarations()
+    val serviceFactoryClassDeclarations = resolver.getSymbolsWithAnnotation(IPCServiceFactory::class.java.name)
+        .toList()
+        .findAnnotatedClassDeclarations()
+    val dependenciesFiles = (iPCInterfaceClassDeclarations + serviceFactoryClassDeclarations).mapNotNull { it.containingFile }
+    if (iPCInterfaceClassDeclarations.isEmpty() && serviceFactoryClassDeclarations.isEmpty()) return emptyList()
 
+    val generatedClassName = "${ObjectPool.Collector::class.java.simpleName}_${RandomHash}"
     val importList = LinkedList<String>()
     val importAppend = { value: String ->
         if (!importList.contains(value)) {
@@ -50,8 +53,6 @@ internal fun buildFunctionCollector(
     }
 
     val stringBuilder = StringBuilder()
-    stringBuilder.appendLine(" // number of serviceFactorySymbols: ${serviceFactorySymbols.size}, number of serviceFactoryClassDeclarations: ${serviceFactoryClassDeclarations.size}")
-    stringBuilder.appendLine(" // number of iPCInterfaceSymbols: ${iPCInterfaceSymbols.size}, number of iPCInterfaceClassDeclarations: ${iPCInterfaceClassDeclarations.size}")
     stringBuilder.appendLine("package $GeneratedPackageName")
     stringBuilder.appendLine()
     importList.forEach(stringBuilder::import)

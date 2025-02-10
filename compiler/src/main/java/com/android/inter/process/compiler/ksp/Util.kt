@@ -43,7 +43,7 @@ internal val KSTypeReference.simpleName: String
                             if (index != 0) {
                                 append(", ")
                             }
-                            append(requireNotNull(ksTypeArgument.type).simpleName)
+                            append(requireNotNull(ksTypeArgument.type).typeOfQualifiedName)
                         }
                     } finally {
                         append(">")

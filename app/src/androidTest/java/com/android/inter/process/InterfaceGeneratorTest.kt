@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.android.inter.process.framework.Address
 import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
+import com.android.inter.process.test.InterfaceGeneratorService
 import com.android.inter.process.test.InterfaceReflectionService
 import com.android.inter.process.test.metadata.ParcelableMetadata
 import com.android.inter.process.test.metadata.SerializableMetadata
@@ -17,9 +18,9 @@ import org.junit.runner.RunWith
 import java.io.File
 
 @RunWith(AndroidJUnit4::class)
-class InterfaceReflectTest {
+class InterfaceGeneratorTest {
 
-    private var interfaceServiceCache: InterfaceReflectionService? = null
+    private var interfaceServiceCache: InterfaceGeneratorService? = null
 
     val appContext: Context
         get() = InstrumentationRegistry.getInstrumentation().targetContext
@@ -32,11 +33,11 @@ class InterfaceReflectTest {
             )
         }
 
-    val interfaceService: InterfaceReflectionService
+    val interfaceService: InterfaceGeneratorService
         get() {
             if (this.interfaceServiceCache == null) {
                 this.interfaceServiceCache = IPCProvider.on(remoteProcessAddress)
-                    .serviceCreate(InterfaceReflectionService::class.java)
+                    .serviceCreate(InterfaceGeneratorService::class.java)
             }
             return requireNotNull(this.interfaceServiceCache)
         }

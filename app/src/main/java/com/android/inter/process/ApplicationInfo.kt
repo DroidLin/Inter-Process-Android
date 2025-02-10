@@ -3,6 +3,7 @@ package com.android.inter.process
 import android.os.ParcelFileDescriptor
 import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.annotation.IPCFunction
+import com.android.inter.process.test.metadata.SerializableMetadata
 
 /**
  * @author: liuzhongao
@@ -14,6 +15,8 @@ interface ApplicationInfo {
     val packageName: String?
 
     var ParcelFileDescriptor?.processName: String
+
+    var mutableSerializableMetadata: SerializableMetadata
 
     suspend fun callRemote(url: String, parameterList: List<Int?>): Int
 

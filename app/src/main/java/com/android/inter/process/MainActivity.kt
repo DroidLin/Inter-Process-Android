@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
+import com.android.inter.process.test.metadata.ParcelableMetadata
+import com.android.inter.process.test.metadata.SerializableMetadata
 import com.android.inter.process.ui.theme.InterProcessAndroidTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -96,6 +98,19 @@ class MainActivity : ComponentActivity() {
                             }
                         ) {
                             Text(text = "Parcel fileDescriptor writeData")
+                        }
+                        TextButton(
+                            onClick = {
+                                applicationInfo.startLauncher {
+                                    withContext(Dispatchers.IO) {
+                                        val serializableMetadata = SerializableMetadata("100", 1000L, 12)
+                                        mutableSerializableMetadata = serializableMetadata
+                                        println("equals = ${serializableMetadata == mutableSerializableMetadata}.")
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(text = "property setter")
                         }
                         Button(onClick = {
                             val intent = Intent(this@MainActivity, LibActivity::class.java)

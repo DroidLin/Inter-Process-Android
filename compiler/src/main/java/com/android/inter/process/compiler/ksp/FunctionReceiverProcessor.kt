@@ -2,23 +2,23 @@ package com.android.inter.process.compiler.ksp
 
 import com.android.inter.process.compiler.exceptions.IllegalDeclarationException
 import com.android.inter.process.framework.annotation.IPCFunction
+import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 
 
-internal fun buildReceiverFunction(
-    ksAnnotatedList: List<KSAnnotated>,
+internal fun processReceiverFunction(
     resolver: Resolver,
     codeGenerator: CodeGenerator
 ) {
+    val ksAnnotatedList = resolver.getSymbolsWithAnnotation(IPCService::class.java.name).toList()
     val classDeclarations = ksAnnotatedList.findAnnotatedClassDeclarations()
     val classStringList = classDeclarations.map(::buildReceiverStructure)
 
@@ -71,15 +71,14 @@ private fun buildReceiverStructure(classDeclaration: KSClassDeclaration): String
                             if (extensionReceiver != null) {
                                 builder.appendLine("\t\t\t\"${ksPropertyDeclaration.identifier(isSetter = true)}\" -> this@${classDeclaration.simpleName.asString()}Receiver.rawInstance.run { (functionParameters[0] ${if (extensionReceiver.resolve().isMarkedNullable) "as?" else "as"} ${extensionReceiver.typeOfQualifiedName}).${ksPropertyDeclaration.simpleName.asString()} = (functionParameters[0] ${if (ksPropertyDeclaration.type.resolve().isMarkedNullable) "as?" else "as"} ${ksPropertyDeclaration.type.typeOfQualifiedName}) }")
                             } else {
-                                builder.appendLine("\t\t\t\"${ksPropertyDeclaration.identifier(isSetter = true)}\" -> this@${classDeclaration.simpleName.asString()}Receiver.rawInstance = (functionParameters[0] ${if (ksPropertyDeclaration.type.resolve().isMarkedNullable) "as?" else "as"} ${ksPropertyDeclaration.type.typeOfQualifiedName}})")
+                                builder.appendLine("\t\t\t\"${ksPropertyDeclaration.identifier(isSetter = true)}\" -> this@${classDeclaration.simpleName.asString()}Receiver.rawInstance.${ksPropertyDeclaration.simpleName.asString()} = (functionParameters[0] ${if (ksPropertyDeclaration.type.resolve().isMarkedNullable) "as?" else "as"} ${ksPropertyDeclaration.type.typeOfQualifiedName})")
                             }
+                        }
+                        val extensionReceiver = ksPropertyDeclaration.extensionReceiver
+                        if (extensionReceiver != null) {
+                            builder.appendLine("\t\t\t\"${ksPropertyDeclaration.identifier(isGetter = true)}\" -> this@${classDeclaration.simpleName.asString()}Receiver.rawInstance.run { (functionParameters[0] ${if (extensionReceiver.resolve().isMarkedNullable) "as?" else "as"} ${extensionReceiver.typeOfQualifiedName}).${ksPropertyDeclaration.simpleName.asString()} }")
                         } else {
-                            val extensionReceiver = ksPropertyDeclaration.extensionReceiver
-                            if (extensionReceiver != null) {
-                                builder.appendLine("\t\t\t\"${ksPropertyDeclaration.identifier(isGetter = true)}\" -> this@${classDeclaration.simpleName.asString()}Receiver.rawInstance.run { (functionParameters[0] ${if (extensionReceiver.resolve().isMarkedNullable) "as?" else "as"} ${extensionReceiver.typeOfQualifiedName}).${ksPropertyDeclaration.simpleName.asString()} }")
-                            } else {
-                                builder.appendLine("\t\t\t\"${ksPropertyDeclaration.identifier(isGetter = true)}\" -> this@${classDeclaration.simpleName.asString()}Receiver.rawInstance.${ksPropertyDeclaration.simpleName.asString()}")
-                            }
+                            builder.appendLine("\t\t\t\"${ksPropertyDeclaration.identifier(isGetter = true)}\" -> this@${classDeclaration.simpleName.asString()}Receiver.rawInstance.${ksPropertyDeclaration.simpleName.asString()}")
                         }
                     }
                     val abstractKotlinNonSuspendFunctionDeclaration = classDeclaration.declarations.filter { it is KSFunctionDeclaration && it.isAbstract && !it.isSuspend } as Sequence<KSFunctionDeclaration>

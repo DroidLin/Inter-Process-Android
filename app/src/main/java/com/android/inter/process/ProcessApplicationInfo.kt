@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.ParcelFileDescriptor
 import com.android.inter.process.framework.ServiceFactory
 import com.android.inter.process.framework.annotation.IPCServiceFactory
+import com.android.inter.process.test.metadata.SerializableMetadata
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -34,6 +35,7 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
     override var ParcelFileDescriptor?.processName: String
         set(value) {}
         get() = App.getProcessName(context)
+    override var mutableSerializableMetadata: SerializableMetadata = SerializableMetadata.Default
 
     override suspend fun callRemote(url: String, parameterList: List<Int?>): Int {
         return 0

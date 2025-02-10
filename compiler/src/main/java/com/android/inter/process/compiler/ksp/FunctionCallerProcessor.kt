@@ -4,21 +4,21 @@ import com.android.inter.process.framework.Address
 import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.JvmMethodRequest
 import com.android.inter.process.framework.annotation.IPCFunction
+import com.android.inter.process.framework.annotation.IPCService
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Dependencies
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.ClassKind
-import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSFunctionDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 
-internal fun buildCallerFunction(
-    ksAnnotatedList: List<KSAnnotated>,
+internal fun processCallerFunction(
     resolver: Resolver,
     codeGenerator: CodeGenerator
 ) {
+    val ksAnnotatedList = resolver.getSymbolsWithAnnotation(IPCService::class.java.name).toList()
     val classDeclarations = ksAnnotatedList.findAnnotatedClassDeclarations()
     val classStringList = classDeclarations.map(::buildCallerStructure)
 
@@ -67,7 +67,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                     .appendLine("\t\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
                     .appendLine("\t\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                     .appendLine("\t\t\t\t\tfunctionIdentifier = \"${ksPropertyDeclaration.identifier(isSetter = true)}\",")
-                    .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this@${classDeclaration.simpleName.asString()}Caller, " } ?: ""}value),")
+                    .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this, " } ?: ""}value),")
                     .appendLine("\t\t\t\t\tisSuspend = false")
                     .appendLine("\t\t\t\t)")
                     .appendLine("\t\t\t)")
@@ -79,7 +79,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                 .appendLine("\t\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
                 .appendLine("\t\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\t\tfunctionIdentifier = \"${ksPropertyDeclaration.identifier(isGetter = true)}\",")
-                .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this@${classDeclaration.simpleName.asString()}Caller" } ?: ""}),")
+                .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this" } ?: ""}),")
                 .appendLine("\t\t\t\t\tisSuspend = false")
                 .appendLine("\t\t\t\t)")
                 .appendLine("\t\t\t) ${if (ksPropertyDeclaration.type.resolve().isMarkedNullable) "as? ${ksPropertyDeclaration.type.typeOfQualifiedName}" else "as ${ksPropertyDeclaration.type.typeOfQualifiedName}"}")
@@ -116,7 +116,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                 .appendLine("\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
                 .appendLine("\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\tfunctionIdentifier = \"${ksFunctionDeclaration.identifier}\",")
-                .appendLine("\t\t\t\tfunctionParameters = listOf(${ksFunctionDeclaration.extensionReceiver?.let { "this@${classDeclaration.simpleName.asString()}Caller, " } ?: ""}${parameters}),")
+                .appendLine("\t\t\t\tfunctionParameters = listOf(${ksFunctionDeclaration.extensionReceiver?.let { "this, " } ?: ""}${parameters}),")
                 .appendLine("\t\t\t\tisSuspend = ${ksFunctionDeclaration.isSuspend}")
                 .appendLine("\t\t\t)")
                 .appendLine("\t\t) ${ksFunctionDeclaration.filterReturnType?.let { if (it.resolve().isMarkedNullable) "as? ${it.typeOfQualifiedName}" else "as ${it.typeOfQualifiedName}" } ?: ""}")
