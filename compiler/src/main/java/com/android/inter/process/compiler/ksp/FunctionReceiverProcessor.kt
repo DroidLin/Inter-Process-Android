@@ -47,7 +47,7 @@ private fun buildReceiverStructure(classDeclaration: KSClassDeclaration): String
     addImport(requireNotNull(classDeclaration.qualifiedName).asString())
     addImport(InvocationReceiver::class.java.name)
     addImport(InvocationParameter::class.java.name)
-    addImport("com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter")
+    addImport("com.android.inter.process.framework.metadata.AndroidBinderFunctionMetadata")
     addImport("com.android.inter.process.framework.metadata.function")
 
     val kotlinStringBuilder = StringBuilder()
@@ -87,7 +87,7 @@ private fun buildReceiverStructure(classDeclaration: KSClassDeclaration): String
                         if (extensionReceiver != null) {
                             val parameters = ksFunctionDeclaration.parameters.mapIndexed { index, ksValueParameter ->
                                 if (ksValueParameter.annotations.find { it.shortName.asString() == IPCFunction::class.java.simpleName } != null) {
-                                    "(functionParameters[${index + 1}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} AndroidBinderFunctionParameter)${if (ksValueParameter.type.resolve().isMarkedNullable) "?" else ""}.function<${ksValueParameter.type.typeOfQualifiedName}>()"
+                                    "(functionParameters[${index + 1}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} AndroidBinderFunctionMetadata)${if (ksValueParameter.type.resolve().isMarkedNullable) "?" else ""}.function<${ksValueParameter.type.typeOfQualifiedName}>()"
                                 } else {
                                     "(functionParameters[${index + 1}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} ${ksValueParameter.type.typeOfQualifiedName})"
                                 }
@@ -96,7 +96,7 @@ private fun buildReceiverStructure(classDeclaration: KSClassDeclaration): String
                         } else {
                             val parameters = ksFunctionDeclaration.parameters.mapIndexed { index, ksValueParameter ->
                                 if (ksValueParameter.annotations.find { it.shortName.asString() == IPCFunction::class.java.simpleName } != null) {
-                                    "(functionParameters[${index}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} AndroidBinderFunctionParameter)${if (ksValueParameter.type.resolve().isMarkedNullable) "?" else ""}.function<${ksValueParameter.type.typeOfQualifiedName}>()"
+                                    "(functionParameters[${index}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} AndroidBinderFunctionMetadata)${if (ksValueParameter.type.resolve().isMarkedNullable) "?" else ""}.function<${ksValueParameter.type.typeOfQualifiedName}>()"
                                 } else {
                                     "(functionParameters[${index}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} ${ksValueParameter.type.typeOfQualifiedName})"
                                 }
@@ -125,7 +125,7 @@ private fun buildReceiverStructure(classDeclaration: KSClassDeclaration): String
                         if (extensionReceiver != null) {
                             val parameters = ksFunctionDeclaration.parameters.mapIndexed { index, ksValueParameter ->
                                 if (ksValueParameter.annotations.find { it.shortName.asString() == IPCFunction::class.java.simpleName } != null) {
-                                    "(functionParameters[${index + 1}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} AndroidBinderFunctionParameter)${if (ksValueParameter.type.resolve().isMarkedNullable) "?" else ""}.function<${ksValueParameter.type.typeOfQualifiedName}>()"
+                                    "(functionParameters[${index + 1}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} AndroidBinderFunctionMetadata)${if (ksValueParameter.type.resolve().isMarkedNullable) "?" else ""}.function<${ksValueParameter.type.typeOfQualifiedName}>()"
                                 } else {
                                     "(functionParameters[${index + 1}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} ${ksValueParameter.type.typeOfQualifiedName})"
                                 }
@@ -134,7 +134,7 @@ private fun buildReceiverStructure(classDeclaration: KSClassDeclaration): String
                         } else {
                             val parameters = ksFunctionDeclaration.parameters.mapIndexed { index, ksValueParameter ->
                                 if (ksValueParameter.annotations.find { it.shortName.asString() == IPCFunction::class.java.simpleName } != null) {
-                                    "(functionParameters[${index}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} AndroidBinderFunctionParameter)${if (ksValueParameter.type.resolve().isMarkedNullable) "?" else ""}.function<${ksValueParameter.type.typeOfQualifiedName}>()"
+                                    "(functionParameters[${index}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} AndroidBinderFunctionMetadata)${if (ksValueParameter.type.resolve().isMarkedNullable) "?" else ""}.function<${ksValueParameter.type.typeOfQualifiedName}>()"
                                 } else {
                                     "(functionParameters[${index}] ${if (ksValueParameter.type.resolve().isMarkedNullable) "as?" else "as"} ${ksValueParameter.type.typeOfQualifiedName})"
                                 }

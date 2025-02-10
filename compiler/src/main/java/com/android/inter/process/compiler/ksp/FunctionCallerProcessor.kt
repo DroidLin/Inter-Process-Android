@@ -94,13 +94,13 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
             }
             addImport("com.android.inter.process.framework.syncCall")
             addImport(JvmMethodRequest::class.java.name)
-            addImport("com.android.inter.process.framework.metadata.AndroidBinderFunctionParameter")
-            addImport("com.android.inter.process.framework.metadata.newBinderFunctionParameter")
+            addImport("com.android.inter.process.framework.metadata.AndroidBinderFunctionMetadata")
+            addImport("com.android.inter.process.framework.metadata.newBinderFunctionMetadata")
 
             val parameters =
                 ksFunctionDeclaration.parameters.mapIndexed { index, ksValueParameter ->
                     if (ksValueParameter.annotations.find { it.shortName.asString() == IPCFunction::class.java.simpleName } != null) {
-                        "newBinderFunctionParameter(${ksValueParameter.type.resolve().declaration.simpleName.asString()}::class.java, ${
+                        "newBinderFunctionMetadata(${ksValueParameter.type.resolve().declaration.simpleName.asString()}::class.java, ${
                             requireNotNull(
                                 ksValueParameter.name
                             ).asString()
