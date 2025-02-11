@@ -21,10 +21,10 @@ class InterfaceGeneratorContentProviderTest {
 
     private var interfaceServiceCache: InterfaceGeneratorService? = null
 
-    val appContext: Context
+    private val appContext: Context
         get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    val remoteProcessAddress: Address
+    private val remoteProcessAddress: Address
         get() {
             return provider(
                 context = appContext,
@@ -32,7 +32,7 @@ class InterfaceGeneratorContentProviderTest {
             )
         }
 
-    val interfaceService: InterfaceGeneratorService
+    private val interfaceService: InterfaceGeneratorService
         get() {
             if (this.interfaceServiceCache == null) {
                 this.interfaceServiceCache = IPCProvider.on(remoteProcessAddress)

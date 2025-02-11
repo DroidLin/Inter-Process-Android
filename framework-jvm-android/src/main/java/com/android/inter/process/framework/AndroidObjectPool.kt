@@ -9,8 +9,8 @@ internal class AndroidObjectPool : ObjectPool {
 
     private val invocationHandlerCache: MutableMap<Class<*>, InvocationHandler> = ConcurrentHashMap()
 
-    private val callerCacheBuilders: MutableMap<Class<*>, (FunctionCallAdapter) -> Any?> = ConcurrentHashMap()
-    private val receiverBuilderCache: MutableMap<Class<*>, (Any) -> InvocationReceiver<Any>> = ConcurrentHashMap()
+    private val callerCacheBuilders: MutableMap<Class<*>, CallerFactory<Any?>> = ConcurrentHashMap()
+    private val receiverBuilderCache: MutableMap<Class<*>, ReceiverFactory<Any>> = ConcurrentHashMap()
     private val receiverCache: MutableMap<Class<*>, InvocationReceiver<*>> = ConcurrentHashMap()
     private val instanceFactoryCache: MutableMap<Class<*>, ServiceFactory<*>> = ConcurrentHashMap()
     private val instanceCache: MutableMap<Class<*>, Any> = ConcurrentHashMap()

@@ -33,15 +33,10 @@ import java.io.File
  */
 class LibActivity : ComponentActivity() {
 
-    private val iPCProvider by lazy {
-        val address = provider(this, getString(R.string.content_provider_main_ipc))
-        IPCProvider.on(address)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val applicationInfo = iPCProvider.serviceCreate(ApplicationInfo::class.java)
+        val applicationInfo = IPCStore.mainProvider.serviceCreate(ApplicationInfo::class.java)
         setContent {
             InterProcessAndroidTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

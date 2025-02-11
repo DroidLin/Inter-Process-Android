@@ -27,7 +27,7 @@
 
         <activity
             android:name=".LibActivity"
-            android:process=":lib"
+            android:process=":broadcast"
             android:launchMode="singleTask"
             android:theme="@style/Theme.InterProcessAndroid" />
 
@@ -41,20 +41,15 @@
         <receiver
             android:name=".BroadcastReceiver1"
             android:exported="false"
-            android:process=":lib">
+            android:process=":broadcast">
             <intent-filter>
                 <action android:name="lib_process_ipc_broadcast_action" />
             </intent-filter>
         </receiver>
-
         <provider
-            android:authorities="com.android.inter.process.provider.main"
-            android:name=".Provider0"
-            android:exported="false" />
-        <provider
-            android:authorities="com.android.inter.process.provider.lib"
+            android:authorities="com.android.inter.process.provider.android"
             android:name=".Provider1"
-            android:process=":lib"
+            android:process=":provider"
             android:exported="false" />
     </application>
 

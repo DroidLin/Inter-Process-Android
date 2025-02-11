@@ -24,14 +24,12 @@ class App : Application() {
 
         val packageName = getProcessName(this)
         println("process name: ${packageName}.")
-        if (packageName.endsWith(":lib")) { // lib进程
-//            val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_lib_ipc))
-            val androidAddress = provider(this, getString(R.string.content_provider_lib_ipc))
-            IPCManager.installAndroid(androidAddress)
+        if (packageName.endsWith(":broadcast")) { // broadcast进程
+            IPCManager.installAndroid(IPCStore.broadcastProcessAddress)
+        } else if (packageName.endsWith(":provider")) { // provider进程
+            IPCManager.installAndroid(IPCStore.providerProcessAddress)
         } else if (!packageName.contains(":")) { // main进程
-//            val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_main_ipc))
-            val androidAddress = provider(this, getString(R.string.content_provider_main_ipc))
-            IPCManager.installAndroid(androidAddress)
+            IPCManager.installAndroid(IPCStore.mainProcessAddress)
         }
 
         StrictMode.enableDefaults();
