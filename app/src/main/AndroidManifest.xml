@@ -46,6 +46,16 @@
                 <action android:name="lib_process_ipc_broadcast_action" />
             </intent-filter>
         </receiver>
+
+        <provider
+            android:authorities="com.android.inter.process.provider.main"
+            android:name=".Provider0"
+            android:exported="false" />
+        <provider
+            android:authorities="com.android.inter.process.provider.lib"
+            android:name=".Provider1"
+            android:process=":lib"
+            android:exported="false" />
     </application>
 
 </manifest>

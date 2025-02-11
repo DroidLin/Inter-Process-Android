@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
+import com.android.inter.process.framework.address.provider
 import com.android.inter.process.test.metadata.ParcelableMetadata
 import com.android.inter.process.test.metadata.SerializableMetadata
 import com.android.inter.process.ui.theme.InterProcessAndroidTheme
@@ -32,7 +33,8 @@ import java.io.File
 class MainActivity : ComponentActivity() {
 
     private val iPCProvider by lazy {
-        IPCProvider.on(broadcast(this, getString(R.string.broadcast_action_lib_ipc)))
+        val address = provider(this, getString(R.string.content_provider_lib_ipc))
+        IPCProvider.on(address)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

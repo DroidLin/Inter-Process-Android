@@ -7,6 +7,7 @@ import android.os.Process
 import android.os.StrictMode
 import com.android.inter.process.framework.IPCManager
 import com.android.inter.process.framework.address.broadcast
+import com.android.inter.process.framework.address.provider
 import com.android.inter.process.framework.installAndroid
 import java.lang.ref.WeakReference
 
@@ -17,17 +18,19 @@ import java.lang.ref.WeakReference
  */
 class App : Application() {
 
-    override fun onCreate() {
-        super.onCreate()
+    override fun attachBaseContext(base: Context?) {
+        super.attachBaseContext(base)
         context = this
 
         val packageName = getProcessName(this)
         println("process name: ${packageName}.")
         if (packageName.endsWith(":lib")) { // lib进程
-            val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_lib_ipc))
+//            val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_lib_ipc))
+            val androidAddress = provider(this, getString(R.string.content_provider_lib_ipc))
             IPCManager.installAndroid(androidAddress)
         } else if (!packageName.contains(":")) { // main进程
-            val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_main_ipc))
+//            val androidAddress = broadcast(context = this, broadcastAction = getString(R.string.broadcast_action_main_ipc))
+            val androidAddress = provider(this, getString(R.string.content_provider_main_ipc))
             IPCManager.installAndroid(androidAddress)
         }
 

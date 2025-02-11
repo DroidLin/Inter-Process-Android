@@ -21,12 +21,6 @@ abstract class BroadcastAndroidReceiver : BroadcastReceiver() {
     final override fun onReceive(context: Context?, intent: Intent?) {
         context ?: return
         val remoteConnectContext = intent?.connectContext ?: return
-        val localSourceAddress = (IPCManager.currentAddress as AndroidAddress).toParcelableAddress()
-        val localBasicConnection = FunctionConnectionPool.getOrPut(localSourceAddress) {
-            BasicConnectionStub(BasicConnection(localSourceAddress))
-        }
-        val localConnectContext = ConnectContext(sourceAddress = localSourceAddress, basicConnection = localBasicConnection)
-        FunctionConnectionPool[remoteConnectContext.sourceAddress] = remoteConnectContext.basicConnection
-        FunctionConnectionPool[remoteConnectContext.sourceAddress]?.setConnectContext(localConnectContext)
+        handleConnect(remoteConnectContext)
     }
 }

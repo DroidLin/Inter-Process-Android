@@ -8,6 +8,7 @@ import com.android.inter.process.framework.Address
 import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
 import com.android.inter.process.test.InterfaceGeneratorService
+import com.android.inter.process.test.InterfaceGeneratorServiceImplementation
 import com.android.inter.process.test.metadata.ParcelableMetadata
 import com.android.inter.process.test.metadata.SerializableMetadata
 import kotlinx.coroutines.runBlocking
@@ -17,7 +18,7 @@ import org.junit.runner.RunWith
 import java.io.File
 
 @RunWith(AndroidJUnit4::class)
-class InterfaceGeneratorTest {
+class InterfaceLocalTest {
 
     private var interfaceServiceCache: InterfaceGeneratorService? = null
 
@@ -28,7 +29,7 @@ class InterfaceGeneratorTest {
         get() {
             return broadcast(
                 context = appContext,
-                broadcastAction = appContext.getString(R.string.broadcast_action_lib_ipc)
+                broadcastAction = appContext.getString(R.string.broadcast_action_main_ipc)
             )
         }
 
@@ -43,32 +44,38 @@ class InterfaceGeneratorTest {
 
     @Test
     fun numberPropertyTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         assert(interfaceService.versionNumber == 100)
     }
 
     @Test
     fun stringPropertyTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         assert(interfaceService.versionName == "100")
     }
 
     @Test
     fun serializableMetadataPropertyTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         assert(interfaceService.serializableMetadata == SerializableMetadata.Default)
     }
 
     @Test
     fun parcelableMetadataPropertyTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         assert(interfaceService.parcelableMetadata == ParcelableMetadata.Default)
     }
 
     @Test
     fun extensionStringNumberPropertyTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         val declaredString = "Hello World"
         assert(interfaceService.run { declaredString.numberOfChar } == declaredString.length)
     }
 
     @Test
     fun fileDescriptorPropertyTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         val tmpContent = System.currentTimeMillis().toString() + Math.random()
         val file = File(appContext.cacheDir, "tmp.txt")
         file.bufferedWriter().use { it.write(tmpContent); it.flush() }
@@ -79,18 +86,21 @@ class InterfaceGeneratorTest {
 
     @Test
     fun mutableNumberTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         this.interfaceService.mutableVersionNumber = 100
         Assert.assertEquals(this.interfaceService.mutableVersionNumber, 100)
     }
 
     @Test
     fun mutableStringTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         this.interfaceService.mutableVersionName = "100"
         Assert.assertEquals(this.interfaceService.mutableVersionName, "100")
     }
 
     @Test
     fun mutableSerializableMetadataTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         val serializableMetadata = SerializableMetadata("100", 1000L, 12)
         this.interfaceService.mutableSerializableMetadata = serializableMetadata
         Assert.assertEquals(this.interfaceService.mutableSerializableMetadata, serializableMetadata)
@@ -98,6 +108,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun mutableParcelableMetadataTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         val parcelableMetadata = ParcelableMetadata(100, "123")
         this.interfaceService.mutableParcelableMetadata = parcelableMetadata
         Assert.assertEquals(this.interfaceService.mutableParcelableMetadata, parcelableMetadata)
@@ -105,32 +116,38 @@ class InterfaceGeneratorTest {
 
     @Test
     fun numberFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         assert(interfaceService.versionNumber() == 100)
     }
 
     @Test
     fun stringFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         assert(interfaceService.versionName() == "100")
     }
 
     @Test
     fun serializableMetadataFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         assert(interfaceService.serializableMetadata() == SerializableMetadata.Default)
     }
 
     @Test
     fun parcelableMetadataFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         assert(interfaceService.parcelableMetadata() == ParcelableMetadata.Default)
     }
 
     @Test
     fun extensionStringNumberFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         val declaredString = "Hello World"
         assert(interfaceService.run { declaredString.numberOfChar() } == declaredString.length)
     }
 
     @Test
     fun fileDescriptorFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         val tmpContent = System.currentTimeMillis().toString() + Math.random()
         val file = File(appContext.cacheDir, "tmp.txt")
         file.bufferedWriter().use { it.write(tmpContent); it.flush() }
@@ -144,21 +161,25 @@ class InterfaceGeneratorTest {
 
     @Test
     fun noReturnFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnValue()
     }
 
     @Test
     fun noReturnValueOneParameter() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnValueOneParameter(100)
     }
 
     @Test
     fun noReturnValueTwoParameter() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnValueTwoParameter(100, "hello world!")
     }
 
     @Test
     fun noReturnValueThreeParameter() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnValueThreeParameter(
             number = 100,
             str = "hello world!",
@@ -168,6 +189,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun noReturnValueFourParameter() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnValueFourParameter(
             number = 100,
             str = "hello world!",
@@ -178,6 +200,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun noReturnNoValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnNoValueCallback {
             println("noReturnNoValueCallback")
         }
@@ -185,6 +208,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun noReturnOneValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnOneValueCallback { number ->
             println("noReturnNoValueCallback, number: ${number}.")
         }
@@ -192,6 +216,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun noReturnTwoValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnTwoValueCallback { number, str ->
             println("noReturnNoValueCallback, number: ${number}, str: ${str}.")
         }
@@ -199,6 +224,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun noReturnThreeValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnThreeValueCallback { number, str, serializableMetadata ->
             println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}.")
         }
@@ -206,6 +232,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun noReturnFourValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnFourValueCallback { number, str, serializableMetadata, parcelableMetadata ->
             println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
         }
@@ -213,6 +240,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNumberFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             assert(interfaceService.suspendVersionNumber() == 100)
         }
@@ -220,6 +248,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendStringFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             assert(interfaceService.suspendVersionName() == "100")
         }
@@ -227,6 +256,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendSerializableMetadataFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             assert(interfaceService.suspendSerializableMetadata() == SerializableMetadata.Default)
         }
@@ -234,6 +264,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendParcelableMetadataFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             assert(interfaceService.suspendParcelableMetadata() == ParcelableMetadata.Default)
         }
@@ -241,6 +272,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendExtensionStringNumberFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             val declaredString = "Hello World"
             assert(interfaceService.run { declaredString.suspendNumberOfChar() } == declaredString.length)
@@ -249,6 +281,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendFileDescriptorFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             val tmpContent = System.currentTimeMillis().toString() + Math.random()
             val file = File(appContext.cacheDir, "tmp.txt")
@@ -261,6 +294,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnFunctionTest() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnValue()
         }
@@ -268,6 +302,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnValueOneParameter() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnValueOneParameter(100)
         }
@@ -275,6 +310,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnValueTwoParameter() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnValueTwoParameter(100, "hello world!")
         }
@@ -282,6 +318,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnValueThreeParameter() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnValueThreeParameter(
                 number = 100,
@@ -293,6 +330,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnValueFourParameter() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnValueFourParameter(
                 number = 100,
@@ -305,6 +343,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnNoValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnNoValueCallback {
                 println("noReturnNoValueCallback")
@@ -314,6 +353,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnOneValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnOneValueCallback { number ->
                 println("noReturnNoValueCallback, number: ${number}.")
@@ -323,6 +363,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnTwoValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnTwoValueCallback { number, str ->
                 println("noReturnNoValueCallback, number: ${number}, str: ${str}.")
@@ -332,6 +373,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnThreeValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnThreeValueCallback { number, str, serializableMetadata ->
                 println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}.")
@@ -341,6 +383,7 @@ class InterfaceGeneratorTest {
 
     @Test
     fun suspendNoReturnFourValueCallback() {
+        assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnFourValueCallback { number, str, serializableMetadata, parcelableMetadata ->
                 println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")

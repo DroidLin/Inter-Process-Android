@@ -5,11 +5,20 @@ import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
 
-internal fun BasicConnection(sourceAddress: ParcelableAndroidAddress): BasicConnection {
-    return BasicConnectionImpl(sourceAddress)
+typealias InvocationReceiverFactory<T> = (Class<T>) -> InvocationReceiver<T>
+
+internal fun BasicConnection(
+    sourceAddress: ParcelableAndroidAddress,
+    receiverFactory: InvocationReceiverFactory<Any> = { objectPool.getReceiver(it) }
+): BasicConnection {
+    return BasicConnectionImpl(sourceAddress, receiverFactory)
 }
 
-internal class BasicConnectionImpl(sourceAddress: ParcelableAndroidAddress) : BasicConnection {
+
+internal class BasicConnectionImpl(
+    sourceAddress: ParcelableAndroidAddress,
+    val invocationReceiverGetter: InvocationReceiverFactory<Any>
+) : BasicConnection {
 
     override val version: Long get() = BuildConfig.version
 
@@ -19,7 +28,7 @@ internal class BasicConnectionImpl(sourceAddress: ParcelableAndroidAddress) : Ba
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
         val hostClass = request.declaredClassFullName.stringType2ClassType as Class<Any>
-        val invocationReceiver = objectPool.getReceiver(hostClass)
+        val invocationReceiver = invocationReceiverGetter(hostClass)
 
         val invocationParameter = InvocationParameter(
             declaredClassFullName = request.declaredClassFullName,
@@ -33,7 +42,7 @@ internal class BasicConnectionImpl(sourceAddress: ParcelableAndroidAddress) : Ba
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
         val hostClass = request.declaredClassFullName.stringType2ClassType as Class<Any>
-        val invocationReceiver = objectPool.getReceiver(hostClass)
+        val invocationReceiver = invocationReceiverGetter(hostClass)
 
         val invokeParameter = InvocationParameter(
             declaredClassFullName = request.declaredClassFullName,

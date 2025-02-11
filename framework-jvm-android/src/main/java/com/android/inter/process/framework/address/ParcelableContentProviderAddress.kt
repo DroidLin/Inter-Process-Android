@@ -2,6 +2,7 @@ package com.android.inter.process.framework.address
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.android.inter.process.framework.address.AndroidAddress.Companion.packageName
 
 /**
  * @author: liuzhongao

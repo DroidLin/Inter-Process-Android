@@ -2,6 +2,7 @@ package com.android.inter.process.framework.connector
 
 import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import com.android.inter.process.framework.BasicConnection
 import com.android.inter.process.framework.BasicConnectionStub
 import com.android.inter.process.framework.FunctionConnectionPool
@@ -22,7 +23,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 
 private const val KEY_CONNECT_CONTEXT = "key_connect_context"
 
@@ -34,9 +36,17 @@ internal var Intent.connectContext: ConnectContext?
         this.getParcelableExtra(KEY_CONNECT_CONTEXT, ConnectContext::class.java)
     } else this.getParcelableExtra(KEY_CONNECT_CONTEXT)
 
+internal var Bundle.connectContext: ConnectContext?
+    set(value) {
+        this.putParcelable(KEY_CONNECT_CONTEXT, value)
+    }
+    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        this.getParcelable(KEY_CONNECT_CONTEXT, ConnectContext::class.java)
+    } else this.getParcelable(KEY_CONNECT_CONTEXT)
+
 internal suspend fun doConnect(
     address: AndroidAddress,
-    typeOfConnection: (ConnectContext) -> Unit
+    typeOfConnection: (ConnectContext) -> ConnectContext?
 ): BasicConnection {
     val newParcelableAddress = address.toParcelableAddress()
     val basicConnection = FunctionConnectionPool[newParcelableAddress]
@@ -89,9 +99,9 @@ internal suspend fun doConnectInner(
     coroutineScope: CoroutineScope,
     destAddress: ParcelableAndroidAddress,
     connectTimeout: Long,
-    typeOfConnection: (ConnectContext) -> Unit
+    typeOfConnection: (ConnectContext) -> ConnectContext?
 ): BasicConnection {
-    return suspendCoroutine { continuation ->
+    return suspendCoroutineUninterceptedOrReturn { continuation ->
         val safeContinuation = SafeContinuation(continuation)
         val timeoutJob = coroutineScope.async {
             delay(connectTimeout)
@@ -112,6 +122,12 @@ internal suspend fun doConnectInner(
             sourceAddress = sourceAddress,
             basicConnection = basicConnection
         )
-        typeOfConnection(connectContext)
+        val remoteConnectContext = typeOfConnection(connectContext)
+        if (remoteConnectContext != null) {
+            timeoutJob.cancel()
+            if (remoteConnectContext.sourceAddress == destAddress) {
+                remoteConnectContext.basicConnection
+            } else throw IllegalArgumentException("unsatisfied source address: ${connectContext.sourceAddress} and destination address: ${destAddress}.")
+        } else COROUTINE_SUSPENDED
     }
 }

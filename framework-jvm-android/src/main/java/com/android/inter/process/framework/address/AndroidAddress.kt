@@ -15,11 +15,6 @@ sealed interface AndroidAddress : Address {
      */
     val context: Context
 
-    /**
-     * which process/application to connect.
-     */
-    val packageName: String
-
     companion object {
         internal fun <T : AndroidAddress> T.toParcelableAddress(): ParcelableAndroidAddress {
             return when (this) {
@@ -28,6 +23,9 @@ sealed interface AndroidAddress : Address {
                 else -> throw IllegalArgumentException("unsupported address type: ${this.javaClass}.")
             }
         }
+
+        internal val AndroidAddress.packageName: String
+            get() = this.context.packageName
     }
 }
 

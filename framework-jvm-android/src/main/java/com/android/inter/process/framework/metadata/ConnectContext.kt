@@ -37,13 +37,18 @@ internal data class ConnectContext(
         return 0
     }
 
-    companion object CREATOR : Parcelable.Creator<ConnectContext> {
-        override fun createFromParcel(parcel: Parcel): ConnectContext {
-            return ConnectContext(parcel)
-        }
+    companion object {
 
-        override fun newArray(size: Int): Array<ConnectContext?> {
-            return arrayOfNulls(size)
+        @JvmField
+        val CREATOR = object : Parcelable.Creator<ConnectContext> {
+            override fun createFromParcel(parcel: Parcel): ConnectContext {
+                return ConnectContext(parcel)
+            }
+
+            override fun newArray(size: Int): Array<ConnectContext?> {
+                return arrayOfNulls(size)
+            }
         }
     }
+
 }

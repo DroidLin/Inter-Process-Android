@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.android.inter.process.framework.IPCProvider
 import com.android.inter.process.framework.address.broadcast
+import com.android.inter.process.framework.address.provider
 import com.android.inter.process.ui.theme.InterProcessAndroidTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +34,8 @@ import java.io.File
 class LibActivity : ComponentActivity() {
 
     private val iPCProvider by lazy {
-        IPCProvider.on(broadcast(this, getString(R.string.broadcast_action_main_ipc)))
+        val address = provider(this, getString(R.string.content_provider_main_ipc))
+        IPCProvider.on(address)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

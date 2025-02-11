@@ -11,6 +11,24 @@ import android.content.Context
  */
 internal data class BroadcastAndroidAddress(
     override val context: Context,
-    override val packageName: String,
     val broadcastAction: String,
-) : AndroidAddress
+) : AndroidAddress {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as BroadcastAndroidAddress
+
+        if (context.packageName != other.context.packageName) return false
+        if (broadcastAction != other.broadcastAction) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = context.packageName.hashCode()
+        result = 31 * result + broadcastAction.hashCode()
+        return result
+    }
+}

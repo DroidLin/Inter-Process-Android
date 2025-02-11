@@ -6,7 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.inter.process.framework.Address
 import com.android.inter.process.framework.IPCProvider
-import com.android.inter.process.framework.address.broadcast
+import com.android.inter.process.framework.address.provider
 import com.android.inter.process.test.InterfaceGeneratorService
 import com.android.inter.process.test.metadata.ParcelableMetadata
 import com.android.inter.process.test.metadata.SerializableMetadata
@@ -17,7 +17,7 @@ import org.junit.runner.RunWith
 import java.io.File
 
 @RunWith(AndroidJUnit4::class)
-class InterfaceGeneratorTest {
+class InterfaceGeneratorContentProviderTest {
 
     private var interfaceServiceCache: InterfaceGeneratorService? = null
 
@@ -26,9 +26,9 @@ class InterfaceGeneratorTest {
 
     val remoteProcessAddress: Address
         get() {
-            return broadcast(
+            return provider(
                 context = appContext,
-                broadcastAction = appContext.getString(R.string.broadcast_action_lib_ipc)
+                authorities = appContext.getString(R.string.content_provider_lib_ipc),
             )
         }
 
