@@ -9,9 +9,11 @@ internal class AndroidObjectPool : ObjectPool {
 
     private val invocationHandlerCache: MutableMap<Class<*>, InvocationHandler> = ConcurrentHashMap()
 
-    private val callerCacheBuilders: MutableMap<Class<*>, CallerFactory<Any?>> = ConcurrentHashMap()
+    private val callerBuilderCache: MutableMap<Class<*>, CallerFactory<Any?>> = ConcurrentHashMap()
     private val receiverBuilderCache: MutableMap<Class<*>, ReceiverFactory<Any>> = ConcurrentHashMap()
+
     private val receiverCache: MutableMap<Class<*>, InvocationReceiver<*>> = ConcurrentHashMap()
+
     private val instanceFactoryCache: MutableMap<Class<*>, ServiceFactory<*>> = ConcurrentHashMap()
     private val instanceCache: MutableMap<Class<*>, Any> = ConcurrentHashMap()
 
@@ -26,11 +28,11 @@ internal class AndroidObjectPool : ObjectPool {
     }
 
     override fun <T> putCallerFactory(clazz: Class<T>, callerFactory: CallerFactory<T>) {
-        this.callerCacheBuilders.putIfAbsent(clazz, callerFactory)
+        this.callerBuilderCache.putIfAbsent(clazz, callerFactory)
     }
 
     override fun <T> getCaller(clazz: Class<T>, functionCallAdapter: FunctionCallAdapter): T? {
-        return this.callerCacheBuilders[clazz]?.invoke(functionCallAdapter) as? T
+        return this.callerBuilderCache[clazz]?.invoke(functionCallAdapter) as? T
     }
 
     override fun <T> putReceiver(clazz: Class<T>, receiver: InvocationReceiver<T>) {
@@ -74,6 +76,7 @@ internal class AndroidObjectPool : ObjectPool {
             return
         }
         this.putReceiver(clazz, receiverFactory(instance))
+        this.instanceCache[clazz] = instance as Any
     }
 
     override fun <T> putInstanceFactory(clazz: Class<T>, serviceFactory: ServiceFactory<T>) {

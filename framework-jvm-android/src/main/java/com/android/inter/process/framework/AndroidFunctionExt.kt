@@ -12,7 +12,7 @@ import kotlin.coroutines.Continuation
 
 internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
     val connectionProxy = BasicConnectionProxy(androidFunction)
-    val functionCall = AndroidFunctionCallAdapter(basicConnection = connectionProxy)
+    val functionCall = AndroidFunctionCallAdapter(basicConnection = { connectionProxy })
     return (objectPool.getCaller(clazz = this, functionCallAdapter = functionCall)
         ?: this.callerFunction(invocationCaller = InvocationCallerAndroid(functionCallAdapter = functionCall)))
 }

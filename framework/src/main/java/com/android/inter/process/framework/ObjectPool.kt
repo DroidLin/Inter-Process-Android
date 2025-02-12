@@ -6,7 +6,8 @@ import java.lang.reflect.InvocationHandler
 import java.util.ServiceLoader
 
 val objectPool: ObjectPool by lazy {
-    val objectPool = ServiceLoader.load(ObjectPool::class.java).firstOrNull() ?: error("no object pool dependencies exist in project.")
+    val objectPool = ServiceLoader.load(ObjectPool::class.java).firstOrNull()
+        ?: error("no object pool dependencies exist in project.")
     object : ObjectPool by objectPool {}
 }
 

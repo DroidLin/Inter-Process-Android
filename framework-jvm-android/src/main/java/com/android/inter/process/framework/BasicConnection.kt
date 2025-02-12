@@ -136,7 +136,8 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
             val result = kotlin.runCatching {
                 when (request) {
                     is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
-                        val continuation = object : Continuation<Any?> by request.suspendContext.androidBinderFunctionMetadata.function() {
+                        val remoteContinuation = request.suspendContext.androidBinderFunctionMetadata.function<Continuation<Any?>>()
+                        val continuation = object : Continuation<Any?> by remoteContinuation {
                             override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
                         }
                         (this::callSuspend as Function2<AndroidRequest, Continuation<*>, AndroidResponse>)(request, continuation)

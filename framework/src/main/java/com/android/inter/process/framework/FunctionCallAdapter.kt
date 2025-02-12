@@ -14,20 +14,9 @@ fun interface FunctionCallAdapter {
     suspend fun call(request: Request): Any?
 }
 
-fun FunctionCallAdapter(function: suspend () -> FunctionCallAdapter): FunctionCallAdapter {
-    return AutoFunctionCallAdapter(function)
-}
-
 /**
  * blocking call with non-suspend functions
  */
 fun FunctionCallAdapter.syncCall(request: Request): Any? {
     return runBlocking(Dispatchers.Unconfined) { call(request) }
-}
-
-private class AutoFunctionCallAdapter(val tryConnect: suspend () -> FunctionCallAdapter) : FunctionCallAdapter {
-
-    override suspend fun call(request: Request): Any? {
-        return this.tryConnect().call(request)
-    }
 }

@@ -76,6 +76,7 @@ internal interface AIDLFunction : IInterface {
                     if (dataSize > PARCEL_MAX_COUNT_THRESHOLD) {
                         throw ParcelableToLargeException("data count: ${dataSize} reaches max limit.")
                     }
+                    // real call to remote.
                     val status = this.remote.transact(TRANSACTION_CALL, data, reply, 0)
                     reply.readException()
                     if (reply.readInt() != 0) {

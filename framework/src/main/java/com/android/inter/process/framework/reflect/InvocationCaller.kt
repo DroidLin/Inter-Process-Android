@@ -4,6 +4,7 @@ import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.JvmReflectMethodRequest
 import com.android.inter.process.framework.Request
 import com.android.inter.process.framework.objectPool
+import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 import kotlin.coroutines.Continuation
@@ -59,7 +60,7 @@ fun <T> Class<T>.callerFunction(
         this.classLoader,
         arrayOf(this),
         objectPool.tryGetInvocationHandler(this) {
-            DefaultInvocationHandler(invocationCaller)
+            InvocationHandler { obj, method, args -> invocationCaller.invoke(method, args) }
         }
     ) as T
 }

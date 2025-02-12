@@ -4,7 +4,7 @@ package com.android.inter.process.framework
  * @author liuzhongao
  * @since 2024/9/18 16:17
  */
-internal class AndroidFunctionCallAdapter(private val basicConnection: BasicConnection) : FunctionCallAdapter {
+internal class AndroidFunctionCallAdapter(private val basicConnection: suspend () -> BasicConnection) : FunctionCallAdapter {
 
     override suspend fun call(request: Request): Any? {
         return when (request) {
@@ -17,9 +17,9 @@ internal class AndroidFunctionCallAdapter(private val basicConnection: BasicConn
                     uniqueId = request.uniqueId,
                 )
                 if (request.continuation != null) {
-                    this.basicConnection.callSuspend(jvmRequest)
+                    this.basicConnection().callSuspend(jvmRequest)
                 } else {
-                    this.basicConnection.call(jvmRequest)
+                    this.basicConnection().call(jvmRequest)
                 }
             }
 
@@ -32,9 +32,9 @@ internal class AndroidFunctionCallAdapter(private val basicConnection: BasicConn
                     uniqueId = request.functionIdentifier,
                 )
                 if (request.isSuspend) {
-                    this.basicConnection.callSuspend(jvmRequest)
+                    this.basicConnection().callSuspend(jvmRequest)
                 } else {
-                    this.basicConnection.call(jvmRequest)
+                    this.basicConnection().call(jvmRequest)
                 }
             }
 
