@@ -5,6 +5,11 @@ import com.android.inter.process.framework.metadata.ConnectRunningTask
 import kotlinx.coroutines.sync.Mutex
 
 /**
+ * include records of connection task, connected basic-connections
+ * and locks related to different address.
+ *
+ * We need to ensure that only one connection occurs at a time, so we use [Mutex].
+ *
  * @author: liuzhongao
  * @since: 2024/9/17 03:18
  */
