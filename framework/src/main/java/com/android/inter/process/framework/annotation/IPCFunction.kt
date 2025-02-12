@@ -14,7 +14,7 @@ package com.android.inter.process.framework.annotation
  * interface MyInterface {
  *     fun requestInformation(
  *         id: String,
- *         @IPCFunction
+ *         @IPCFunction  // add annotation like this,
  *         callback: Callback
  *     )
  * }
