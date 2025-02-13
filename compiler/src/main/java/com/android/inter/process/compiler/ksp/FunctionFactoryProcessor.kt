@@ -46,7 +46,7 @@ internal fun processCustomFunctionCollector(
         importAppend(requireNotNull(classDeclaration.qualifiedName).asString())
         val annotation = classDeclaration.annotations.find { it.shortName.asString() == IPCServiceFactory::class.java.simpleName }
         if (annotation != null) {
-            val interfaceClazz = annotation.arguments.find { it.name?.asString() == "interfaceClazz" }?.value
+            val interfaceClazz = annotation.arguments.find { it.name?.asString() == IPCServiceFactory::interfaceClazz.name }?.value
             if (interfaceClazz is KSType) {
                 importAppend(requireNotNull(interfaceClazz.declaration.qualifiedName).asString())
             }

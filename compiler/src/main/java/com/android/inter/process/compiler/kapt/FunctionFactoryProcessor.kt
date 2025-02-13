@@ -72,6 +72,8 @@ internal fun processCustomFunctionCollector(
         .apply {
             iPCServiceElements.forEach { typeElement ->
                 appendLine("\t\tObjectPoolKt.getObjectPool().putCallerFactory(${typeElement.simpleName}.class, (adapter) -> { return new ${typeElement.callerFileName}(adapter); });")
+            }
+            iPCServiceElements.forEach { typeElement ->
                 appendLine("\t\tObjectPoolKt.getObjectPool().putReceiverFactory(${typeElement.simpleName}.class, (mInstance) -> { return new ${typeElement.receiverFileName}(mInstance); });")
             }
             iPCServiceFactoryElements.forEach { typeElement ->
