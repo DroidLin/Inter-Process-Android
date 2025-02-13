@@ -8,6 +8,8 @@ import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.ElementKind
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.TypeElement
+import javax.lang.model.type.NoType
+import javax.lang.model.type.PrimitiveType
 
 internal fun processCallerFunction(
     processingEnvironment: ProcessingEnvironment,
@@ -15,12 +17,14 @@ internal fun processCallerFunction(
 ) {
     val iPCServiceElements = environment.getElementsAnnotatedWith(IPCService::class.java)
         .filterIsInstance<TypeElement>()
-
+    if (iPCServiceElements.isEmpty()) {
+        return
+    }
     val classStringList = iPCServiceElements.map(::createCallerForIPCServiceType)
     classStringList.forEachIndexed { index, classString ->
         val packageName = iPCServiceElements[index].packageName ?: return@forEachIndexed
         val className = iPCServiceElements[index].callerFileName
-        processingEnvironment.filer.createSourceFile("${packageName}.${className}")
+        processingEnvironment.filer.createSourceFile("${packageName}.${className}", *iPCServiceElements.toTypedArray())
             .openWriter()
             .use { it.write(classString); it.flush() }
     }
@@ -40,12 +44,25 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
     importOperation(Override::class.java.canonicalName)
     importOperation(FunctionCallAdapter::class.java.canonicalName)
     importOperation(typeElement.qualifiedName.toString())
+    importOperation("com.android.inter.process.framework.FunctionCallAdapterKt")
+    importOperation("com.android.inter.process.framework.JvmMethodRequestKt")
+    importOperation("kotlin.collections.CollectionsKt")
 
     typeElement.enclosedElements.forEach { element ->
         if (element is ExecutableElement) {
-            importOperation(element.returnType.fullName)
+            val returnType = element.returnType
+            if (returnType.isValidForFullName) {
+                importOperation(returnType.fullName)
+            }
             element.parameters.forEach { variableElement ->
-                importOperation(variableElement.asType().fullName)
+                val variableType = variableElement.asType()
+                if (variableType.isValidForFullName) {
+                    importOperation(variableType.fullName)
+                }
+            }
+            element.annotationMirrors.forEach { annotationMirror ->
+                val annotationType = annotationMirror.annotationType
+                importOperation(annotationType.fullName)
             }
         }
     }
@@ -55,6 +72,7 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
         .appendLine("package ${typeElement.packageName};")
         .appendLine()
         .apply {
+            importLines.sort()
             importLines.forEach { importLine ->
                 appendLine("import ${importLine};")
             }
@@ -63,7 +81,7 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
         .appendLine("public final class ${typeElement.callerFileName} implements ${typeElement.simpleName} {")
         .appendLine()
         .appendLine("\t@${NotNull::class.java.simpleName}")
-        .appendLine("\tpublic final ${FunctionCallAdapter::class.java.simpleName} mTransformer;")
+        .appendLine("\tprivate final ${FunctionCallAdapter::class.java.simpleName} mTransformer;")
         .appendLine()
         .appendLine("\tpublic ${typeElement.callerFileName}(@${NotNull::class.java.simpleName} ${FunctionCallAdapter::class.java.simpleName} mTransformer) {")
         .appendLine("\t\tthis.mTransformer = mTransformer;")
@@ -74,10 +92,47 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
             for (element in memberElements) {
                 when (element) {
                     is ExecutableElement -> {
+                        appendLine("\t// ${element.returnType}")
+                        appendLine("\t// ${element.receiverType}")
+                        appendLine("\t// ${element.annotationMirrors.joinToString { it.annotationType.toString() }}")
+                        val parameters = element.parameters.joinToString { variableElement ->
+                            appendLine("\t// ${variableElement.asType()}")
+                            "${variableElement.asType().simpleName} ${variableElement.simpleName}"
+                        }
+                        // function annotations
+                        element.annotationMirrors.forEach { annotationMirror ->
+                            appendLine("\t@${annotationMirror.annotationType.simpleName}")
+                        }
                         appendLine("\t@${Override::class.java.simpleName}")
-                            .appendLine("\tpublic final ${element.returnType.simpleName} ${element.simpleName}(${element.parameters.joinToString { "${it.asType().simpleName} ${it.simpleName}" } }) {")
-                            .appendLine("\t}")
-                            .appendLine()
+
+                        val isReturnValueExist = element.returnType !is NoType
+                        val isSuspendExecutable = element.isSuspendExecutable
+
+                        // function body
+                        appendLine("\tpublic final ${element.returnType.simpleName} ${element.simpleName}(${parameters}) {")
+                        if (isSuspendExecutable) {
+                            appendLine("\t\t${if (isReturnValueExist) "return (${element.returnType.simpleName}) " else ""}this.mTransformer.call(")
+                            appendLine("\t\t\tJvmMethodRequestKt.request(")
+                            appendLine("\t\t\t\t${typeElement.simpleName}.class,")
+                            appendLine("\t\t\t\t\"${element.identifier}\",")
+                            appendLine("\t\t\t\tCollectionsKt.listOf(${element.parameterNoContinuation.joinToString { it.simpleName }}),")
+                            appendLine("\t\t\t\t${isSuspendExecutable}")
+                            appendLine("\t\t\t),")
+                            appendLine("\t\t\t${requireNotNull(element.continuationVariable).simpleName}")
+                            appendLine("\t\t);")
+                        } else {
+                            appendLine("\t\t${if (isReturnValueExist) "return (${element.returnType.simpleName}) " else ""}FunctionCallAdapterKt.syncCall(")
+                            appendLine("\t\t\tthis.mTransformer,")
+                            appendLine("\t\t\tJvmMethodRequestKt.request(")
+                            appendLine("\t\t\t\t${typeElement.simpleName}.class,")
+                            appendLine("\t\t\t\t\"${element.identifier}\",")
+                            appendLine("\t\t\t\tCollectionsKt.listOf(${element.parameters.joinToString { it.simpleName }}),")
+                            appendLine("\t\t\t\t${isSuspendExecutable}")
+                            appendLine("\t\t\t)")
+                            appendLine("\t\t);")
+                        }
+                        appendLine("\t}")
+                        appendLine()
                     }
                 }
             }

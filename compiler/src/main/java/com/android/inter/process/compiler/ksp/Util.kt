@@ -118,9 +118,6 @@ internal val KSClassDeclaration.receiverClassName: String
 internal val KSClassDeclaration.receiverFileName: String
     get() = "${simpleName.asString()}Receiver"
 
-internal val GeneratedPackageName: String
-    get() = "com.android.inter.process.generated"
-
 internal fun StringBuilder.import(className: String): StringBuilder = apply {
     append("import").append(' ').appendLine(className)
 }

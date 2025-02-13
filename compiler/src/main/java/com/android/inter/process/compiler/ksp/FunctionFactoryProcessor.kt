@@ -1,5 +1,6 @@
 package com.android.inter.process.compiler.ksp
 
+import com.android.inter.process.compiler.utils.GeneratedPackageName
 import com.android.inter.process.compiler.utils.RandomHash
 import com.android.inter.process.framework.ObjectPool
 import com.android.inter.process.framework.annotation.IPCService
