@@ -11,7 +11,7 @@ import kotlin.coroutines.Continuation
  * @author liuzhongao
  * @since 2024/9/18 17:04
  */
-data class JvmReflectMethodRequest(
+data class JvmReflectMethodRequest internal constructor(
     val declaredClassFullName: String,
     /**
      * name of calling method.
@@ -37,4 +37,22 @@ data class JvmReflectMethodRequest(
     companion object {
         private const val serialVersionUID: Long = 4029814239749099528L
     }
+}
+
+fun reflectRequest(
+    declaredClassFullName: String,
+    methodName: String,
+    methodParameterTypeFullNames: List<String>,
+    methodParameterValues: List<Any?>,
+    uniqueId: String,
+    continuation: Continuation<Any?>? = null
+): Request {
+    return JvmReflectMethodRequest(
+        declaredClassFullName = declaredClassFullName,
+        methodName = methodName,
+        methodParameterTypeFullNames = methodParameterTypeFullNames,
+        methodParameterValues = methodParameterValues,
+        uniqueId = uniqueId,
+        continuation = continuation,
+    )
 }

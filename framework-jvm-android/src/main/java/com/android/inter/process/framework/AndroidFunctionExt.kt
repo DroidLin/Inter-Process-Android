@@ -2,17 +2,14 @@ package com.android.inter.process.framework
 
 import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.address.AndroidAddress.Companion.toParcelableAddress
-import com.android.inter.process.framework.metadata.function
 import com.android.inter.process.framework.reflect.InvocationCallerAndroid
-import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
 import com.android.inter.process.framework.reflect.InvocationReceiverAndroid
 import com.android.inter.process.framework.reflect.callerFunction
-import kotlin.coroutines.Continuation
 
 internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
     val connectionProxy = BasicConnectionProxy(androidFunction)
-    val functionCall = AndroidFunctionCallAdapter(basicConnection = { connectionProxy })
+    val functionCall = AndroidFunctionCallAdapter(basicConnectionGetter = { connectionProxy })
     return (objectPool.getCaller(clazz = this, functionCallAdapter = functionCall)
         ?: this.callerFunction(invocationCaller = InvocationCallerAndroid(functionCallAdapter = functionCall)))
 }

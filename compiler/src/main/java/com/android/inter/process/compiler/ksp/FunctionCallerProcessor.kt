@@ -57,14 +57,14 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
             }
             addImport(ksPropertyDeclaration.type.qualifiedName)
             addImport("com.android.inter.process.framework.syncCall")
-            addImport(JvmMethodRequest::class.java.name)
+            addImport("com.android.inter.process.framework.request")
             val bodyDeclarationBuilder = StringBuilder()
             bodyDeclarationBuilder.appendLine("\toverride ${if (ksPropertyDeclaration.isMutable) "var" else "val"} ${if (ksPropertyDeclaration.extensionReceiver != null) "${requireNotNull(ksPropertyDeclaration.extensionReceiver).simpleName}." else ""}${ksPropertyDeclaration.simpleName.asString()}: ${ksPropertyDeclaration.type.simpleName}")
             if (ksPropertyDeclaration.isMutable) {
                 bodyDeclarationBuilder
                     .appendLine("\t\tset(value) {")
                     .appendLine("\t\t\tthis@${classDeclaration.simpleName.asString()}Caller.transformer.syncCall(")
-                    .appendLine("\t\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
+                    .appendLine("\t\t\t\trequest = request(")
                     .appendLine("\t\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                     .appendLine("\t\t\t\t\tfunctionIdentifier = \"${ksPropertyDeclaration.identifier(isSetter = true)}\",")
                     .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this, " } ?: ""}value),")
@@ -76,7 +76,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
             bodyDeclarationBuilder
                 .appendLine("\t\tget() {")
                 .appendLine("\t\t\treturn this@${classDeclaration.simpleName.asString()}Caller.transformer.syncCall(")
-                .appendLine("\t\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
+                .appendLine("\t\t\t\trequest = request(")
                 .appendLine("\t\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\t\tfunctionIdentifier = \"${ksPropertyDeclaration.identifier(isGetter = true)}\",")
                 .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this" } ?: ""}),")
@@ -113,7 +113,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
             bodyDeclarationBuilder
                 .appendLine("\toverride${if (ksFunctionDeclaration.isSuspend) " suspend" else ""} fun ${ksFunctionDeclaration.functionTypeParameters}${ksFunctionDeclaration.extensionReceiverDeclaration}${ksFunctionDeclaration.simpleName.asString()}${ksFunctionDeclaration.parameters.joinToString(separator = ", ", prefix = "(", postfix = ")") { valueParameter -> addImport(valueParameter.type.qualifiedName);"${requireNotNull(valueParameter.name).asString()}: ${valueParameter.type.simpleName}" }}${ksFunctionDeclaration.returnType?.let { ": ${it.simpleName}" } ?: ""} {")
                 .appendLine("\t\t${ksFunctionDeclaration.filterReturnType?.let { "return " } ?: ""}this@${classDeclaration.simpleName.asString()}Caller.transformer.${if (ksFunctionDeclaration.isSuspend) "call" else "syncCall"}(")
-                .appendLine("\t\t\trequest = ${JvmMethodRequest::class.java.simpleName}(")
+                .appendLine("\t\t\trequest = request(")
                 .appendLine("\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\tfunctionIdentifier = \"${ksFunctionDeclaration.identifier}\",")
                 .appendLine("\t\t\t\tfunctionParameters = listOf(${ksFunctionDeclaration.extensionReceiver?.let { "this, " } ?: ""}${parameters}),")

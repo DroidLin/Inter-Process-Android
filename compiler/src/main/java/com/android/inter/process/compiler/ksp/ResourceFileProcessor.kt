@@ -10,7 +10,7 @@ import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSFile
 
-fun resourceFileProcessor(
+internal fun resourceFileProcessor(
     collectorResourceList: List<String>,
     resolver: Resolver,
     codeGenerator: CodeGenerator

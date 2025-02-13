@@ -1,5 +1,6 @@
-package com.android.inter.process.compiler.ksp
+package com.android.inter.process.compiler.services
 
+import com.android.inter.process.compiler.ksp.startSymbolProcessor
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment

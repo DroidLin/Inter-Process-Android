@@ -4,9 +4,10 @@ package com.android.inter.process.framework
  * @author liuzhongao
  * @since 2024/9/18 16:17
  */
-internal class AndroidFunctionCallAdapter(private val basicConnection: suspend () -> BasicConnection) : FunctionCallAdapter {
+internal class AndroidFunctionCallAdapter(private val basicConnectionGetter: suspend () -> BasicConnection) : FunctionCallAdapter {
 
     override suspend fun call(request: Request): Any? {
+        val basicConnection = this.basicConnectionGetter()
         return when (request) {
             is JvmReflectMethodRequest -> {
                 val jvmRequest = AndroidJvmMethodRequest(
@@ -17,9 +18,9 @@ internal class AndroidFunctionCallAdapter(private val basicConnection: suspend (
                     uniqueId = request.uniqueId,
                 )
                 if (request.continuation != null) {
-                    this.basicConnection().callSuspend(jvmRequest)
+                    basicConnection.callSuspend(jvmRequest)
                 } else {
-                    this.basicConnection().call(jvmRequest)
+                    basicConnection.call(jvmRequest)
                 }
             }
 
@@ -32,13 +33,13 @@ internal class AndroidFunctionCallAdapter(private val basicConnection: suspend (
                     uniqueId = request.functionIdentifier,
                 )
                 if (request.isSuspend) {
-                    this.basicConnection().callSuspend(jvmRequest)
+                    basicConnection.callSuspend(jvmRequest)
                 } else {
-                    this.basicConnection().call(jvmRequest)
+                    basicConnection.call(jvmRequest)
                 }
             }
 
-            else -> null
+            else -> throw IllegalArgumentException("Unsupported request type: ${request.javaClass.name}.")
         }
     }
 }

@@ -30,3 +30,17 @@ data class JvmMethodRequest(
         private const val serialVersionUID: Long = -5077850849886473899L
     }
 }
+
+fun request(
+    clazz: Class<*>,
+    functionIdentifier: String,
+    functionParameters: List<Any?>,
+    isSuspend: Boolean
+): Request {
+    return JvmMethodRequest(
+        clazz = clazz,
+        functionIdentifier = functionIdentifier,
+        functionParameters = functionParameters,
+        isSuspend = isSuspend,
+    )
+}
