@@ -26,7 +26,7 @@ class KotlinAnnotationProcessor : AbstractProcessor() {
     }
 
     override fun process(p0: MutableSet<out TypeElement>?, p1: RoundEnvironment): Boolean {
-        startProcessor(p1)
+        startProcessor(this.processingEnv, p1)
         return false
     }
 }

@@ -3,7 +3,8 @@ import org.jetbrains.kotlin.gradle.internal.Kapt3GradleSubplugin.Companion.isInc
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.google.devtools.ksp")
+//    id("com.google.devtools.ksp")
+    id("kotlin-kapt")
 }
 
 android {
@@ -43,7 +44,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.7"
     }
     packaging {
         resources {
@@ -56,9 +57,6 @@ android {
             sourceSet.kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}${sourceSet.name}${File.separator}resources")
         }
     }
-}
-
-ksp {
 }
 
 dependencies {
@@ -80,5 +78,6 @@ dependencies {
 
     implementation(project(":framework"))
     implementation(project(":framework-jvm-android"))
-    ksp(project(":compiler"))
+//    ksp(project(":compiler"))
+    kapt(project(":compiler"))
 }
