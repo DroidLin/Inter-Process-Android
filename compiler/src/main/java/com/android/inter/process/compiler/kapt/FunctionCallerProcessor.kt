@@ -1,5 +1,6 @@
 package com.android.inter.process.compiler.kapt
 
+import com.android.inter.process.compiler.exceptions.IllegalDeclarationException
 import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.annotation.IPCFunction
 import com.android.inter.process.framework.annotation.IPCService
@@ -98,6 +99,9 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
             for (element in memberElements) {
                 when (element) {
                     is ExecutableElement -> {
+                        if (element.typeParameters.isNotEmpty()) {
+                            throw IllegalDeclarationException("type parameters declared in function ${element.simpleName} is not allowed!!!")
+                        }
                         appendLine("\t// ${element.returnType}")
                         appendLine("\t// ${element.receiverType}")
                         appendLine("\t// ${element.annotationMirrors.joinToString { it.annotationType.toString() }}")
