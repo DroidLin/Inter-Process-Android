@@ -87,36 +87,45 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
     }
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
+        checkParameters(request)
         return this.function.call(request).dataOrThrow
     }
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
+        checkParameters(request)
         return suspendCoroutineUninterceptedOrReturn { continuation ->
-            val newRequest = request.copy(
-                suspendContext = SuspendContext(
-                    androidBinderFunctionMetadata = newBinderFunctionMetadata(
-                        clazz = Continuation::class.java,
-                        androidFunction = Continuation::class.java.receiverAndroidFunction(SafeContinuation(continuation))
-                    )
-                )
-            )
             var deathListener: AndroidFunction.DeathListener? = null
             var data: Any? = null
             try {
-                val isSuspendFunction = request.suspendContext != null
-                if (isSuspendFunction) {
-                    deathListener = object : AndroidFunction.DeathListener {
-                        override fun onDead() {
-                            function.removeDeathListener(this)
-                            continuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
-                        }
+                // resume suspended function if remote binder is dead.
+                deathListener = object : AndroidFunction.DeathListener {
+                    override fun onDead() {
+                        function.removeDeathListener(this)
+                        continuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
                     }
-                    function.addDeathListener(deathListener)
                 }
+                function.addDeathListener(deathListener)
 
+                val newContinuation = object : Continuation<AndroidResponse> by continuation {
+                    override fun resumeWith(result: Result<AndroidResponse>) {
+                        // if the function is really suspended, we need to remove death listener
+                        // after the suspended function is resumed.
+                        function.removeDeathListener(deathListener)
+                        continuation.resumeWith(result)
+                    }
+                }
+                val newRequest = request.copy(
+                    suspendContext = SuspendContext(
+                        androidBinderFunctionMetadata = newBinderFunctionMetadata(
+                            clazz = Continuation::class.java,
+                            androidFunction = Continuation::class.java.receiverAndroidFunction(newContinuation)
+                        )
+                    )
+                )
                 // call remote
                 data = function.call(newRequest).dataOrThrow
             }finally {
+                // we have to remove death listener if function is not suspended.
                 if (deathListener != null && data != COROUTINE_SUSPENDED) {
                     function.removeDeathListener(deathListener)
                 }

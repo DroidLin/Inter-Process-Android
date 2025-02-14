@@ -1,6 +1,7 @@
 package com.android.inter.process.compiler.kapt
 
 import com.android.inter.process.framework.FunctionCallAdapter
+import com.android.inter.process.framework.annotation.IPCFunction
 import com.android.inter.process.framework.annotation.IPCService
 import org.jetbrains.annotations.NotNull
 import javax.annotation.processing.ProcessingEnvironment
@@ -9,7 +10,6 @@ import javax.lang.model.element.ElementKind
 import javax.lang.model.element.ExecutableElement
 import javax.lang.model.element.TypeElement
 import javax.lang.model.type.NoType
-import javax.lang.model.type.PrimitiveType
 
 internal fun processCallerFunction(
     processingEnvironment: ProcessingEnvironment,
@@ -47,6 +47,7 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
     importOperation("com.android.inter.process.framework.FunctionCallAdapterKt")
     importOperation("com.android.inter.process.framework.JvmMethodRequestKt")
     importOperation("kotlin.collections.CollectionsKt")
+    importOperation("com.android.inter.process.framework.metadata.AndroidBinderFunctionMetadataKt")
 
     typeElement.enclosedElements.forEach { element ->
         if (element is ExecutableElement) {
@@ -58,6 +59,11 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
                 val variableType = variableElement.asType()
                 if (variableType.isValidForFullName) {
                     importOperation(variableType.fullName)
+                }
+                variableElement.annotationMirrors.forEach { annotationMirror ->
+                    if (annotationMirror.annotationType.isValidForFullName) {
+                        importOperation(annotationMirror.annotationType.fullName)
+                    }
                 }
             }
             element.annotationMirrors.forEach { annotationMirror ->
@@ -97,7 +103,14 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
                         appendLine("\t// ${element.annotationMirrors.joinToString { it.annotationType.toString() }}")
                         val parameters = element.parameters.joinToString { variableElement ->
                             appendLine("\t// ${variableElement.asType()}")
-                            "${variableElement.asType().simpleName} ${variableElement.simpleName}"
+                            val variableAnnotations = variableElement.annotationMirrors.joinToString(separator = " ") { annotationMirror ->
+                                "@${annotationMirror.annotationType.simpleName}"
+                            }
+                            if (variableAnnotations.isNotEmpty()) {
+                                "$variableAnnotations ${variableElement.asType().simpleName} ${variableElement.simpleName}"
+                            } else {
+                                "${variableElement.asType().simpleName} ${variableElement.simpleName}"
+                            }
                         }
                         // function annotations
                         element.annotationMirrors.forEach { annotationMirror ->
@@ -111,22 +124,38 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
                         // function body
                         appendLine("\tpublic final ${element.returnType.simpleName} ${element.simpleName}(${parameters}) {")
                         if (isSuspendExecutable) {
+                            val parametersString = element.parameterNoContinuation.joinToString { variableElement ->
+                                val iPCFunctionMirror = variableElement.annotationMirrors.find { it.annotationType.isValidForFullName && it.annotationType.simpleName == IPCFunction::class.java.simpleName }
+                                if (iPCFunctionMirror != null) {
+                                    "AndroidBinderFunctionMetadataKt.newBinderFunctionMetadata(${variableElement.asType().simpleName}.class, ${variableElement.simpleName})"
+                                } else {
+                                    variableElement.simpleName
+                                }
+                            }
                             appendLine("\t\t${if (isReturnValueExist) "return (${element.returnType.simpleName}) " else ""}this.mTransformer.call(")
                             appendLine("\t\t\tJvmMethodRequestKt.request(")
                             appendLine("\t\t\t\t${typeElement.simpleName}.class,")
                             appendLine("\t\t\t\t\"${element.identifier}\",")
-                            appendLine("\t\t\t\tCollectionsKt.listOf(${element.parameterNoContinuation.joinToString { it.simpleName }}),")
+                            appendLine("\t\t\t\tCollectionsKt.listOf(${parametersString}),")
                             appendLine("\t\t\t\t${isSuspendExecutable}")
                             appendLine("\t\t\t),")
                             appendLine("\t\t\t${requireNotNull(element.continuationVariable).simpleName}")
                             appendLine("\t\t);")
                         } else {
+                            val parametersString = element.parameters.joinToString { variableElement ->
+                                val iPCFunctionMirror = variableElement.annotationMirrors.find { it.annotationType.isValidForFullName && it.annotationType.simpleName == IPCFunction::class.java.simpleName }
+                                if (iPCFunctionMirror != null) {
+                                    "AndroidBinderFunctionMetadataKt.newBinderFunctionMetadata(${variableElement.asType().simpleName}.class, ${variableElement.simpleName})"
+                                } else {
+                                    variableElement.simpleName
+                                }
+                            }
                             appendLine("\t\t${if (isReturnValueExist) "return (${element.returnType.simpleName}) " else ""}FunctionCallAdapterKt.syncCall(")
                             appendLine("\t\t\tthis.mTransformer,")
                             appendLine("\t\t\tJvmMethodRequestKt.request(")
                             appendLine("\t\t\t\t${typeElement.simpleName}.class,")
                             appendLine("\t\t\t\t\"${element.identifier}\",")
-                            appendLine("\t\t\t\tCollectionsKt.listOf(${element.parameters.joinToString { it.simpleName }}),")
+                            appendLine("\t\t\t\tCollectionsKt.listOf(${parametersString}),")
                             appendLine("\t\t\t\t${isSuspendExecutable}")
                             appendLine("\t\t\t)")
                             appendLine("\t\t);")

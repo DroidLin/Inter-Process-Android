@@ -19,5 +19,4 @@ kotlin {
 dependencies {
     implementation(project(":framework"))
     implementation(libs.ksp.compiler)
-    implementation("com.squareup:javapoet:1.7.0")
 }

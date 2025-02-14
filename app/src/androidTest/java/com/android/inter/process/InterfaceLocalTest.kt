@@ -17,6 +17,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 
+/**
+ * test local implementation for current process.
+ */
 @RunWith(AndroidJUnit4::class)
 class InterfaceLocalTest {
 
@@ -152,10 +155,8 @@ class InterfaceLocalTest {
         val file = File(appContext.cacheDir, "tmp.txt")
         file.bufferedWriter().use { it.write(tmpContent); it.flush() }
         val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-        try {
-            assert(tmpContent == interfaceService.run { fileDescriptor.content() })
-        } finally {
-            fileDescriptor.close()
+        fileDescriptor.use { descriptor ->
+            assert(tmpContent == interfaceService.run { descriptor.content() })
         }
     }
 
@@ -226,7 +227,7 @@ class InterfaceLocalTest {
     fun noReturnThreeValueCallback() {
         assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnThreeValueCallback { number, str, serializableMetadata ->
-            println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}.")
+            println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}.")
         }
     }
 
@@ -234,7 +235,7 @@ class InterfaceLocalTest {
     fun noReturnFourValueCallback() {
         assert(interfaceService is InterfaceGeneratorServiceImplementation)
         interfaceService.noReturnFourValueCallback { number, str, serializableMetadata, parcelableMetadata ->
-            println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
+            println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
         }
     }
 
@@ -376,7 +377,7 @@ class InterfaceLocalTest {
         assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnThreeValueCallback { number, str, serializableMetadata ->
-                println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}.")
+                println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}.")
             }
         }
     }
@@ -386,7 +387,7 @@ class InterfaceLocalTest {
         assert(interfaceService is InterfaceGeneratorServiceImplementation)
         runBlocking {
             interfaceService.suspendNoReturnFourValueCallback { number, str, serializableMetadata, parcelableMetadata ->
-                println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
+                println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
             }
         }
     }

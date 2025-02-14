@@ -1,5 +1,6 @@
 package com.android.inter.process.compiler.kapt
 
+import com.android.inter.process.framework.annotation.IPCFunction
 import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
@@ -50,6 +51,8 @@ private fun createReceiverForIPCServiceType(typeElement: TypeElement): String {
     importOperation(InvocationParameter::class.java.canonicalName)
     importOperation(typeElement.qualifiedName.toString())
     importOperation(Continuation::class.java.canonicalName)
+    importOperation("com.android.inter.process.framework.metadata.AndroidBinderFunctionMetadata")
+    importOperation("com.android.inter.process.framework.metadata.AndroidBinderFunctionMetadataExtensionsKt")
 
     typeElement.enclosedElements.forEach { element ->
         if (element is ExecutableElement) {
@@ -65,7 +68,9 @@ private fun createReceiverForIPCServiceType(typeElement: TypeElement): String {
             }
             element.annotationMirrors.forEach { annotationMirror ->
                 val annotationType = annotationMirror.annotationType
-                importOperation(annotationType.fullName)
+                if (annotationType.isValidForFullName) {
+                    importOperation(annotationType.fullName)
+                }
             }
         }
     }
@@ -108,7 +113,12 @@ private fun createReceiverForIPCServiceType(typeElement: TypeElement): String {
                                 if (index != 0) {
                                     parameters.append(", ")
                                 }
-                                parameters.append("(${variableElement.asType().simpleName}) params.get(${index})")
+                                val iPCFunctionAnnotationMirror = variableElement.annotationMirrors.find { it.annotationType.isValidForFullName && it.annotationType.simpleName == IPCFunction::class.java.simpleName }
+                                if (iPCFunctionAnnotationMirror != null) {
+                                    parameters.append("(${variableElement.asType().simpleName}) AndroidBinderFunctionMetadataExtensionsKt.function((AndroidBinderFunctionMetadata) params.get(${index}))")
+                                } else {
+                                    parameters.append("(${variableElement.asType().simpleName}) params.get(${index})")
+                                }
                             }
                             appendLine("\t\t\tcase \"${element.identifier}\":")
                             if (isReturnValueExist) {
@@ -145,7 +155,12 @@ private fun createReceiverForIPCServiceType(typeElement: TypeElement): String {
                                 if (index != 0) {
                                     parameters.append(", ")
                                 }
-                                parameters.append("(${variableElement.asType().simpleName}) params.get(${index})")
+                                val iPCFunctionAnnotationMirror = variableElement.annotationMirrors.find { it.annotationType.isValidForFullName && it.annotationType.simpleName == IPCFunction::class.java.simpleName }
+                                if (iPCFunctionAnnotationMirror != null) {
+                                    parameters.append("(${variableElement.asType().simpleName}) AndroidBinderFunctionMetadataExtensionsKt.function((AndroidBinderFunctionMetadata) params.get(${index}))")
+                                } else {
+                                    parameters.append("(${variableElement.asType().simpleName}) params.get(${index})")
+                                }
                             }
                             appendLine("\t\t\tcase \"${element.identifier}\":")
                             if (isReturnValueExist) {

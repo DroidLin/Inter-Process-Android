@@ -135,10 +135,8 @@ class InterfaceGeneratorContentProviderTest {
         val file = File(appContext.cacheDir, "tmp.txt")
         file.bufferedWriter().use { it.write(tmpContent); it.flush() }
         val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-        try {
-            assert(tmpContent == interfaceService.run { fileDescriptor.content() })
-        } finally {
-            fileDescriptor.close()
+        fileDescriptor.use { descriptor ->
+            assert(tmpContent == interfaceService.run { descriptor.content() })
         }
     }
 
@@ -200,14 +198,14 @@ class InterfaceGeneratorContentProviderTest {
     @Test
     fun noReturnThreeValueCallback() {
         interfaceService.noReturnThreeValueCallback { number, str, serializableMetadata ->
-            println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}.")
+            println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}.")
         }
     }
 
     @Test
     fun noReturnFourValueCallback() {
         interfaceService.noReturnFourValueCallback { number, str, serializableMetadata, parcelableMetadata ->
-            println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
+            println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
         }
     }
 
@@ -334,7 +332,7 @@ class InterfaceGeneratorContentProviderTest {
     fun suspendNoReturnThreeValueCallback() {
         runBlocking {
             interfaceService.suspendNoReturnThreeValueCallback { number, str, serializableMetadata ->
-                println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}.")
+                println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}.")
             }
         }
     }
@@ -343,7 +341,7 @@ class InterfaceGeneratorContentProviderTest {
     fun suspendNoReturnFourValueCallback() {
         runBlocking {
             interfaceService.suspendNoReturnFourValueCallback { number, str, serializableMetadata, parcelableMetadata ->
-                println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
+                println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
             }
         }
     }

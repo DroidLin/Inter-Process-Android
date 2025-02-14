@@ -16,15 +16,18 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
 
+/**
+ * test remote process with reflections.
+ */
 @RunWith(AndroidJUnit4::class)
 class InterfaceReflectTest {
 
     private var interfaceServiceCache: InterfaceReflectionService? = null
 
-    val appContext: Context
+    private val appContext: Context
         get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    val remoteProcessAddress: Address
+    private val remoteProcessAddress: Address
         get() {
             return broadcast(
                 context = appContext,
@@ -32,7 +35,7 @@ class InterfaceReflectTest {
             )
         }
 
-    val interfaceService: InterfaceReflectionService
+    private val interfaceService: InterfaceReflectionService
         get() {
             if (this.interfaceServiceCache == null) {
                 this.interfaceServiceCache = IPCProvider.on(remoteProcessAddress)
@@ -135,10 +138,8 @@ class InterfaceReflectTest {
         val file = File(appContext.cacheDir, "tmp.txt")
         file.bufferedWriter().use { it.write(tmpContent); it.flush() }
         val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-        try {
-            assert(tmpContent == interfaceService.run { fileDescriptor.content() })
-        } finally {
-            fileDescriptor.close()
+        fileDescriptor.use { descriptor ->
+            assert(tmpContent == interfaceService.run { descriptor.content() })
         }
     }
 
@@ -200,14 +201,14 @@ class InterfaceReflectTest {
     @Test
     fun noReturnThreeValueCallback() {
         interfaceService.noReturnThreeValueCallback { number, str, serializableMetadata ->
-            println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}.")
+            println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}.")
         }
     }
 
     @Test
     fun noReturnFourValueCallback() {
         interfaceService.noReturnFourValueCallback { number, str, serializableMetadata, parcelableMetadata ->
-            println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
+            println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
         }
     }
 
@@ -334,7 +335,7 @@ class InterfaceReflectTest {
     fun suspendNoReturnThreeValueCallback() {
         runBlocking {
             interfaceService.suspendNoReturnThreeValueCallback { number, str, serializableMetadata ->
-                println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}.")
+                println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}.")
             }
         }
     }
@@ -343,7 +344,7 @@ class InterfaceReflectTest {
     fun suspendNoReturnFourValueCallback() {
         runBlocking {
             interfaceService.suspendNoReturnFourValueCallback { number, str, serializableMetadata, parcelableMetadata ->
-                println("noReturnNoValueCallback, number: ${number}, str: ${number}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
+                println("noReturnNoValueCallback, number: ${number}, str: ${str}, serializableMetadata: ${serializableMetadata}, parcelableMetadata: ${parcelableMetadata}.")
             }
         }
     }
