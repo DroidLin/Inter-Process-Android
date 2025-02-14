@@ -27,6 +27,7 @@ interface ApplicationInfo {
     suspend fun String.emptyFunction(@IPCFunction callback: Callback)
 
     fun emptyCallbackFunction(@IPCFunction callback: Callback)
+    fun emptyCallbackFunction1(@IPCFunction callback: Callback)
 
     fun String.emptyCallbackFunction(@IPCFunction callback: Callback)
 

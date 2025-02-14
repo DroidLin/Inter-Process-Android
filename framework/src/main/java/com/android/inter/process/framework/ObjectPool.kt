@@ -21,11 +21,6 @@ typealias ReceiverFactory<T> = (T) -> InvocationReceiver<T>
  */
 interface ObjectPool {
 
-    fun tryGetInvocationHandler(
-        clazz: Class<*>,
-        factory: () -> InvocationHandler
-    ): InvocationHandler
-
     fun <T> putCallerFactory(clazz: Class<T>, callerFactory: CallerFactory<T>)
 
     fun <T> getCaller(clazz: Class<T>, functionCallAdapter: FunctionCallAdapter): T?

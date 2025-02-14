@@ -7,8 +7,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 internal class AndroidObjectPool : ObjectPool {
 
-    private val invocationHandlerCache: MutableMap<Class<*>, InvocationHandler> = ConcurrentHashMap()
-
     private val callerBuilderCache: MutableMap<Class<*>, CallerFactory<Any?>> = ConcurrentHashMap()
     private val receiverBuilderCache: MutableMap<Class<*>, ReceiverFactory<Any>> = ConcurrentHashMap()
 
@@ -16,16 +14,6 @@ internal class AndroidObjectPool : ObjectPool {
 
     private val instanceFactoryCache: MutableMap<Class<*>, ServiceFactory<*>> = ConcurrentHashMap()
     private val instanceCache: MutableMap<Class<*>, Any> = ConcurrentHashMap()
-
-    override fun tryGetInvocationHandler(
-        clazz: Class<*>,
-        factory: () -> InvocationHandler
-    ): InvocationHandler {
-        if (this.invocationHandlerCache[clazz] == null) {
-            return factory()
-        }
-        return requireNotNull(this.invocationHandlerCache[clazz])
-    }
 
     override fun <T> putCallerFactory(clazz: Class<T>, callerFactory: CallerFactory<T>) {
         this.callerBuilderCache.putIfAbsent(clazz, callerFactory)

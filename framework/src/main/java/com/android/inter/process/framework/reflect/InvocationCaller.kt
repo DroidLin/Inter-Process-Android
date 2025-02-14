@@ -58,9 +58,6 @@ fun <T> Class<T>.callerFunction(
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
     return Proxy.newProxyInstance(
         this.classLoader,
-        arrayOf(this),
-        objectPool.tryGetInvocationHandler(this) {
-            InvocationHandler { obj, method, args -> invocationCaller.invoke(method, args) }
-        }
-    ) as T
+        arrayOf(this)
+    ) { obj, method, args -> invocationCaller.invoke(method, args) } as T
 }

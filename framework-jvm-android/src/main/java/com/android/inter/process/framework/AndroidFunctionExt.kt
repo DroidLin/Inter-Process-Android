@@ -20,10 +20,11 @@ internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction
 internal fun <T> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
     val parcelableAddress = (IPCManager.currentAddress as AndroidAddress).toParcelableAddress()
+    val invocationReceiver = InvocationReceiverAndroid(instance = instance) as InvocationReceiver<Any>
     return BasicConnectionStub(
         basicConnection = BasicConnection(
             sourceAddress = parcelableAddress,
-            receiverFactory = { InvocationReceiverAndroid(instance = instance) as InvocationReceiver<Any> }
+            receiverFactory = { invocationReceiver }
         )
     ).binderFunction
 //    return AndroidFunctionStub(

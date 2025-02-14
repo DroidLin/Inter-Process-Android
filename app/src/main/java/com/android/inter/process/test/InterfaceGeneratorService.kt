@@ -7,6 +7,8 @@ import com.android.inter.process.framework.annotation.IPCService
 import com.android.inter.process.framework.annotation.IPCServiceFactory
 import com.android.inter.process.test.metadata.ParcelableMetadata
 import com.android.inter.process.test.metadata.SerializableMetadata
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.FileInputStream
 
 @IPCService
@@ -233,22 +235,32 @@ class InterfaceGeneratorServiceImplementation : InterfaceGeneratorService {
     }
 
     override suspend fun suspendNoReturnNoValueCallback(callback: () -> Unit) {
-        callback()
+        withContext(Dispatchers.IO) {
+            callback()
+        }
     }
 
     override suspend fun suspendNoReturnOneValueCallback(callback: (number: Int) -> Unit) {
-        callback(100)
+        withContext(Dispatchers.IO) {
+            callback(100)
+        }
     }
 
     override suspend fun suspendNoReturnTwoValueCallback(callback: (number: Int, str: String) -> Unit) {
-        callback(100, "hello world!")
+        withContext(Dispatchers.IO) {
+            callback(100, "hello world!")
+        }
     }
 
     override suspend fun suspendNoReturnThreeValueCallback(callback: (number: Int, str: String, serializableMetadata: SerializableMetadata) -> Unit) {
-        callback(100, "hello world!", SerializableMetadata("hahahha", 10232L, 100))
+        withContext(Dispatchers.IO) {
+            callback(100, "hello world!", SerializableMetadata("hahahha", 10232L, 100))
+        }
     }
 
     override suspend fun suspendNoReturnFourValueCallback(callback: (number: Int, str: String, serializableMetadata: SerializableMetadata, parcelableMetadata: ParcelableMetadata) -> Unit) {
-        callback(100, "hello world!", SerializableMetadata("hahahha", 10232L, 100), ParcelableMetadata(210, "android"))
+        withContext(Dispatchers.IO) {
+            callback(100, "hello world!", SerializableMetadata("hahahha", 10232L, 100), ParcelableMetadata(210, "android"))
+        }
     }
 }

@@ -4,6 +4,8 @@ import com.android.inter.process.compiler.utils.CollectorClassName
 import com.android.inter.process.compiler.utils.GeneratedPackageName
 import com.android.inter.process.framework.ObjectPool
 import com.android.inter.process.framework.annotation.CustomCollector
+import com.android.inter.process.framework.annotation.IPCService
+import com.android.inter.process.framework.annotation.IPCServiceFactory
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.TypeElement
@@ -15,12 +17,19 @@ internal fun processResource(
 ) {
     val customCollectElements = environment.getElementsAnnotatedWith(CustomCollector::class.java)
         .filterIsInstance<TypeElement>()
-    if (customCollectElements.isEmpty()) {
+    val iPCServiceElements = environment.getElementsAnnotatedWith(IPCService::class.java)
+        .filterIsInstance<TypeElement>()
+    val iPCServiceFactoryElements = environment.getElementsAnnotatedWith(IPCServiceFactory::class.java)
+        .filterIsInstance<TypeElement>()
+
+    if (customCollectElements.isEmpty() && iPCServiceElements.isEmpty() && iPCServiceFactoryElements.isEmpty()) {
         return
     }
 
     val stringBuilder = StringBuilder()
-    stringBuilder.appendLine("${GeneratedPackageName}.${CollectorClassName}")
+    if (iPCServiceElements.isNotEmpty() || iPCServiceFactoryElements.isNotEmpty()) {
+        stringBuilder.appendLine("${GeneratedPackageName}.${CollectorClassName}")
+    }
     customCollectElements.forEach { typeElement ->
         if (typeElement.asType().isValidForFullName) {
             stringBuilder.appendLine(typeElement.asType().fullName)

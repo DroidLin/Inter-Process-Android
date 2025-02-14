@@ -2,6 +2,7 @@ package com.android.inter.process.framework
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -9,11 +10,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
-
-/**
- * @author: liuzhongao
- * @since: 2024/9/16 15:34
- */
 
 internal fun <T> SafeContinuation(continuation: Continuation<T>): Continuation<T> {
     return object : Continuation<T> by continuation {
@@ -33,7 +29,7 @@ internal fun <T> SafeContinuation(continuation: Continuation<T>): Continuation<T
     }
 }
 
-internal val ConnectionCoroutineDispatcherScope = CoroutineScope(Dispatchers.IO)
+internal val ConnectionCoroutineDispatcherScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
 internal fun runOnConnectionScope(
     coroutineContext: CoroutineContext = EmptyCoroutineContext,

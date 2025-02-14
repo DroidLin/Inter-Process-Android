@@ -64,6 +64,9 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
         TODO("Not yet implemented")
     }
 
+    override fun emptyCallbackFunction1(callback: Callback) {
+    }
+
     override suspend fun writeData(fileDescriptor: ParcelFileDescriptor) {
         fileDescriptor.use {
             FileInputStream(it.fileDescriptor).bufferedReader().use { inputStream ->

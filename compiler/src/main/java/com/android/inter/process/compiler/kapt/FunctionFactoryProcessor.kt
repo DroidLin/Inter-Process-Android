@@ -16,9 +16,8 @@ internal fun processCustomFunctionCollector(
 ) {
     val iPCServiceElements = environment.getElementsAnnotatedWith(IPCService::class.java)
         .filterIsInstance<TypeElement>()
-    val iPCServiceFactoryElements =
-        environment.getElementsAnnotatedWith(IPCServiceFactory::class.java)
-            .filterIsInstance<TypeElement>()
+    val iPCServiceFactoryElements = environment.getElementsAnnotatedWith(IPCServiceFactory::class.java)
+        .filterIsInstance<TypeElement>()
 
     if (iPCServiceElements.isEmpty() && iPCServiceFactoryElements.isEmpty()) {
         return

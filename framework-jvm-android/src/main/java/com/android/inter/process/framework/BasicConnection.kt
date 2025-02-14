@@ -7,14 +7,11 @@ import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.SuspendContext
 import com.android.inter.process.framework.metadata.function
 import com.android.inter.process.framework.metadata.newBinderFunctionMetadata
-import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
-import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * basic interface used to get information about remote process,
@@ -96,7 +93,8 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
         checkParameters(request)
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutineUninterceptedOrReturn { continuation ->
+            val safeContinuation = SafeContinuation(continuation)
             var deathListener: AndroidFunction.DeathListener? = null
             var data: Any? = null
             try {
@@ -104,23 +102,22 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
                 deathListener = object : AndroidFunction.DeathListener {
                     override fun onDead() {
                         function.removeDeathListener(this)
-//                        continuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
+                        safeContinuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
                     }
                 }
                 function.addDeathListener(deathListener)
 
-                val newContinuation = BasicFunctionCallback { d, throwable ->
-                    if (throwable != null) {
-//                        continuation.resumeWithException(throwable)
-                    } else {
-                        continuation.resume(d)
+                val newContinuation = object : Continuation<Any?> by safeContinuation {
+                    override fun resumeWith(result: Result<Any?>) {
+                        function.removeDeathListener(deathListener)
+                        safeContinuation.resumeWith(result)
                     }
                 }
                 val newRequest = request.copy(
                     suspendContext = SuspendContext(
                         androidBinderFunctionMetadata = newBinderFunctionMetadata(
-                            clazz = BasicFunctionCallback::class.java,
-                            androidFunction = BasicFunctionCallback::class.java.receiverAndroidFunction(newContinuation)
+                            clazz = Continuation::class.java,
+                            androidFunction = Continuation::class.java.receiverAndroidFunction(newContinuation)
                         )
                     )
                 )
@@ -132,9 +129,7 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
                     function.removeDeathListener(deathListener)
                 }
             }
-//            if (data != COROUTINE_SUSPENDED) {
-//                continuation.resume(data)
-//            }
+            data
         }
     }
 }
@@ -149,16 +144,9 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
             val result = kotlin.runCatching {
                 when (request) {
                     is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
-                        val basicFunctionCallback = request.suspendContext.androidBinderFunctionMetadata.function<BasicFunctionCallback>()
-                        val continuation = object : Continuation<Any?> {
+                        val rawContinuation = request.suspendContext.androidBinderFunctionMetadata.function<Continuation<Any?>>()
+                        val continuation = object : Continuation<Any?> by rawContinuation {
                             override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
-                            override fun resumeWith(result: Result<Any?>) {
-                                if (result.isFailure) {
-                                    basicFunctionCallback.callback(null, result.exceptionOrNull())
-                                } else if (result.isSuccess) {
-                                    basicFunctionCallback.callback(result.getOrNull(), null)
-                                }
-                            }
                         }
                         (this::callSuspend as Function2<AndroidRequest, Continuation<*>, Any?>)(request, continuation)
                     } else this.call(request)
