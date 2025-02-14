@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.internal.Kapt3GradleSubplugin.Companion.isInc
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-//    id("com.google.devtools.ksp")
+    id("com.google.devtools.ksp")
     id("kotlin-kapt")
 }
 
@@ -79,5 +79,5 @@ dependencies {
     implementation(project(":framework"))
     implementation(project(":framework-jvm-android"))
 //    ksp(project(":compiler"))
-    kapt(project(":compiler"))
+//    kapt(project(":compiler"))
 }

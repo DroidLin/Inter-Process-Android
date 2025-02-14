@@ -72,8 +72,11 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
         }
     }
 
-    override suspend fun getData(type: String): List<String>? {
-        return listOf("hello", "world", "!")
+    override suspend fun getData(type: String): List<String> {
+        return withContext(Dispatchers.IO) {
+            delay(1000L)
+            listOf("hello", "world", "!")
+        }
     }
 
     override fun String.isAwesome(): Boolean {

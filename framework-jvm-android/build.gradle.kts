@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -50,4 +52,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines)
 
     implementation(project(":framework"))
+//    kapt(project(":compiler"))
+    ksp(project(":compiler"))
 }

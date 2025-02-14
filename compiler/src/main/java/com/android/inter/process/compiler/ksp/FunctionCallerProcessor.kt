@@ -93,6 +93,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                 addImport(ksTypeReference.qualifiedName)
             }
             addImport("com.android.inter.process.framework.syncCall")
+            addImport("com.android.inter.process.framework.request")
             addImport(JvmMethodRequest::class.java.name)
             addImport("com.android.inter.process.framework.metadata.AndroidBinderFunctionMetadata")
             addImport("com.android.inter.process.framework.metadata.newBinderFunctionMetadata")

@@ -11,7 +11,9 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * basic interface used to get information about remote process,
@@ -106,25 +108,22 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
                 }
                 function.addDeathListener(deathListener)
 
-                val newContinuation = object : Continuation<AndroidResponse> by continuation {
-                    override fun resumeWith(result: Result<AndroidResponse>) {
-                        // if the function is really suspended, we need to remove death listener
-                        // after the suspended function is resumed.
-                        function.removeDeathListener(deathListener)
-                        continuation.resumeWith(result)
-                    }
+                val newContinuation = BasicFunctionCallback { d, throwable ->
+                    if (throwable != null) {
+                        continuation.resumeWithException(throwable)
+                    } else continuation.resume(d)
                 }
                 val newRequest = request.copy(
                     suspendContext = SuspendContext(
                         androidBinderFunctionMetadata = newBinderFunctionMetadata(
-                            clazz = Continuation::class.java,
-                            androidFunction = Continuation::class.java.receiverAndroidFunction(newContinuation)
+                            clazz = BasicFunctionCallback::class.java,
+                            androidFunction = BasicFunctionCallback::class.java.receiverAndroidFunction(newContinuation)
                         )
                     )
                 )
                 // call remote
                 data = function.call(newRequest).dataOrThrow
-            }finally {
+            } finally {
                 // we have to remove death listener if function is not suspended.
                 if (deathListener != null && data != COROUTINE_SUSPENDED) {
                     function.removeDeathListener(deathListener)
@@ -145,11 +144,18 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
             val result = kotlin.runCatching {
                 when (request) {
                     is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
-                        val remoteContinuation = request.suspendContext.androidBinderFunctionMetadata.function<Continuation<Any?>>()
-                        val continuation = object : Continuation<Any?> by remoteContinuation {
+                        val basicFunctionCallback = request.suspendContext.androidBinderFunctionMetadata.function<BasicFunctionCallback>()
+                        val continuation = object : Continuation<Any?> {
                             override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
+                            override fun resumeWith(result: Result<Any?>) {
+                                if (result.isFailure) {
+                                    basicFunctionCallback.callback(null, result.exceptionOrNull())
+                                } else if (result.isSuccess) {
+                                    basicFunctionCallback.callback(result.getOrNull(), null)
+                                }
+                            }
                         }
-                        (this::callSuspend as Function2<AndroidRequest, Continuation<*>, AndroidResponse>)(request, continuation)
+                        (this::callSuspend as Function2<AndroidRequest, Continuation<*>, Any?>)(request, continuation)
                     } else this.call(request)
 
                     is BasicConnectionSelfRequest -> {

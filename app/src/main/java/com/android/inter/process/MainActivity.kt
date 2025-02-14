@@ -109,6 +109,18 @@ class MainActivity : ComponentActivity() {
                         ) {
                             Text(text = "property setter")
                         }
+                        TextButton(
+                            onClick = {
+                                applicationInfo.startLauncher {
+                                    withContext(Dispatchers.IO) {
+                                        val data = getData("")
+                                        println("data = ${data}.")
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(text = "getData")
+                        }
                         Button(onClick = {
                             val intent = Intent(this@MainActivity, LibActivity::class.java)
                             startActivity(intent)
