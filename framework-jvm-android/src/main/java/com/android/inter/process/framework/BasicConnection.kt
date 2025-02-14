@@ -7,6 +7,7 @@ import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.SuspendContext
 import com.android.inter.process.framework.metadata.function
 import com.android.inter.process.framework.metadata.newBinderFunctionMetadata
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
@@ -95,7 +96,7 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
         checkParameters(request)
-        return suspendCoroutineUninterceptedOrReturn { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             var deathListener: AndroidFunction.DeathListener? = null
             var data: Any? = null
             try {
@@ -103,15 +104,17 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
                 deathListener = object : AndroidFunction.DeathListener {
                     override fun onDead() {
                         function.removeDeathListener(this)
-                        continuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
+//                        continuation.resumeWithException(BinderDisconnectedException("missing connection to remote"))
                     }
                 }
                 function.addDeathListener(deathListener)
 
                 val newContinuation = BasicFunctionCallback { d, throwable ->
                     if (throwable != null) {
-                        continuation.resumeWithException(throwable)
-                    } else continuation.resume(d)
+//                        continuation.resumeWithException(throwable)
+                    } else {
+                        continuation.resume(d)
+                    }
                 }
                 val newRequest = request.copy(
                     suspendContext = SuspendContext(
@@ -129,7 +132,9 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
                     function.removeDeathListener(deathListener)
                 }
             }
-            data
+//            if (data != COROUTINE_SUSPENDED) {
+//                continuation.resume(data)
+//            }
         }
     }
 }

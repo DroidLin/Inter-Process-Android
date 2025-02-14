@@ -79,5 +79,5 @@ dependencies {
     implementation(project(":framework"))
     implementation(project(":framework-jvm-android"))
 //    ksp(project(":compiler"))
-//    kapt(project(":compiler"))
+    kapt(project(":compiler"))
 }

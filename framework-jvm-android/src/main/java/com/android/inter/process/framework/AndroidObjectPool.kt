@@ -22,7 +22,7 @@ internal class AndroidObjectPool : ObjectPool {
         factory: () -> InvocationHandler
     ): InvocationHandler {
         if (this.invocationHandlerCache[clazz] == null) {
-            this.invocationHandlerCache[clazz] = factory()
+            return factory()
         }
         return requireNotNull(this.invocationHandlerCache[clazz])
     }
