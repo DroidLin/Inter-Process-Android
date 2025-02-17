@@ -143,6 +143,12 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
                     val continuation = object : Continuation<Any?> {
                         override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
                         override fun resumeWith(result: Result<Any?>) {
+                            val response = result.toResponse()
+                            val checkResult = kotlin.runCatching { checkParameters(response) }
+                            if (checkResult.isFailure) {
+                                functionCallback(DefaultResponse(null, checkResult.exceptionOrNull()))
+                                return
+                            }
                             functionCallback(result.toResponse())
                         }
                     }
@@ -160,7 +166,9 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
                 else -> null
             }
         }.onFailure { Logger.logError(it) }
-        result.toResponse()
+        val response = result.toResponse()
+        checkParameters(response)
+        response
     }
 }
 

@@ -201,6 +201,13 @@ class InterfaceGeneratorTest {
     }
 
     @Test
+    fun noReturnGetValueCallback() {
+        interfaceService.noReturnGetValueCallback {
+            SerializableMetadata.Default
+        }
+    }
+
+    @Test
     fun suspendNumberFunctionTest() {
         runBlocking {
             assert(interfaceService.suspendVersionNumber() == 100)

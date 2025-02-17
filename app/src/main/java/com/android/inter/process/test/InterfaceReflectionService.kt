@@ -46,6 +46,8 @@ interface InterfaceReflectionService {
     fun noReturnThreeValueCallback(@IPCFunction callback: (number: Int, str: String, serializableMetadata: SerializableMetadata) -> Unit)
     fun noReturnFourValueCallback(@IPCFunction callback: (number: Int, str: String, serializableMetadata: SerializableMetadata, parcelableMetadata: ParcelableMetadata) -> Unit)
 
+    fun noReturnGetValueCallback(@IPCFunction callback: () -> SerializableMetadata)
+
     suspend fun suspendVersionNumber(): Int
     suspend fun suspendVersionName(): String
     suspend fun suspendSerializableMetadata(): SerializableMetadata
@@ -159,6 +161,11 @@ class InterfaceReflectionServiceImplementation : InterfaceReflectionService {
 
     override fun noReturnFourValueCallback(callback: (number: Int, str: String, serializableMetadata: SerializableMetadata, parcelableMetadata: ParcelableMetadata) -> Unit) {
         callback(100, "hello world!", SerializableMetadata("hahahha", 10232L, 100), ParcelableMetadata(210, "android"))
+    }
+
+    override fun noReturnGetValueCallback(callback: () -> SerializableMetadata) {
+        val metadata = callback()
+        println("metadata: ${metadata}.")
     }
 
     override suspend fun suspendVersionNumber(): Int {

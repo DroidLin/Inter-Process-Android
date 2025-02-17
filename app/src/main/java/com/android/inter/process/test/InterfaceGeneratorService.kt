@@ -49,6 +49,8 @@ interface InterfaceGeneratorService {
     fun noReturnThreeValueCallback(@IPCFunction callback: (number: Int, str: String, serializableMetadata: SerializableMetadata) -> Unit)
     fun noReturnFourValueCallback(@IPCFunction callback: (number: Int, str: String, serializableMetadata: SerializableMetadata, parcelableMetadata: ParcelableMetadata) -> Unit)
 
+    fun noReturnGetValueCallback(@IPCFunction callback: () -> SerializableMetadata)
+
     fun List<String>.parameterizedNoReturn()
     fun List<String>.parameterizedOneReturn(number: Int)
 
@@ -168,6 +170,11 @@ class InterfaceGeneratorServiceImplementation : InterfaceGeneratorService {
 
     override fun noReturnFourValueCallback(callback: (number: Int, str: String, serializableMetadata: SerializableMetadata, parcelableMetadata: ParcelableMetadata) -> Unit) {
         callback(100, "hello world!", SerializableMetadata("hahahha", 10232L, 100), ParcelableMetadata(210, "android"))
+    }
+
+    override fun noReturnGetValueCallback(callback: () -> SerializableMetadata) {
+        val metadata = callback()
+        println("metadata: ${metadata}.")
     }
 
     override fun List<String>.parameterizedNoReturn() {
