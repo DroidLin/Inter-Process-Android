@@ -14,8 +14,10 @@ import com.android.inter.process.framework.address.AndroidAddress.Companion.toPa
 import com.android.inter.process.framework.address.ParcelableAndroidAddress
 import com.android.inter.process.framework.exceptions.ConnectTimeoutException
 import com.android.inter.process.framework.isConnected
+import com.android.inter.process.framework.isDebugMode
 import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.metadata.ConnectRunningTask
+import com.android.inter.process.framework.processAddress
 import com.android.inter.process.framework.withConnectionScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -51,27 +53,37 @@ internal suspend fun doConnect(
     val newParcelableAddress = address.toParcelableAddress()
     val basicConnection = FunctionConnectionPool[newParcelableAddress]
     if (basicConnection != null && basicConnection.isConnected) {
-        Logger.logDebug("function already exist and alive, just return the value.")
+        if (isDebugMode) {
+            Logger.logDebug("function already exist and alive, just return the value.")
+        }
         return basicConnection
     }
     // we need to wait if there is an existing task.
     val firstCheckTask = FunctionConnectionPool.getRecord(newParcelableAddress)
     if (firstCheckTask != null) {
-        Logger.logDebug("another connection task is running, wait until finished.")
+        if (isDebugMode) {
+            Logger.logDebug("another connection task is running, wait until finished.")
+        }
         return firstCheckTask.deferred.await()
     }
     return FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
         // now we check the connection again.
         val newBasicConnection = FunctionConnectionPool[newParcelableAddress]
         if (newBasicConnection != null && newBasicConnection.isConnected) {
-            Logger.logDebug("double check function already exist and alive, just return the value.")
+            if (isDebugMode) {
+                Logger.logDebug("double check function already exist and alive, just return the value.")
+            }
             return@withLock newBasicConnection
         }
         // or just launch connection logics.
         withConnectionScope connectionScope@{
             try {
-                Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
-                Logger.logDebug("trying connect to remote: ${newParcelableAddress}.")
+                if (isDebugMode) {
+                    Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
+                }
+                if (isDebugMode) {
+                    Logger.logDebug("trying connect to remote: ${newParcelableAddress}.")
+                }
                 val newTask = ConnectRunningTask(
                     deferred = async {
                         doConnectInner(
@@ -89,7 +101,9 @@ internal suspend fun doConnect(
                 newConnection
             } finally {
                 FunctionConnectionPool.removeRecord(newParcelableAddress)
-                Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner Finished >>>>>>>>>>>>>>>>>>>>>>>>>")
+                if (isDebugMode) {
+                    Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner Finished >>>>>>>>>>>>>>>>>>>>>>>>>")
+                }
             }
         }
     }
@@ -107,7 +121,7 @@ internal suspend fun doConnectInner(
             delay(connectTimeout)
             safeContinuation.resumeWithException(ConnectTimeoutException("failed to connect to remote due to connect timeout."))
         }
-        val sourceAddress = (IPCManager.currentAddress as AndroidAddress).toParcelableAddress()
+        val sourceAddress = (processAddress as AndroidAddress).toParcelableAddress()
         val basicConnection = BasicConnectionStub(
             object : BasicConnection by BasicConnection(sourceAddress) {
                 override fun setConnectContext(connectContext: ConnectContext) {

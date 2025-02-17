@@ -70,19 +70,22 @@ internal fun processCustomFunctionCollector(
         .appendLine("\tpublic void collect() {")
         .apply {
             iPCServiceElements.forEach { typeElement ->
-                appendLine("\t\tObjectPoolKt.getObjectPool().putCallerFactory(${typeElement.simpleName}.class, (adapter) -> { return new ${typeElement.callerFileName}(adapter); });")
+                appendLine("\t\tObjectPoolKt.getObjectPool().putCallerFactory(${typeElement.simpleName}.class, (adapter, uniqueKey) -> { return new ${typeElement.callerFileName}(adapter, uniqueKey); });")
             }
             iPCServiceElements.forEach { typeElement ->
                 appendLine("\t\tObjectPoolKt.getObjectPool().putReceiverFactory(${typeElement.simpleName}.class, (mInstance) -> { return new ${typeElement.receiverFileName}(mInstance); });")
             }
             iPCServiceFactoryElements.forEach { typeElement ->
-                val annotation =
-                    typeElement.annotationMirrors.find { it.annotationType.toString() == IPCServiceFactory::class.java.name }
-                annotation?.elementValues?.forEach { (executableElement, annotationValue) ->
-                    if (executableElement.simpleName.toString() == IPCServiceFactory::interfaceClazz.name) {
-                        val type = annotationValue.value
-                        if (type is TypeMirror) {
-                            appendLine("\t\tObjectPoolKt.getObjectPool().putInstanceFactory(${type.simpleName}.class, new ${typeElement.simpleName}());")
+                val annotation = typeElement.annotationMirrors.find { it.annotationType.toString() == IPCServiceFactory::class.java.name }
+                val annotationElementValues = annotation?.elementValues?.mapKeys { (element, _) -> element.simpleName.toString() }
+                if (annotationElementValues != null) {
+                    val interfaceClazzName = (annotationElementValues[IPCServiceFactory::interfaceClazz.name]?.value as? TypeMirror)?.simpleName
+                    val uniqueKey = annotationElementValues[IPCServiceFactory::uniqueKey.name]?.value as? String
+                    if (!interfaceClazzName.isNullOrEmpty()) {
+                        if (uniqueKey.isNullOrEmpty() || uniqueKey.isBlank()) {
+                            appendLine("\t\tObjectPoolKt.getObjectPool().putInstanceFactory(${interfaceClazzName}.class, null, new ${typeElement.simpleName}());")
+                        } else {
+                            appendLine("\t\tObjectPoolKt.getObjectPool().putInstanceFactory(${interfaceClazzName}.class, \"${uniqueKey}\", new ${typeElement.simpleName}());")
                         }
                     }
                 }

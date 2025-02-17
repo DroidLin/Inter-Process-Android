@@ -9,7 +9,7 @@ import com.android.inter.process.framework.Address
  * @author: liuzhongao
  * @since: 2024/9/11 22:12
  */
-data class ServiceCreateResource<T : Any, A : Address>(
+data class ServiceCreateResource<T, A : Address>(
     /**
      * target class of an interface.
      */
@@ -19,4 +19,10 @@ data class ServiceCreateResource<T : Any, A : Address>(
      * address for inter process call, may be implemented as different data type.
      */
     val interProcessAddress: A,
+
+    /**
+     * unique key for a specific implementation to remote, identifier to different
+     * implementations for the same interface in one or more processes.
+     */
+    val uniqueKey: String? = null,
 )

@@ -41,17 +41,21 @@ internal interface AIDLFunction : IInterface {
                 }
 
                 TRANSACTION_CALL -> {
-                    val functionParameters = readTypedObject(data, FunctionParameters.CREATOR)
-                    checkNotNull(functionParameters) { "function parameters is null." }
-                    this.call(functionParameters)
-                    reply.writeNoException()
-                    writeTypedObject(
-                        reply,
-                        functionParameters,
-                        Parcelable.PARCELABLE_WRITE_RETURN_VALUE
-                    )
-                    if (reply.dataSize() > PARCEL_MAX_COUNT_THRESHOLD) {
-                        throw ParcelableToLargeException("return data count: ${reply.dataSize()} reaches max limit.")
+                    try {
+                        val functionParameters = readTypedObject(data, FunctionParameters.CREATOR)
+                        checkNotNull(functionParameters) { "function parameters is null." }
+                        this.call(functionParameters)
+                        reply.writeNoException()
+                        writeTypedObject(
+                            reply,
+                            functionParameters,
+                            Parcelable.PARCELABLE_WRITE_RETURN_VALUE
+                        )
+                        if (reply.dataSize() > PARCEL_MAX_COUNT_THRESHOLD) {
+                            throw ParcelableToLargeException("return data count: ${reply.dataSize()} reaches max limit.")
+                        }
+                    } catch (t: Throwable) {
+                        t.printStackTrace()
                     }
                 }
 

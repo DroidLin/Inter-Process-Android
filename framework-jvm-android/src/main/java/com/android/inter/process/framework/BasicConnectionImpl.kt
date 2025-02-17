@@ -5,11 +5,11 @@ import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
 
-typealias InvocationReceiverFactory<T> = (Class<T>) -> InvocationReceiver<T>
+typealias InvocationReceiverFactory<T> = (Class<T>, String?) -> InvocationReceiver<T>
 
 internal fun BasicConnection(
     sourceAddress: ParcelableAndroidAddress,
-    receiverFactory: InvocationReceiverFactory<Any> = { objectPool.getReceiver(it) }
+    receiverFactory: InvocationReceiverFactory<Any> = { clazz, uniqueKey -> objectPool.getReceiver(clazz, uniqueKey) }
 ): BasicConnection {
     return BasicConnectionImpl(sourceAddress, receiverFactory)
 }
@@ -31,7 +31,7 @@ internal class BasicConnectionImpl(
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
         val hostClass = request.declaredClassFullName.stringType2ClassType as Class<Any>
-        val invocationReceiver = invocationReceiverGetter(hostClass)
+        val invocationReceiver = invocationReceiverGetter(hostClass, request.hostUniqueKey)
 
         val invocationParameter = InvocationParameter(
             declaredClassFullName = request.declaredClassFullName,
@@ -45,7 +45,7 @@ internal class BasicConnectionImpl(
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
         val hostClass = request.declaredClassFullName.stringType2ClassType as Class<Any>
-        val invocationReceiver = invocationReceiverGetter(hostClass)
+        val invocationReceiver = invocationReceiverGetter(hostClass, request.hostUniqueKey)
 
         val invokeParameter = InvocationParameter(
             declaredClassFullName = request.declaredClassFullName,

@@ -9,6 +9,33 @@ import android.os.Parcelable
  */
 internal interface AndroidResponse : Response, Parcelable
 
+internal class NoResponse : AndroidResponse {
+
+    constructor()
+    constructor(parcel: Parcel) : this()
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+    }
+
+    override val data: Any? get() = null
+    override val throwable: Throwable? get() = null
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<NoResponse> {
+        override fun createFromParcel(parcel: Parcel): NoResponse {
+            return NoResponse(parcel)
+        }
+
+        override fun newArray(size: Int): Array<NoResponse?> {
+            return arrayOfNulls(size)
+        }
+    }
+
+}
+
 internal data class DefaultResponse(
     override val data: Any? = null,
     override val throwable: Throwable? = null

@@ -1,8 +1,12 @@
 package com.android.inter.process.framework
 
-import com.android.inter.process.framework.metadata.InitializeConfig
+import com.android.inter.process.framework.metadata.InitConfig
 import java.util.ServiceLoader
 import java.util.concurrent.ConcurrentHashMap
+
+val isDebugMode: Boolean get() = IPCManager.initConfig.debugMode
+
+val processAddress: Address get() = IPCManager.initConfig.initAddress
 
 /**
  * @author: liuzhongao
@@ -13,27 +17,16 @@ object IPCManager {
     private val component: MutableMap<Class<*>, Component<*>> = ConcurrentHashMap()
 
     @Volatile
-    private lateinit var _address: Address
+    internal lateinit var initConfig: InitConfig
 
-    lateinit var initializeConfig: InitializeConfig
-        private set
-
-    val currentAddress: Address
-        get() = if (this::_address.isInitialized) {
-            _address
-        } else error("address of current process not exist, have you called install yet?")
-
-    /**
-     * init default address of current process, which will be transported to remote,
-     * ensure this method be called once during the application lifecycle to avoid
-     * temporary issues.
-     */
-    fun installAddress(address: Address) {
-        if (this::_address.isInitialized) {
-            Logger.logDebug("InterProcessCenter#installAddress should only be called once.")
+    fun installConfig(config: InitConfig) {
+        if (this::initConfig.isInitialized) {
+            if (isDebugMode) {
+                Logger.logDebug("InterProcessCenter#install should only be called once.")
+            }
             return
         }
-        this._address = address
+        this.initConfig = config
     }
 
     @JvmStatic
@@ -42,7 +35,9 @@ object IPCManager {
         component: Component<in A>
     ) {
         if (this.component[clazz] != null) {
-            Logger.logDebug("duplicated installation of component, target: ${clazz}.")
+            if (isDebugMode) {
+                Logger.logDebug("duplicated installation of component, target: ${clazz}.")
+            }
         }
         this.component[clazz] = component
     }
@@ -51,7 +46,9 @@ object IPCManager {
     internal fun <A : Address> findComponent(clazz: Class<A>): Component<A> {
         val component = this.component[clazz]
         if (component == null) {
-            Logger.logDebug("duplicated installation of component, target: ${clazz}.")
+            if (isDebugMode) {
+                Logger.logDebug("duplicated installation of component, target: ${clazz}.")
+            }
             throw NullPointerException("Can not find Component related to address type: ${clazz}, have you installed component yet?")
         }
         return component as Component<A>

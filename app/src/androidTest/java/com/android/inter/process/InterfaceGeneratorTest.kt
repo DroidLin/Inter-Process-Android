@@ -24,19 +24,10 @@ class InterfaceGeneratorTest {
     private val appContext: Context
         get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    private val remoteProcessAddress: Address
-        get() {
-            return broadcast(
-                context = appContext,
-                broadcastAction = appContext.getString(R.string.broadcast_action_lib_ipc)
-            )
-        }
-
     private val interfaceService: InterfaceGeneratorService
         get() {
             if (this.interfaceServiceCache == null) {
-                this.interfaceServiceCache = IPCProvider.on(remoteProcessAddress)
-                    .serviceCreate(InterfaceGeneratorService::class.java)
+                this.interfaceServiceCache = ProcessManager.fromBroadcastProcess(InterfaceGeneratorService::class.java)
             }
             return requireNotNull(this.interfaceServiceCache)
         }

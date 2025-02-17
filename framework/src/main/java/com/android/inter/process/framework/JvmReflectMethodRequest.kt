@@ -13,6 +13,7 @@ import kotlin.coroutines.Continuation
  */
 data class JvmReflectMethodRequest internal constructor(
     val declaredClassFullName: String,
+    val hostUniqueKey: String?,
     /**
      * name of calling method.
      */
@@ -41,6 +42,7 @@ data class JvmReflectMethodRequest internal constructor(
 
 fun reflectRequest(
     declaredClassFullName: String,
+    hostUniqueKey: String?,
     methodName: String,
     methodParameterTypeFullNames: List<String>,
     methodParameterValues: List<Any?>,
@@ -49,6 +51,7 @@ fun reflectRequest(
 ): Request {
     return JvmReflectMethodRequest(
         declaredClassFullName = declaredClassFullName,
+        hostUniqueKey = hostUniqueKey,
         methodName = methodName,
         methodParameterTypeFullNames = methodParameterTypeFullNames,
         methodParameterValues = methodParameterValues,

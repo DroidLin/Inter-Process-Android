@@ -18,7 +18,7 @@ fun interface InvocationCaller {
          * parse jvm method into a structured [Request] object.
          */
         @JvmStatic
-        fun parseRequest(method: Method, parameters: Array<Any?>?): JvmReflectMethodRequest {
+        fun parseRequest(hostUniqueKey: String?, method: Method, parameters: Array<Any?>?): JvmReflectMethodRequest {
             val methodParameterTypes: Array<Class<*>> = method.parameterTypes
             val isSuspend = methodParameterTypes.lastOrNull() == Continuation::class.java
             val continuation =
@@ -35,6 +35,7 @@ fun interface InvocationCaller {
 
             return JvmReflectMethodRequest(
                 declaredClassFullName = method.declaringClass.name,
+                hostUniqueKey = hostUniqueKey,
                 methodName = method.name,
                 methodParameterTypeFullNames = newMethodParameterType,
                 methodParameterValues = newMethodParameters,
@@ -45,8 +46,9 @@ fun interface InvocationCaller {
     }
 }
 
-fun InvocationCaller(functionCallAdapter: FunctionCallAdapter): InvocationCaller {
-    return object : InvocationCaller by DefaultInvocationCaller(functionCallAdapter = functionCallAdapter) {}
+@JvmOverloads
+fun InvocationCaller(functionCallAdapter: FunctionCallAdapter, uniqueKey: String? = null): InvocationCaller {
+    return object : InvocationCaller by DefaultInvocationCaller(functionCallAdapter, uniqueKey) {}
 }
 
 /**

@@ -66,7 +66,7 @@ interface InterfaceReflectionService {
     suspend fun suspendNoReturnFourValueCallback(@IPCFunction callback: (number: Int, str: String, serializableMetadata: SerializableMetadata, parcelableMetadata: ParcelableMetadata) -> Unit)
 }
 
-@IPCServiceFactory(interfaceClazz = InterfaceReflectionService::class)
+@IPCServiceFactory(interfaceClazz = InterfaceReflectionService::class, uniqueKey = "HelloWorld!")
 class InterfaceReflectionServiceFactory : ServiceFactory<InterfaceReflectionService> {
     override fun serviceCreate(): InterfaceReflectionService {
         return InterfaceReflectionServiceImplementation()

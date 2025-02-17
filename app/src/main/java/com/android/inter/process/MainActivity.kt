@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val applicationInfo = IPCStore.broadcastProvider.serviceCreate(ApplicationInfo::class.java)
+        val applicationInfo = ProcessManager.fromBroadcastProcess(ApplicationInfo::class.java)
         setContent {
             InterProcessAndroidTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -69,13 +69,13 @@ class MainActivity : ComponentActivity() {
                         TextButton(
                             onClick = {
                                 applicationInfo.startLauncher {
-                                    emptyCallbackFunction {
-                                        println("emptyCallbackFunction")
+                                    suspendNoReturnNoValueCallback {
+                                        println("suspendNoReturnNoValueCallback")
                                     }
                                 }
                             }
                         ) {
-                            Text(text = "emptyCallbackFunction")
+                            Text(text = "suspendNoReturnNoValueCallback")
                         }
                         TextButton(
                             onClick = {
@@ -99,11 +99,9 @@ class MainActivity : ComponentActivity() {
                         TextButton(
                             onClick = {
                                 applicationInfo.startLauncher {
-                                    withContext(Dispatchers.IO) {
-                                        val serializableMetadata = SerializableMetadata("100", 1000L, 12)
-                                        mutableSerializableMetadata = serializableMetadata
-                                        println("equals = ${serializableMetadata == mutableSerializableMetadata}.")
-                                    }
+                                    val serializableMetadata = SerializableMetadata("100", 1000L, 12)
+                                    mutableSerializableMetadata = serializableMetadata
+                                    println("equals = ${serializableMetadata == mutableSerializableMetadata}.")
                                 }
                             }
                         ) {

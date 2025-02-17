@@ -11,5 +11,5 @@ import com.android.inter.process.framework.metadata.ServiceCreateResource
  */
 interface Component<A : Address> {
 
-    fun <T : Any> serviceCreate(serviceCreateResource: ServiceCreateResource<T, A>): T
+    fun <T> serviceCreate(serviceCreateResource: ServiceCreateResource<T, A>): T
 }

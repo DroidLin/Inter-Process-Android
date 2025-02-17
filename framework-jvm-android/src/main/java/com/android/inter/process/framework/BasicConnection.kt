@@ -11,6 +11,7 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.suspendCoroutineUninterceptedOrReturn
+import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
@@ -26,10 +27,6 @@ internal interface BasicConnection {
 
     /**
      * get version of [BasicConnectionStub] tool kit.
-     *
-     * encode method like: (000)(000)(000).
-     *
-     * example: (1.2.1) -> (001002001), (1.20.1) -> (001020001)
      */
     val version: Long
 
@@ -107,17 +104,16 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
                 }
                 function.addDeathListener(deathListener)
 
-                val newContinuation = object : Continuation<Any?> by safeContinuation {
-                    override fun resumeWith(result: Result<Any?>) {
-                        function.removeDeathListener(deathListener)
-                        safeContinuation.resumeWith(result)
-                    }
+                val functionCallback = BasicFunctionCallback { response ->
+                    if (response.throwable != null) {
+                        safeContinuation.resumeWithException(requireNotNull(response.throwable))
+                    } else safeContinuation.resume(response.data)
                 }
                 val newRequest = request.copy(
                     suspendContext = SuspendContext(
                         androidBinderFunctionMetadata = newBinderFunctionMetadata(
-                            clazz = Continuation::class.java,
-                            androidFunction = Continuation::class.java.receiverAndroidFunction(newContinuation)
+                            clazz = BasicFunctionCallback::class.java,
+                            androidFunction = BasicFunctionCallback::class.java.receiverAndroidFunction(functionCallback)
                         )
                     )
                 )
@@ -139,30 +135,40 @@ internal fun BasicConnectionStub(basicConnection: BasicConnection): BasicConnect
 }
 
 private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicConnection by basicConnection {
-    val function = AndroidFunctionStub(
-        AndroidFunction { request ->
-            val result = kotlin.runCatching {
-                when (request) {
-                    is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
-                        val rawContinuation = request.suspendContext.androidBinderFunctionMetadata.function<Continuation<Any?>>()
-                        val continuation = object : Continuation<Any?> by rawContinuation {
-                            override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
-                        }
-                        (this::callSuspend as Function2<AndroidRequest, Continuation<*>, Any?>)(request, continuation)
-                    } else this.call(request)
-
-                    is BasicConnectionSelfRequest -> {
-                        when (request.requestType) {
-                            TYPE_SET_CONNECT_CONTEXT -> this.setConnectContext(requireNotNull(request.connectContext))
-                            TYPE_FETCH_BASIC_CONNECTION_VERSION -> this.version
-                            TYPE_FETCH_REMOTE_CONNECTION_ADDRESS -> this.remoteAddress
-                            else -> null
+    val function = AndroidFunctionStub { request ->
+        val result = kotlin.runCatching {
+            when (request) {
+                is AndroidJvmMethodRequest -> if (request.suspendContext != null) {
+                    val functionCallback = request.suspendContext.androidBinderFunctionMetadata.function<BasicFunctionCallback>()
+                    val continuation = object : Continuation<Any?> {
+                        override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
+                        override fun resumeWith(result: Result<Any?>) {
+                            functionCallback(result.toResponse())
                         }
                     }
-                    else -> null
+                    (this::callSuspend as Function2<AndroidRequest, Continuation<*>, Any?>)(request, continuation)
+                } else this.call(request)
+
+                is BasicConnectionSelfRequest -> {
+                    when (request.requestType) {
+                        TYPE_SET_CONNECT_CONTEXT -> this.setConnectContext(requireNotNull(request.connectContext))
+                        TYPE_FETCH_BASIC_CONNECTION_VERSION -> this.version
+                        TYPE_FETCH_REMOTE_CONNECTION_ADDRESS -> this.remoteAddress
+                        else -> null
+                    }
                 }
-            }.onFailure { Logger.logError(it) }
-            DefaultResponse(result.getOrNull(), result.exceptionOrNull())
-        }
-    )
+                else -> null
+            }
+        }.onFailure { Logger.logError(it) }
+        result.toResponse()
+    }
+}
+
+private fun <T> Result<T>.toResponse(): AndroidResponse {
+    val data = getOrNull()
+    val exception = exceptionOrNull()
+    if (data == null && exception == null) {
+        return NoResponse()
+    }
+    return DefaultResponse(getOrNull(), exceptionOrNull())
 }

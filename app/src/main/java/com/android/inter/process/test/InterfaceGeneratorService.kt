@@ -8,6 +8,7 @@ import com.android.inter.process.framework.annotation.IPCServiceFactory
 import com.android.inter.process.test.metadata.ParcelableMetadata
 import com.android.inter.process.test.metadata.SerializableMetadata
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.io.FileInputStream
 
@@ -190,19 +191,31 @@ class InterfaceGeneratorServiceImplementation : InterfaceGeneratorService {
     }
 
     override suspend fun suspendSerializableMetadata(): SerializableMetadata {
-        return SerializableMetadata.Default
+        return withContext(Dispatchers.IO) {
+            delay(2000L)
+            SerializableMetadata.Default
+        }
     }
 
     override suspend fun suspendParcelableMetadata(): ParcelableMetadata {
-        return ParcelableMetadata.Default
+        return withContext(Dispatchers.IO) {
+            delay(1000L)
+            ParcelableMetadata.Default
+        }
     }
 
     override suspend fun String.suspendNumberOfChar(): Int {
-        return length
+        return withContext(Dispatchers.IO) {
+            delay(1000L)
+            length
+        }
     }
 
     override suspend fun ParcelFileDescriptor.suspendContent(): String {
-        return use { FileInputStream(it.fileDescriptor).bufferedReader().readText() }
+        return withContext(Dispatchers.IO) {
+            delay(1000L)
+            use { FileInputStream(it.fileDescriptor).bufferedReader().readText() }
+        }
     }
 
     override suspend fun suspendNoReturnValue() {

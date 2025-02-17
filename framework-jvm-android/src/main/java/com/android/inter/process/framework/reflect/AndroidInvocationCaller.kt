@@ -8,12 +8,13 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.Continuation
 import com.android.inter.process.framework.reflect.AndroidServiceMethod.AndroidCallerServiceMethod
 
-fun InvocationCallerAndroid(functionCallAdapter: FunctionCallAdapter): InvocationCaller {
-    return AndroidInvocationCaller(functionCallAdapter = functionCallAdapter)
+fun InvocationCallerAndroid(functionCallAdapter: FunctionCallAdapter, hostUniqueKey: String?): InvocationCaller {
+    return AndroidInvocationCaller(functionCallAdapter = functionCallAdapter, hostUniqueKey = hostUniqueKey)
 }
 
 private class AndroidInvocationCaller(
-    private val functionCallAdapter: FunctionCallAdapter
+    private val functionCallAdapter: FunctionCallAdapter,
+    private val hostUniqueKey: String?
 ) : InvocationCaller {
 
     private val serviceMethodCache by lazy { ConcurrentHashMap<String, AndroidCallerServiceMethod>() }
@@ -26,7 +27,7 @@ private class AndroidInvocationCaller(
         // for now, service method is running for annotation [IPCMethod],
         // and is created for further use.
         val transformedParameters = serviceMethod.invoke(parameters ?: emptyArray())
-        val request = InvocationCaller.parseRequest(method, transformedParameters)
+        val request = InvocationCaller.parseRequest(this.hostUniqueKey, method, transformedParameters)
         val isSuspend = request.continuation != null
         return if (isSuspend) {
             (this.functionCallAdapter::call as Function2<Request, Continuation<Any?>, Any?>)

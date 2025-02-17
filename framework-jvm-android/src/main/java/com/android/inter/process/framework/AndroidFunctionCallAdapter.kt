@@ -12,6 +12,7 @@ internal class AndroidFunctionCallAdapter(private val basicConnectionGetter: sus
             is JvmReflectMethodRequest -> {
                 val jvmRequest = AndroidJvmMethodRequest(
                     declaredClassFullName = request.declaredClassFullName,
+                    hostUniqueKey = request.hostUniqueKey,
                     methodName = request.methodName,
                     methodParameterTypeFullNames = request.methodParameterTypeFullNames,
                     methodParameterValues = request.methodParameterValues,
@@ -27,6 +28,7 @@ internal class AndroidFunctionCallAdapter(private val basicConnectionGetter: sus
             is JvmMethodRequest -> {
                 val jvmRequest = AndroidJvmMethodRequest(
                     declaredClassFullName = request.clazz.name,
+                    hostUniqueKey = request.hostUniqueKey,
                     methodName = "",
                     methodParameterTypeFullNames = emptyList(),
                     methodParameterValues = request.functionParameters,

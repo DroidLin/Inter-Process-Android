@@ -11,7 +11,7 @@ val objectPool: ObjectPool by lazy {
     object : ObjectPool by objectPool {}
 }
 
-typealias CallerFactory<T> = (FunctionCallAdapter) -> T
+typealias CallerFactory<T> = (FunctionCallAdapter, String?) -> T
 
 typealias ReceiverFactory<T> = (T) -> InvocationReceiver<T>
 
@@ -24,22 +24,23 @@ interface ObjectPool {
     fun <T> putCallerFactory(clazz: Class<T>, callerFactory: CallerFactory<T>)
 
     fun <T> getCaller(clazz: Class<T>, functionCallAdapter: FunctionCallAdapter): T?
+    fun <T> getCaller(clazz: Class<T>, uniqueKey: String?, functionCallAdapter: FunctionCallAdapter): T?
 
     fun <T> putReceiver(clazz: Class<T>, receiver: InvocationReceiver<T>)
+    fun <T> putReceiver(clazz: Class<T>, uniqueKey: String?, receiver: InvocationReceiver<T>)
 
     fun <T> getReceiver(clazz: Class<T>): InvocationReceiver<T>
+    fun <T> getReceiver(clazz: Class<T>, uniqueKey: String?): InvocationReceiver<T>
 
     fun <T> putReceiverFactory(clazz: Class<T>, receiverFactory: ReceiverFactory<T>)
 
     fun <T> getReceiverBuilder(clazz: Class<T>): ReceiverFactory<T>?
 
-    fun <T> putInstance(clazz: Class<T>, instance: T)
-
-    fun <T> putInstance(clazz: Class<T>, instance: T, receiverFactory: ReceiverFactory<T>)
-
     fun <T> putInstanceFactory(clazz: Class<T>, serviceFactory: ServiceFactory<T>)
+    fun <T> putInstanceFactory(clazz: Class<T>, uniqueKey: String?, serviceFactory: ServiceFactory<T>)
 
     fun <T> getInstance(clazz: Class<T>): T
+    fun <T> getInstance(clazz: Class<T>, uniqueKey: String?): T
 
     /**
      * called and generated automatically by java spi.

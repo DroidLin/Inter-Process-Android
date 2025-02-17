@@ -96,4 +96,11 @@ class ProcessApplicationInfo(private val context: Context): ApplicationInfo {
 
     override fun recordLeft() {
     }
+
+    override suspend fun suspendNoReturnNoValueCallback(callback: () -> Unit) {
+        withContext(Dispatchers.IO) {
+            delay(1000)
+            callback()
+        }
+    }
 }

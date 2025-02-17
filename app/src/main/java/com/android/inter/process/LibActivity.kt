@@ -36,7 +36,7 @@ class LibActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val applicationInfo = IPCStore.mainProvider.serviceCreate(ApplicationInfo::class.java)
+        val applicationInfo = ProcessManager.fromMainProcess(ApplicationInfo::class.java)
         setContent {
             InterProcessAndroidTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->

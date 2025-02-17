@@ -7,6 +7,7 @@ import com.android.inter.process.framework.IPCManager
 import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.address.AndroidAddress.Companion.toParcelableAddress
 import com.android.inter.process.framework.metadata.ConnectContext
+import com.android.inter.process.framework.processAddress
 
 internal fun handleConnect(connectContext: ConnectContext) {
     val localConnectContext = handleConnectAndReturn(connectContext)
@@ -14,7 +15,7 @@ internal fun handleConnect(connectContext: ConnectContext) {
 }
 
 internal fun handleConnectAndReturn(connectContext: ConnectContext): ConnectContext {
-    val localSourceAddress = (IPCManager.currentAddress as AndroidAddress).toParcelableAddress()
+    val localSourceAddress = (processAddress as AndroidAddress).toParcelableAddress()
     val localBasicConnection = FunctionConnectionPool.getOrPut(localSourceAddress) {
         BasicConnectionStub(BasicConnection(localSourceAddress))
     }

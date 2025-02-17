@@ -10,8 +10,8 @@ import com.android.inter.process.framework.reflect.callerFunction
 internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction): T {
     val connectionProxy = BasicConnectionProxy(androidFunction)
     val functionCall = AndroidFunctionCallAdapter(basicConnectionGetter = { connectionProxy })
-    return (objectPool.getCaller(clazz = this, functionCallAdapter = functionCall)
-        ?: this.callerFunction(invocationCaller = InvocationCallerAndroid(functionCallAdapter = functionCall)))
+    return (objectPool.getCaller(this, null, functionCall)
+        ?: this.callerFunction(invocationCaller = InvocationCallerAndroid(functionCall, null)))
 }
 
 /**
@@ -19,36 +19,14 @@ internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction
  */
 internal fun <T> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
-    val parcelableAddress = (IPCManager.currentAddress as AndroidAddress).toParcelableAddress()
+    val parcelableAddress = (processAddress as AndroidAddress).toParcelableAddress()
     val invocationReceiver = InvocationReceiverAndroid(instance = instance) as InvocationReceiver<Any>
     return BasicConnectionStub(
         basicConnection = BasicConnection(
             sourceAddress = parcelableAddress,
-            receiverFactory = { invocationReceiver }
+            receiverFactory = { _, _ -> invocationReceiver }
         )
     ).binderFunction
-//    return AndroidFunctionStub(
-//        AndroidFunction { request ->
-//            if (request !is AndroidJvmMethodRequest) return@AndroidFunction DefaultResponse(null, null)
-//            val invokeParameter = InvocationParameter(
-//                declaredClassFullName = request.declaredClassFullName,
-//                methodName = request.methodName,
-//                uniqueKey = request.uniqueId,
-//                methodParameterTypeFullNames = request.methodParameterTypeFullNames,
-//                methodParameterValues = request.methodParameterValues,
-//            )
-//            val result = kotlin.runCatching {
-//                val continuation = request.suspendContext?.androidBinderFunctionMetadata?.function<Continuation<Any?>>()
-//                if (continuation != null) {
-//                    val suspendFunction = receiver::invokeSuspend as Function2<InvocationParameter, Continuation<Any?>, Any?>
-//                    suspendFunction(invokeParameter, continuation)
-//                } else {
-//                    receiver.invoke(invokeParameter)
-//                }
-//            }.onFailure { Logger.logError(it) }
-//            DefaultResponse(result.getOrNull(), result.exceptionOrNull())
-//        }
-//    )
 }
 
 internal val Response.dataOrThrow: Any?

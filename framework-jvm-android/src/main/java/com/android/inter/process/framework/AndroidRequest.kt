@@ -17,6 +17,7 @@ internal interface AndroidRequest : Request, Parcelable
 
 internal data class AndroidJvmMethodRequest(
     val declaredClassFullName: String,
+    val hostUniqueKey: String?,
     /**
      * name of calling method.
      */
@@ -43,6 +44,7 @@ internal data class AndroidJvmMethodRequest(
 
     constructor(parcel: Parcel) : this(
         requireNotNull(parcel.readString()),
+        parcel.readString(),
         requireNotNull(parcel.readString()),
         requireNotNull(parcel.readCompatList(AndroidJvmMethodRequest::class.java.classLoader)),
         requireNotNull(parcel.readCompatList(AndroidJvmMethodRequest::class.java.classLoader)),
@@ -58,6 +60,7 @@ internal data class AndroidJvmMethodRequest(
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
         dest.writeString(this.declaredClassFullName)
+        dest.writeString(this.hostUniqueKey)
         dest.writeString(this.methodName)
         dest.writeList(this.methodParameterTypeFullNames)
         dest.writeList(this.methodParameterValues)

@@ -13,6 +13,11 @@ data class JvmMethodRequest(
      * indicate where this method is called from.
      */
     val clazz: Class<*>,
+
+    /**
+     * unique key for remote specific implementations.
+     */
+    val hostUniqueKey: String?,
     /**
      * special identifier in [clazz] and is unique in it`s class declaration.
      */
@@ -33,12 +38,14 @@ data class JvmMethodRequest(
 
 fun request(
     clazz: Class<*>,
+    hostUniqueKey: String?,
     functionIdentifier: String,
     functionParameters: List<Any?>,
     isSuspend: Boolean
 ): Request {
     return JvmMethodRequest(
         clazz = clazz,
+        hostUniqueKey = hostUniqueKey,
         functionIdentifier = functionIdentifier,
         functionParameters = functionParameters,
         isSuspend = isSuspend,

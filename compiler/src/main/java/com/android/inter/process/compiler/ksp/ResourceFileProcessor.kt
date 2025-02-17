@@ -22,7 +22,7 @@ internal fun resourceFileProcessor(
     val serviceFactorySymbols = resolver.getSymbolsWithAnnotation(IPCServiceFactory::class.java.name).toList()
     val dependenciesFiles = (customKSAnnotated + serviceFactorySymbols).mapNotNull { it.containingFile }
 
-    if (collectorSymbolNames.isEmpty()) return
+    if (collectorSymbolNames.isEmpty() && collectorResourceList.isEmpty()) return
     val resourceWriter = codeGenerator.createNewFileByPath(
         dependencies = Dependencies(
             false,

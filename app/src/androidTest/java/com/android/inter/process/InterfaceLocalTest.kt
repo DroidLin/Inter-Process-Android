@@ -39,8 +39,7 @@ class InterfaceLocalTest {
     val interfaceService: InterfaceGeneratorService
         get() {
             if (this.interfaceServiceCache == null) {
-                this.interfaceServiceCache = IPCProvider.on(remoteProcessAddress)
-                    .serviceCreate(InterfaceGeneratorService::class.java)
+                this.interfaceServiceCache = ProcessManager.fromMainProcess(InterfaceGeneratorService::class.java)
             }
             return requireNotNull(this.interfaceServiceCache)
         }

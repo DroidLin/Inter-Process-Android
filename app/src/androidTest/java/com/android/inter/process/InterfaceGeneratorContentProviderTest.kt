@@ -35,8 +35,7 @@ class InterfaceGeneratorContentProviderTest {
     private val interfaceService: InterfaceGeneratorService
         get() {
             if (this.interfaceServiceCache == null) {
-                this.interfaceServiceCache = IPCProvider.on(remoteProcessAddress)
-                    .serviceCreate(InterfaceGeneratorService::class.java)
+                this.interfaceServiceCache = ProcessManager.fromBroadcastProcess(InterfaceGeneratorService::class.java)
             }
             return requireNotNull(this.interfaceServiceCache)
         }

@@ -10,10 +10,13 @@ import kotlin.coroutines.Continuation
  * @author: liuzhongao
  * @since: 2024/9/16 15:05
  */
-internal class DefaultInvocationCaller(private val functionCallAdapter: FunctionCallAdapter) : InvocationCaller {
+internal class DefaultInvocationCaller(
+    private val functionCallAdapter: FunctionCallAdapter,
+    private val uniqueKey: String?
+) : InvocationCaller {
 
     override fun invoke(method: Method, parameters: Array<Any?>?): Any? {
-        val request = InvocationCaller.parseRequest(method, parameters)
+        val request = InvocationCaller.parseRequest(this.uniqueKey, method, parameters)
         val isSuspend = request.continuation != null
         return if (isSuspend) {
             (this.functionCallAdapter::call as Function2<Request, Continuation<Any?>, Any?>).invoke(request, requireNotNull(request.continuation))

@@ -13,13 +13,15 @@ class IPCProvider private constructor(
     private val address: Address,
 ) {
 
-    fun <T : Any> serviceCreate(clazz: Class<T>): T {
+    @JvmOverloads
+    fun <T> serviceCreate(clazz: Class<T>, uniqueKey: String? = null): T {
         if (!clazz.isInterface) {
             throw IllegalArgumentException("class: $clazz is not declared as an interface.")
         }
         val resource = ServiceCreateResource(
             clazz = clazz,
             interProcessAddress = this.address,
+            uniqueKey = uniqueKey,
         )
         return this.component.serviceCreate(serviceCreateResource = resource)
     }

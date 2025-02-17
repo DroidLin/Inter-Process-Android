@@ -6,9 +6,8 @@ import android.content.Context
 import android.os.Process
 import android.os.StrictMode
 import com.android.inter.process.framework.IPCManager
-import com.android.inter.process.framework.address.broadcast
-import com.android.inter.process.framework.address.provider
-import com.android.inter.process.framework.installAndroid
+import com.android.inter.process.framework.install
+import com.android.inter.process.framework.metadata.InitConfig
 import java.lang.ref.WeakReference
 
 
@@ -25,14 +24,14 @@ class App : Application() {
         val packageName = getProcessName(this)
         println("process name: ${packageName}.")
         if (packageName.endsWith(":broadcast")) { // broadcast进程
-            IPCManager.installAndroid(IPCStore.broadcastProcessAddress)
+            IPCManager.install(InitConfig(ProcessManager.Address.broadcastProcessAddress))
         } else if (packageName.endsWith(":provider")) { // provider进程
-            IPCManager.installAndroid(IPCStore.providerProcessAddress)
+            IPCManager.install(InitConfig(ProcessManager.Address.providerProcessAddress))
         } else if (!packageName.contains(":")) { // main进程
-            IPCManager.installAndroid(IPCStore.mainProcessAddress)
+            IPCManager.install(InitConfig(ProcessManager.Address.mainProcessAddress))
         }
 
-        StrictMode.enableDefaults();
+        StrictMode.enableDefaults()
 
         Class.forName("dalvik.system.CloseGuard")
             .getMethod("setEnabled", Boolean::class.javaPrimitiveType)

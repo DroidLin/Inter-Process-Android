@@ -27,19 +27,10 @@ class InterfaceReflectTest {
     private val appContext: Context
         get() = InstrumentationRegistry.getInstrumentation().targetContext
 
-    private val remoteProcessAddress: Address
-        get() {
-            return broadcast(
-                context = appContext,
-                broadcastAction = appContext.getString(R.string.broadcast_action_lib_ipc)
-            )
-        }
-
     private val interfaceService: InterfaceReflectionService
         get() {
             if (this.interfaceServiceCache == null) {
-                this.interfaceServiceCache = IPCProvider.on(remoteProcessAddress)
-                    .serviceCreate(InterfaceReflectionService::class.java)
+                this.interfaceServiceCache = ProcessManager.fromBroadcastProcess(InterfaceReflectionService::class.java, "HelloWorld!")
             }
             return requireNotNull(this.interfaceServiceCache)
         }

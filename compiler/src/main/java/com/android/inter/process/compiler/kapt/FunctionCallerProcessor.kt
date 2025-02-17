@@ -5,6 +5,7 @@ import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.annotation.IPCFunction
 import com.android.inter.process.framework.annotation.IPCService
 import org.jetbrains.annotations.NotNull
+import org.jetbrains.annotations.Nullable
 import javax.annotation.processing.ProcessingEnvironment
 import javax.annotation.processing.RoundEnvironment
 import javax.lang.model.element.ElementKind
@@ -42,6 +43,7 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
     }
 
     importOperation(NotNull::class.java.canonicalName)
+    importOperation(Nullable::class.java.canonicalName)
     importOperation(Override::class.java.canonicalName)
     importOperation(FunctionCallAdapter::class.java.canonicalName)
     importOperation(typeElement.qualifiedName.toString())
@@ -90,8 +92,12 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
         .appendLine("\t@${NotNull::class.java.simpleName}")
         .appendLine("\tprivate final ${FunctionCallAdapter::class.java.simpleName} mTransformer;")
         .appendLine()
-        .appendLine("\tpublic ${typeElement.callerFileName}(@${NotNull::class.java.simpleName} ${FunctionCallAdapter::class.java.simpleName} mTransformer) {")
+        .appendLine("\t@${Nullable::class.java.simpleName}")
+        .appendLine("\tprivate final ${String::class.java.simpleName} mUniqueKey;")
+        .appendLine()
+        .appendLine("\tpublic ${typeElement.callerFileName}(@${NotNull::class.java.simpleName} ${FunctionCallAdapter::class.java.simpleName} mTransformer, @${Nullable::class.java.simpleName} ${String::class.java.simpleName} mUniqueKey) {")
         .appendLine("\t\tthis.mTransformer = mTransformer;")
+        .appendLine("\t\tthis.mUniqueKey = mUniqueKey;")
         .appendLine("\t}")
         .appendLine()
         .apply {
@@ -139,6 +145,7 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
                             appendLine("\t\t${if (isReturnValueExist) "return (${element.returnType.simpleName}) " else ""}this.mTransformer.call(")
                             appendLine("\t\t\tJvmMethodRequestKt.request(")
                             appendLine("\t\t\t\t${typeElement.simpleName}.class,")
+                            appendLine("\t\t\t\tthis.mUniqueKey,")
                             appendLine("\t\t\t\t\"${element.identifier}\",")
                             appendLine("\t\t\t\tCollectionsKt.listOf(${parametersString}),")
                             appendLine("\t\t\t\t${isSuspendExecutable}")
@@ -158,6 +165,7 @@ private fun createCallerForIPCServiceType(typeElement: TypeElement): String {
                             appendLine("\t\t\tthis.mTransformer,")
                             appendLine("\t\t\tJvmMethodRequestKt.request(")
                             appendLine("\t\t\t\t${typeElement.simpleName}.class,")
+                            appendLine("\t\t\t\tthis.mUniqueKey,")
                             appendLine("\t\t\t\t\"${element.identifier}\",")
                             appendLine("\t\t\t\tCollectionsKt.listOf(${parametersString}),")
                             appendLine("\t\t\t\t${isSuspendExecutable}")

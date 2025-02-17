@@ -16,16 +16,16 @@ import com.android.inter.process.framework.reflect.callerFunction
  */
 internal class AndroidComponent : Component<AndroidAddress> {
 
-    override fun <T : Any> serviceCreate(serviceCreateResource: ServiceCreateResource<T, AndroidAddress>): T {
+    override fun <T> serviceCreate(serviceCreateResource: ServiceCreateResource<T, AndroidAddress>): T {
         val targetAddress = serviceCreateResource.interProcessAddress
         // if we are going to connect to local process, just skip and return the target instance.
-        if (targetAddress == IPCManager.currentAddress) {
-            return objectPool.getInstance(serviceCreateResource.clazz)
+        if (targetAddress == processAddress) {
+            return objectPool.getInstance(serviceCreateResource.clazz, serviceCreateResource.uniqueKey)
         }
         val connector = AndroidConnectorHandle(targetAddress, ::functionAndroidConnectionHandle)
         val functionCall = AndroidFunctionCallAdapter(connector::tryConnect)
         val clazz = serviceCreateResource.clazz
-        return objectPool.getCaller(clazz = clazz, functionCallAdapter = functionCall)
-            ?: clazz.callerFunction(InvocationCallerAndroid(functionCallAdapter = functionCall))
+        return objectPool.getCaller(clazz, serviceCreateResource.uniqueKey, functionCall)
+            ?: clazz.callerFunction(InvocationCallerAndroid(functionCall, serviceCreateResource.uniqueKey))
     }
 }

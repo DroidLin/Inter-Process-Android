@@ -1,5 +1,6 @@
 package com.android.inter.process.framework.reflect
 
+import com.android.inter.process.framework.exceptions.ImplementationNotFoundException
 import com.android.inter.process.framework.objectPool
 import com.android.inter.process.framework.reflect.AndroidServiceMethod.AndroidReceiverServiceMethod
 import com.android.inter.process.framework.stringType2ClassType
@@ -50,7 +51,11 @@ private class AndroidInvocationReceiver<T>(val instance: T) : InvocationReceiver
         functionName: String,
         vararg clazz: Class<*>
     ): AndroidReceiverServiceMethod = this.serviceMethodCache.getOrPut(uniqueId) {
-        val method = hostClass.getDeclaredMethod(functionName, *clazz)
-        AndroidServiceMethod.parseReceiverServiceMethod(method)
+        try {
+            val method = hostClass.getDeclaredMethod(functionName, *clazz)
+            AndroidServiceMethod.parseReceiverServiceMethod(method)
+        } catch (exception: NoSuchMethodException) {
+            throw ImplementationNotFoundException(exception)
+        }
     }
 }
