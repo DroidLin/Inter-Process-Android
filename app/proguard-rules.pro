@@ -19,3 +19,8 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class kotlin.** { *; }
+-keep class kotlinx.** { *; }
+-keep class com.google.errorprone.annotations.MustBeClosed
+-dontwarn com.google.errorprone.annotations.MustBeClosed

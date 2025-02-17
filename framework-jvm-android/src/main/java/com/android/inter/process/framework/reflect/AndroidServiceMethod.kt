@@ -53,6 +53,11 @@ internal abstract class AndroidServiceMethod : ServiceMethod {
     }
 
     companion object {
+
+        /**
+         * check annotations on function parameters and generate specific transformer
+         * for target parameters.
+         */
         @JvmStatic
         fun parseCallerServiceMethod(method: Method): AndroidCallerServiceMethod {
             val parameterTypes = method.parameterTypes

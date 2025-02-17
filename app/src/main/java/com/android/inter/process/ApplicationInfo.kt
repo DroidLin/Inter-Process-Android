@@ -9,7 +9,7 @@ import com.android.inter.process.test.metadata.SerializableMetadata
  * @author: liuzhongao
  * @since: 2024/9/17 16:00
  */
-@IPCService
+//@IPCService
 interface ApplicationInfo {
 
     val packageName: String?

@@ -1,0 +1,4 @@
+-keep @com.android.inter.process.framework.annotation.CustomCollector class * { *; }
+-keep @com.android.inter.process.framework.annotation.IPCService class * { *; }
+-keep @com.android.inter.process.framework.annotation.IPCServiceFactory class * { *; }
+-keep @com.android.inter.process.framework.annotation.NoProguard class * { *; }

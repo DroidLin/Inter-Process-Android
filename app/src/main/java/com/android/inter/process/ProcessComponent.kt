@@ -10,3 +10,5 @@ class BroadcastReceiver1 : BroadcastAndroidReceiver()
 class Provider0 : ContentAndroidProvider()
 
 class Provider1 : ContentAndroidProvider()
+
+class Provider2 : ContentAndroidProvider()

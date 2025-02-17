@@ -4,5 +4,6 @@
     <string name="broadcast_action_main_ipc">main_process_ipc_broadcast_action</string>
     <string name="broadcast_action_lib_ipc">lib_process_ipc_broadcast_action</string>
     <string name="content_provider_main_ipc">com.android.inter.process.provider.main</string>
-    <string name="content_provider_lib_ipc">com.android.inter.process.provider.android</string>
+    <string name="content_provider_lib_ipc">com.android.inter.process.provider.broadcast</string>
+    <string name="content_provider_provider_ipc">com.android.inter.process.provider.provider</string>
 </resources>

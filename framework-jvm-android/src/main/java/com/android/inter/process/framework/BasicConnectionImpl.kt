@@ -14,7 +14,10 @@ internal fun BasicConnection(
     return BasicConnectionImpl(sourceAddress, receiverFactory)
 }
 
-
+/**
+ * real implementation in function call processor, all the inter process call will
+ * pass through this class.
+ */
 internal class BasicConnectionImpl(
     sourceAddress: ParcelableAndroidAddress,
     val invocationReceiverGetter: InvocationReceiverFactory<Any>

@@ -32,6 +32,13 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -80,4 +87,6 @@ dependencies {
     implementation(project(":framework-jvm-android"))
 //    ksp(project(":compiler"))
     kapt(project(":compiler"))
+
+    implementation("com.google.errorprone:error_prone_annotations:2.18.0")
 }

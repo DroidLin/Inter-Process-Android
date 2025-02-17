@@ -4,10 +4,12 @@ import android.os.ParcelFileDescriptor
 import com.android.inter.process.framework.ServiceFactory
 import com.android.inter.process.framework.annotation.IPCFunction
 import com.android.inter.process.framework.annotation.IPCServiceFactory
+import com.android.inter.process.framework.annotation.NoProguard
 import com.android.inter.process.test.metadata.ParcelableMetadata
 import com.android.inter.process.test.metadata.SerializableMetadata
 import java.io.FileInputStream
 
+@NoProguard
 interface InterfaceReflectionService {
 
     val versionNumber: Int

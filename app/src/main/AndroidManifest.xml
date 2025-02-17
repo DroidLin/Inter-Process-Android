@@ -31,24 +31,18 @@
             android:launchMode="singleTask"
             android:theme="@style/Theme.InterProcessAndroid" />
 
-        <receiver
-            android:name=".BroadcastReceiver0"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="main_process_ipc_broadcast_action" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name=".BroadcastReceiver1"
-            android:exported="false"
-            android:process=":broadcast">
-            <intent-filter>
-                <action android:name="lib_process_ipc_broadcast_action" />
-            </intent-filter>
-        </receiver>
         <provider
-            android:authorities="com.android.inter.process.provider.android"
+            android:authorities="com.android.inter.process.provider.main"
+            android:name=".Provider0"
+            android:exported="false" />
+        <provider
+            android:authorities="com.android.inter.process.provider.broadcast"
             android:name=".Provider1"
+            android:process=":broadcast"
+            android:exported="false" />
+        <provider
+            android:authorities="com.android.inter.process.provider.provider"
+            android:name=".Provider2"
             android:process=":provider"
             android:exported="false" />
     </application>
