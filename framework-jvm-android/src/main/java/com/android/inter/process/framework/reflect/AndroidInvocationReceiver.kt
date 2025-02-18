@@ -1,6 +1,5 @@
 package com.android.inter.process.framework.reflect
 
-import com.android.inter.process.framework.exceptions.ImplementationNotFoundException
 import com.android.inter.process.framework.objectPool
 import com.android.inter.process.framework.reflect.AndroidServiceMethod.AndroidReceiverServiceMethod
 import com.android.inter.process.framework.stringType2ClassType
@@ -26,7 +25,7 @@ private class AndroidInvocationReceiver<T>(val instance: T) : InvocationReceiver
     private val serviceMethodCache by lazy { ConcurrentHashMap<String, AndroidReceiverServiceMethod>() }
 
     override fun invoke(invocationParameter: InvocationParameter): Any? {
-        return loadServiceMethod(
+        return parseServiceMethod(
             hostClass = invocationParameter.declaredClassFullName.stringType2ClassType,
             uniqueId = invocationParameter.methodUniqueId,
             functionName = invocationParameter.methodName,
@@ -36,7 +35,7 @@ private class AndroidInvocationReceiver<T>(val instance: T) : InvocationReceiver
 
     override suspend fun invokeSuspend(invocationParameter: InvocationParameter): Any? {
         return suspendCoroutineUninterceptedOrReturn { continuation ->
-            loadServiceMethod(
+            parseServiceMethod(
                 hostClass = invocationParameter.declaredClassFullName.stringType2ClassType,
                 uniqueId = invocationParameter.methodUniqueId,
                 functionName = invocationParameter.methodName,
@@ -45,17 +44,15 @@ private class AndroidInvocationReceiver<T>(val instance: T) : InvocationReceiver
         }
     }
 
-    private fun loadServiceMethod(
+    private fun parseServiceMethod(
         hostClass: Class<*>,
         uniqueId: String,
         functionName: String,
         vararg clazz: Class<*>
-    ): AndroidReceiverServiceMethod = this.serviceMethodCache.getOrPut(uniqueId) {
-        try {
+    ): AndroidReceiverServiceMethod {
+        return this.serviceMethodCache.getOrPut(uniqueId) {
             val method = hostClass.getDeclaredMethod(functionName, *clazz)
             AndroidServiceMethod.parseReceiverServiceMethod(method)
-        } catch (exception: NoSuchMethodException) {
-            throw ImplementationNotFoundException(exception)
         }
     }
 }

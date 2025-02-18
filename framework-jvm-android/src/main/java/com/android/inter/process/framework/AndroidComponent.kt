@@ -22,7 +22,7 @@ internal class AndroidComponent : Component<AndroidAddress> {
         if (targetAddress == processAddress) {
             return objectPool.getInstance(serviceCreateResource.clazz, serviceCreateResource.uniqueKey)
         }
-        val connector = AndroidConnectorHandle(targetAddress, ::functionAndroidConnectionHandle)
+        val connector = AndroidConnectorHandle(targetAddress, connectTimeout, ::functionAndroidConnectionHandle)
         val functionCall = AndroidFunctionCallAdapter(connector::tryConnect)
         val clazz = serviceCreateResource.clazz
         return objectPool.getCaller(clazz, serviceCreateResource.uniqueKey, functionCall)

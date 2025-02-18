@@ -4,6 +4,7 @@ import com.android.inter.process.framework.FunctionCallAdapter
 import com.android.inter.process.framework.JvmReflectMethodRequest
 import com.android.inter.process.framework.Request
 import com.android.inter.process.framework.objectPool
+import com.android.inter.process.framework.reflectRequest
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
@@ -33,7 +34,7 @@ fun interface InvocationCaller {
                 throw IllegalArgumentException("suspend function with invalid parameters.")
             } else parameters)?.toList() ?: emptyList()
 
-            return JvmReflectMethodRequest(
+            return reflectRequest(
                 declaredClassFullName = method.declaringClass.name,
                 hostUniqueKey = hostUniqueKey,
                 methodName = method.name,

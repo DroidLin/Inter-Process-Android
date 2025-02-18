@@ -13,7 +13,6 @@ import com.android.inter.process.framework.ServiceFactory
  *
  * @param interfaceClazz implementation of this factory is generated to.
  * @param uniqueKey unique key for this implementation.
- *
  */
 @Retention(value = AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)

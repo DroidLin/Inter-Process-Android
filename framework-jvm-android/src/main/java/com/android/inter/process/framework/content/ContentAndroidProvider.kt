@@ -19,13 +19,7 @@ abstract class ContentAndroidProvider : ContentProvider() {
         return true
     }
 
-    override fun query(
-        uri: Uri,
-        projection: Array<out String>?,
-        selection: String?,
-        selectionArgs: Array<out String>?,
-        sortOrder: String?
-    ): Cursor? {
+    override fun query(uri: Uri, projection: Array<out String>?, selection: String?, selectionArgs: Array<out String>?, sortOrder: String?): Cursor? {
         return null
     }
 
@@ -58,14 +52,11 @@ abstract class ContentAndroidProvider : ContentProvider() {
     }
 
     private fun onIPConnectionEstablished(extras: Bundle?): Bundle? {
-        return extras?.run {
-            classLoader = ConnectContext::class.java.classLoader
-            val connectContext = connectContext
-            if (connectContext != null) {
-                Bundle().apply {
-                    this.connectContext = handleConnectAndReturn(connectContext)
-                }
-            } else null
-        }
+        val connectContext = extras?.connectContext
+        return if (connectContext != null) {
+            val newBundle = Bundle()
+            newBundle.connectContext = handleConnectAndReturn(connectContext)
+            newBundle
+        } else null
     }
 }

@@ -14,4 +14,12 @@ open class InitConfig(
      * controls debug logs print during runtime.
      */
     val debugMode: Boolean = false,
+
+    /**
+     * time milliseconds in connecting to remote, if remote is not respond,
+     * an ConnectTimeoutException is thrown
+     *
+     * see [com.android.inter.process.framework.exceptions.ConnectTimeoutException] for more information.
+     */
+    val connectTimeout: Long = 10_000L
 )

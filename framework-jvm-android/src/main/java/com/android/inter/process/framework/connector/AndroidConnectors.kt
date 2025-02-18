@@ -14,11 +14,12 @@ internal const val FUNCTION_CONTENT_PROVIDER_CONNECT = "function_content_provide
 
 internal fun AndroidConnectorHandle(
     androidAddress: AndroidAddress,
+    connectTimeout: Long,
     functionHandle: (AndroidAddress, ConnectContext) -> ConnectContext?
 ): AndroidConnector<AndroidAddress> = object : AndroidConnector<AndroidAddress> {
     override val address: AndroidAddress get() = androidAddress
     override suspend fun tryConnect(): BasicConnection =
-        doConnect(this.address) { functionHandle(this.address, it) }
+        doConnect(this.address, connectTimeout) { functionHandle(this.address, it) }
 }
 
 internal fun functionAndroidConnectionHandle(
@@ -48,7 +49,6 @@ private fun contentProviderConnectionInner(contentProviderAddress: ContentProvid
     bundle.connectContext = connectContext
     return requireNotNull(
         contentProviderAddress.context.contentResolver.call(uri, FUNCTION_CONTENT_PROVIDER_CONNECT, "", bundle)
-            ?.apply { classLoader = ConnectContext::class.java.classLoader }
             ?.connectContext
     )
 }

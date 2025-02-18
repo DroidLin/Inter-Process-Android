@@ -12,7 +12,13 @@ import kotlin.coroutines.Continuation
  * @since 2024/9/18 17:04
  */
 data class JvmReflectMethodRequest internal constructor(
+    /**
+     * which implementation this request is request for.
+     */
     val declaredClassFullName: String,
+    /**
+     * unique key represent remote specific implementation.
+     */
     val hostUniqueKey: String?,
     /**
      * name of calling method.
@@ -48,7 +54,7 @@ fun reflectRequest(
     methodParameterValues: List<Any?>,
     uniqueId: String,
     continuation: Continuation<Any?>? = null
-): Request {
+): JvmReflectMethodRequest {
     return JvmReflectMethodRequest(
         declaredClassFullName = declaredClassFullName,
         hostUniqueKey = hostUniqueKey,

@@ -42,12 +42,16 @@ internal var Bundle.connectContext: ConnectContext?
     set(value) {
         this.putParcelable(KEY_CONNECT_CONTEXT, value)
     }
-    get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        this.getParcelable(KEY_CONNECT_CONTEXT, ConnectContext::class.java)
-    } else this.getParcelable(KEY_CONNECT_CONTEXT)
+    get() {
+        classLoader = ConnectContext::class.java.classLoader
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            this.getParcelable(KEY_CONNECT_CONTEXT, ConnectContext::class.java)
+        } else this.getParcelable(KEY_CONNECT_CONTEXT)
+    }
 
 internal suspend fun doConnect(
     address: AndroidAddress,
+    connectTimeout: Long,
     typeOfConnection: (ConnectContext) -> ConnectContext?
 ): BasicConnection {
     val newParcelableAddress = address.toParcelableAddress()
@@ -58,7 +62,7 @@ internal suspend fun doConnect(
         }
         return basicConnection
     }
-    // we need to wait if there is an existing task.
+    // we need to wait if there is an existing connection task.
     val firstCheckTask = FunctionConnectionPool.getRecord(newParcelableAddress)
     if (firstCheckTask != null) {
         if (isDebugMode) {
@@ -67,7 +71,7 @@ internal suspend fun doConnect(
         return firstCheckTask.deferred.await()
     }
     return FunctionConnectionPool.useMutex(newParcelableAddress).withLock {
-        // now we check the connection again.
+        // now we check the connection again, trying to get previous running result.
         val newBasicConnection = FunctionConnectionPool[newParcelableAddress]
         if (newBasicConnection != null && newBasicConnection.isConnected) {
             if (isDebugMode) {
@@ -80,8 +84,6 @@ internal suspend fun doConnect(
             try {
                 if (isDebugMode) {
                     Logger.logDebug("<<<<<<<<<<<<<<<<<<<<<<<<< Do Real Connect Inner >>>>>>>>>>>>>>>>>>>>>>>>>")
-                }
-                if (isDebugMode) {
                     Logger.logDebug("trying connect to remote: ${newParcelableAddress}.")
                 }
                 val newTask = ConnectRunningTask(
@@ -89,7 +91,7 @@ internal suspend fun doConnect(
                         doConnectInner(
                             coroutineScope = this@connectionScope,
                             destAddress = newParcelableAddress,
-                            connectTimeout = 10_000,
+                            connectTimeout = connectTimeout,
                             typeOfConnection = typeOfConnection
                         )
                     }
@@ -141,7 +143,7 @@ internal suspend fun doConnectInner(
             timeoutJob.cancel()
             if (remoteConnectContext.sourceAddress == destAddress) {
                 remoteConnectContext.basicConnection
-            } else throw IllegalArgumentException("unsatisfied source address: ${connectContext.sourceAddress} and destination address: ${destAddress}.")
+            } else throw IllegalArgumentException("unsatisfied source address: ${sourceAddress} and destination address: ${destAddress}.")
         } else COROUTINE_SUSPENDED
     }
 }

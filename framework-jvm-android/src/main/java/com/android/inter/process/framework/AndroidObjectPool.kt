@@ -1,8 +1,8 @@
 package com.android.inter.process.framework
 
+import com.android.inter.process.framework.exceptions.ImplementationNotFoundException
 import com.android.inter.process.framework.reflect.InvocationReceiver
 import com.android.inter.process.framework.reflect.InvocationReceiverAndroid
-import java.lang.reflect.InvocationHandler
 import java.util.concurrent.ConcurrentHashMap
 
 internal class AndroidObjectPool : ObjectPool {
@@ -79,7 +79,7 @@ internal class AndroidObjectPool : ObjectPool {
         val key = calculateUniqueKeys(clazz, uniqueKey)
         return this.instanceCache.getOrPut(key) {
             val cacheInInstanceFactory = this.instanceFactoryCache[key] as? ServiceFactory<T>
-                ?: error("there is no receiver or the instance $clazz factory registered in object pool.")
+                ?: throw ImplementationNotFoundException("there is no receiver or the instance $clazz factory registered in object pool.")
             cacheInInstanceFactory.serviceCreate() as Any
         } as T
     }
