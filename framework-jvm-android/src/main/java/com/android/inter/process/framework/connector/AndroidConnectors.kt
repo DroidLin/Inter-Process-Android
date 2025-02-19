@@ -1,13 +1,12 @@
 package com.android.inter.process.framework.connector
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import com.android.inter.process.framework.BasicConnection
 import com.android.inter.process.framework.address.AndroidAddress
 import com.android.inter.process.framework.address.AndroidAddress.Companion.packageName
-import com.android.inter.process.framework.address.BroadcastAndroidAddress
-import com.android.inter.process.framework.address.ContentProviderAndroidAddress
+import com.android.inter.process.framework.address.BroadcastAddress
+import com.android.inter.process.framework.address.ContentProviderAddress
 import com.android.inter.process.framework.metadata.ConnectContext
 
 internal const val FUNCTION_CONTENT_PROVIDER_CONNECT = "function_content_provider_connect"
@@ -27,28 +26,29 @@ internal fun functionAndroidConnectionHandle(
     connectContext: ConnectContext
 ): ConnectContext? {
     return when (remoteAddress) {
-        is BroadcastAndroidAddress -> {
+        is BroadcastAddress -> {
             broadcastConnectionInner(remoteAddress, connectContext)
             null
         }
-        is ContentProviderAndroidAddress -> contentProviderConnectionInner(remoteAddress, connectContext)
+        is ContentProviderAddress -> contentProviderConnectionInner(remoteAddress, connectContext)
         else -> null
     }
 }
 
-private fun broadcastConnectionInner(broadcastAddress: BroadcastAndroidAddress, connectContext: ConnectContext) {
+private fun broadcastConnectionInner(broadcastAddress: BroadcastAddress, connectContext: ConnectContext) {
     val intent = Intent(broadcastAddress.broadcastAction)
     intent.`package` = broadcastAddress.packageName
     intent.connectContext = connectContext
     broadcastAddress.context.sendBroadcast(intent)
 }
 
-private fun contentProviderConnectionInner(contentProviderAddress: ContentProviderAndroidAddress, connectContext: ConnectContext): ConnectContext {
+private fun contentProviderConnectionInner(contentProviderAddress: ContentProviderAddress, connectContext: ConnectContext): ConnectContext {
     val uri = contentProviderAddress.uri
     val bundle = Bundle()
     bundle.connectContext = connectContext
-    return requireNotNull(
-        contentProviderAddress.context.contentResolver.call(uri, FUNCTION_CONTENT_PROVIDER_CONNECT, "", bundle)
-            ?.connectContext
-    )
+    val targetContext = contentProviderAddress.context
+        .contentResolver
+        .call(uri, FUNCTION_CONTENT_PROVIDER_CONNECT, null, bundle)
+        ?.connectContext
+    return requireNotNull(targetContext)
 }

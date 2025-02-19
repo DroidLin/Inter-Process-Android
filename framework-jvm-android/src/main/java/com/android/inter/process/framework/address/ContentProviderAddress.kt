@@ -2,15 +2,15 @@ package com.android.inter.process.framework.address
 
 import android.content.Context
 import android.net.Uri
+import android.content.ContentProvider
 
 /**
- * address used to connect to remote process through
- * android-based-component [android.content.ContentProvider]
+ * address to connect to remote process through [ContentProvider]
  *
  * @author: liuzhongao
  * @since: 2024/9/16 11:59
  */
-internal data class ContentProviderAndroidAddress(
+internal data class ContentProviderAddress(
     override val context: Context,
     val authorities: String,
 ) : AndroidAddress {
@@ -21,7 +21,7 @@ internal data class ContentProviderAndroidAddress(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as ContentProviderAndroidAddress
+        other as ContentProviderAddress
 
         if (context.packageName != other.context.packageName) return false
         if (authorities != other.authorities) return false

@@ -49,9 +49,7 @@ object IPCManager {
     @JvmStatic
     internal fun <A : Address> findComponent(clazz: Class<A>): Component<A> {
         val component = this.component[clazz]
-        if (component == null) {
-            throw NullPointerException("Can not find Component related to address type: ${clazz}, have you installed component yet?")
-        }
+            ?: throw NullPointerException("Can not find Component related to address type: ${clazz}, have you installed component yet?")
         return component as Component<A>
     }
 

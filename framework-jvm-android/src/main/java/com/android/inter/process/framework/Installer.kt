@@ -1,8 +1,8 @@
 package com.android.inter.process.framework
 
 import com.android.inter.process.framework.address.AndroidAddress
-import com.android.inter.process.framework.address.BroadcastAndroidAddress
-import com.android.inter.process.framework.address.ContentProviderAndroidAddress
+import com.android.inter.process.framework.address.BroadcastAddress
+import com.android.inter.process.framework.address.ContentProviderAddress
 import com.android.inter.process.framework.metadata.InitConfig
 
 /**
@@ -14,8 +14,8 @@ import com.android.inter.process.framework.metadata.InitConfig
 fun IPCManager.install(config: InitConfig) {
     val androidComponent = AndroidComponent()
     installComponent(AndroidAddress::class.java, androidComponent)
-    installComponent(BroadcastAndroidAddress::class.java, androidComponent)
-    installComponent(ContentProviderAndroidAddress::class.java, androidComponent)
+    installComponent(BroadcastAddress::class.java, androidComponent)
+    installComponent(ContentProviderAddress::class.java, androidComponent)
     installConfig(config)
     installDependencies()
 }

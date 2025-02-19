@@ -1,15 +1,15 @@
 package com.android.inter.process.framework.address
 
 import android.content.Context
+import android.content.BroadcastReceiver
 
 /**
- * address used to connect to remote process through
- * android-based-component [android.content.BroadcastReceiver]
+ * address to connect to remote process through [BroadcastReceiver]
  *
  * @author: liuzhongao
  * @since: 2024/9/13 00:24
  */
-internal data class BroadcastAndroidAddress(
+internal data class BroadcastAddress(
     override val context: Context,
     val broadcastAction: String,
 ) : AndroidAddress {
@@ -18,7 +18,7 @@ internal data class BroadcastAndroidAddress(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as BroadcastAndroidAddress
+        other as BroadcastAddress
 
         if (context.packageName != other.context.packageName) return false
         if (broadcastAction != other.broadcastAction) return false

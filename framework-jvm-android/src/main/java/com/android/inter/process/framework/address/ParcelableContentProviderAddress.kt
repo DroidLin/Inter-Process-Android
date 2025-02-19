@@ -13,7 +13,7 @@ internal data class ParcelableContentProviderAddress(
     val authorities: String,
 ) : ParcelableAndroidAddress {
 
-    constructor(address: ContentProviderAndroidAddress) : this(
+    constructor(address: ContentProviderAddress) : this(
         packageName = address.packageName,
         authorities = address.authorities
     )

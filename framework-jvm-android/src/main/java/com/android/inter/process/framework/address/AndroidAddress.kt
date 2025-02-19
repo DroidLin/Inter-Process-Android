@@ -4,7 +4,10 @@ import android.content.Context
 import com.android.inter.process.framework.Address
 
 /**
- * address represent
+ * Represents the Android process name.
+ * Each process should be unique and there must be only one.
+ *
+ * see [BroadcastAddress], [ContentProviderAddress] for more information.
  *
  * @author: liuzhongao
  * @since: 2024/9/13 00:24
@@ -18,8 +21,8 @@ sealed interface AndroidAddress : Address {
     companion object {
         internal fun <T : AndroidAddress> T.toParcelableAddress(): ParcelableAndroidAddress {
             return when (this) {
-                is BroadcastAndroidAddress -> ParcelableBroadcastAndroidAddress(this)
-                is ContentProviderAndroidAddress -> ParcelableContentProviderAddress(this)
+                is BroadcastAddress -> ParcelableBroadcastAndroidAddress(this)
+                is ContentProviderAddress -> ParcelableContentProviderAddress(this)
                 else -> throw IllegalArgumentException("unsupported address type: ${this.javaClass}.")
             }
         }

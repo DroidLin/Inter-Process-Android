@@ -1,7 +1,6 @@
 package com.android.inter.process.framework.address
 
 import android.content.Context
-import com.android.inter.process.framework.Address
 
 /**
  * @author: liuzhongao
@@ -12,7 +11,7 @@ fun broadcast(
     context: Context,
     broadcastAction: String,
 ): AndroidAddress {
-    return BroadcastAndroidAddress(
+    return BroadcastAddress(
         context = context,
         broadcastAction = broadcastAction
     )
@@ -22,7 +21,7 @@ fun provider(
     context: Context,
     authorities: String,
 ): AndroidAddress {
-    return ContentProviderAndroidAddress(
+    return ContentProviderAddress(
         context = context,
         authorities = authorities
     )

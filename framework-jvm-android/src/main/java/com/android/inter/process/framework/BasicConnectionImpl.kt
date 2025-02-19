@@ -5,11 +5,15 @@ import com.android.inter.process.framework.metadata.ConnectContext
 import com.android.inter.process.framework.reflect.InvocationParameter
 import com.android.inter.process.framework.reflect.InvocationReceiver
 
-typealias InvocationReceiverFactory<T> = (Class<T>, String?) -> InvocationReceiver<T>
+internal typealias InvocationReceiverFactory<T> = (Class<T>, String?) -> InvocationReceiver<T>
+
+internal val defaultFactory: InvocationReceiverFactory<Any> = { clazz, uniqueKey ->
+    objectPool.getReceiver(clazz, uniqueKey)
+}
 
 internal fun BasicConnection(
     sourceAddress: ParcelableAndroidAddress,
-    receiverFactory: InvocationReceiverFactory<Any> = { clazz, uniqueKey -> objectPool.getReceiver(clazz, uniqueKey) }
+    receiverFactory: InvocationReceiverFactory<Any> = defaultFactory
 ): BasicConnection {
     return BasicConnectionImpl(sourceAddress, receiverFactory)
 }

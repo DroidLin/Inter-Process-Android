@@ -13,9 +13,9 @@ internal data class ParcelableBroadcastAndroidAddress(
     val broadcastAction: String,
 ) : ParcelableAndroidAddress {
 
-    constructor(broadcastAndroidAddress: BroadcastAndroidAddress) : this(
-        packageName = broadcastAndroidAddress.packageName,
-        broadcastAction = broadcastAndroidAddress.broadcastAction
+    constructor(broadcastAddress: BroadcastAddress) : this(
+        packageName = broadcastAddress.packageName,
+        broadcastAction = broadcastAddress.broadcastAction
     )
 
     constructor(parcel: Parcel) : this(
