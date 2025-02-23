@@ -15,19 +15,19 @@ object ProcessManager {
 
     @JvmOverloads
     fun <T> fromMainProcess(clazz: Class<T>, uniqueKey: String? = null): T {
-        return this.getProviderInstance(Address.mainProcessAddress)
+        return this.getProviderInstance(ProcessAddress.main)
             .serviceCreate(clazz, uniqueKey)
     }
 
     @JvmOverloads
     fun <T> fromBroadcastProcess(clazz: Class<T>, uniqueKey: String? = null): T {
-        return this.getProviderInstance(Address.broadcastProcessAddress)
+        return this.getProviderInstance(ProcessAddress.broadcast)
             .serviceCreate(clazz, uniqueKey)
     }
 
     @JvmOverloads
     fun <T> fromProviderProcess(clazz: Class<T>, uniqueKey: String? = null): T {
-        return this.getProviderInstance(Address.providerProcessAddress)
+        return this.getProviderInstance(ProcessAddress.provider)
             .serviceCreate(clazz, uniqueKey)
     }
 
@@ -35,15 +35,15 @@ object ProcessManager {
         return this.providers.getOrPut(address) { IPCProvider.on(address) }
     }
 
-    object Address {
+    object ProcessAddress {
 
-        val mainProcessAddress: AndroidAddress
+        val main: AndroidAddress
             get() = provider(context, context.getString(R.string.content_provider_main_ipc))
 
-        val broadcastProcessAddress: AndroidAddress
+        val broadcast: AndroidAddress
             get() = provider(context, context.getString(R.string.content_provider_lib_ipc))
 
-        val providerProcessAddress: AndroidAddress
+        val provider: AndroidAddress
             get() = provider(context, context.getString(R.string.content_provider_provider_ipc))
 
     }

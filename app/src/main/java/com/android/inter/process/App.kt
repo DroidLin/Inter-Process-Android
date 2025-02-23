@@ -24,11 +24,11 @@ class App : Application() {
         val packageName = getProcessName(this)
         println("process name: ${packageName}.")
         if (packageName.endsWith(":broadcast")) { // broadcast进程
-            IPCManager.install(InitConfig(ProcessManager.Address.broadcastProcessAddress))
+            IPCManager.install(InitConfig(ProcessManager.ProcessAddress.broadcast))
         } else if (packageName.endsWith(":provider")) { // provider进程
-            IPCManager.install(InitConfig(ProcessManager.Address.providerProcessAddress))
+            IPCManager.install(InitConfig(ProcessManager.ProcessAddress.provider))
         } else if (!packageName.contains(":")) { // main进程
-            IPCManager.install(InitConfig(ProcessManager.Address.mainProcessAddress))
+            IPCManager.install(InitConfig(ProcessManager.ProcessAddress.main))
         }
 
         StrictMode.enableDefaults()

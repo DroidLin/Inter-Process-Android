@@ -32,16 +32,16 @@
             android:theme="@style/Theme.InterProcessAndroid" />
 
         <provider
-            android:authorities="com.android.inter.process.provider.main"
+            android:authorities="@string/content_provider_main_ipc"
             android:name=".Provider0"
             android:exported="false" />
         <provider
-            android:authorities="com.android.inter.process.provider.broadcast"
+            android:authorities="@string/content_provider_lib_ipc"
             android:name=".Provider1"
             android:process=":broadcast"
             android:exported="false" />
         <provider
-            android:authorities="com.android.inter.process.provider.provider"
+            android:authorities="@string/content_provider_provider_ipc"
             android:name=".Provider2"
             android:process=":provider"
             android:exported="false" />

@@ -84,12 +84,12 @@ private class BasicConnectionCaller(val function: AndroidFunction) : BasicConnec
     }
 
     override fun call(request: AndroidJvmMethodRequest): Any? {
-        checkParameters(request)
+        checkRequest(request)
         return this.function.call(request).dataOrThrow
     }
 
     override suspend fun callSuspend(request: AndroidJvmMethodRequest): Any? {
-        checkParameters(request)
+        checkRequest(request)
         return suspendCoroutineUninterceptedOrReturn { continuation ->
             val safeContinuation = SafeContinuation(continuation)
             var deathListener: AndroidFunction.DeathListener? = null
@@ -144,12 +144,12 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
                         override val context: CoroutineContext get() = ConnectionCoroutineDispatcherScope.coroutineContext
                         override fun resumeWith(result: Result<Any?>) {
                             val response = result.toResponse()
-                            val checkResult = kotlin.runCatching { checkParameters(response) }
+                            val checkResult = kotlin.runCatching { checkResponse(response) }
                             if (checkResult.isFailure) {
                                 functionCallback(DefaultResponse(null, checkResult.exceptionOrNull()))
                                 return
                             }
-                            functionCallback(result.toResponse())
+                            functionCallback(response)
                         }
                     }
                     (this::callSuspend as Function2<AndroidRequest, Continuation<*>, Any?>)(request, continuation)
@@ -164,11 +164,9 @@ private class BasicConnectionReceiver(basicConnection: BasicConnection) : BasicC
                     }
                 }
                 else -> null
-            }
+            }?.also(::checkResponse)
         }.onFailure { Logger.logError(it) }
-        val response = result.toResponse()
-        checkParameters(response)
-        response
+        result.toResponse()
     }
 }
 
