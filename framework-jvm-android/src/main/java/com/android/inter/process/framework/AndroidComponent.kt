@@ -18,7 +18,7 @@ internal class AndroidComponent : Component<AndroidAddress> {
 
     override fun <T> serviceCreate(serviceCreateResource: ServiceCreateResource<T, AndroidAddress>): T {
         val targetAddress = serviceCreateResource.interProcessAddress
-        // if we are going to connect to local process, just skip and return the target instance.
+        // if we are going to connect to local process, just skip and return the target instance instead.
         if (targetAddress == processAddress) {
             return objectPool.getInstance(serviceCreateResource.clazz, serviceCreateResource.uniqueKey)
         }
