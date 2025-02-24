@@ -1,12 +1,5 @@
 package com.android.inter.process.framework
 
-import java.io.FileDescriptor
-
-/**
- * @author: liuzhongao
- * @since: 2024/9/15 11:11
- */
-
 val defaultReturnType: List<Class<*>> = listOfNotNull(
     Void::class.java,
     Void::class.javaPrimitiveType,
