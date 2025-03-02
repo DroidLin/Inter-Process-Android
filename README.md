@@ -7,11 +7,8 @@ sorry the repository does not provide compiled packages yet, we will publish lat
 # How to use
 - declare your process installations.
 ```kotlin
-
 object ProcessManager {
-
     private val context: Context get() = App.context
-
     private val providers = ConcurrentHashMap<Address, IPCProvider>()
 
     /**
@@ -52,6 +49,46 @@ object ProcessManager {
             get() = provider(context, context.getString(R.string.content_provider_provider_ipc))
     }
 }
+```
+- then in ```AndroidManifest.xml``` add android-component:
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <provider
+            android:authorities="@string/content_provider_main_ipc"
+            android:name=".Provider0"
+            android:exported="false" />
+        <provider
+            android:authorities="@string/content_provider_lib_ipc"
+            android:name=".Provider1"
+            android:process=":broadcast"
+            android:exported="false" />
+        <provider
+            android:authorities="@string/content_provider_provider_ipc"
+            android:name=".Provider2"
+            android:process=":provider"
+            android:exported="false" />
+    </application>
+</manifest>
+```
+- declare android component:
+```kotlin
+// class ProcessComponent
+class Provider0 : ContentAndroidProvider()
+
+class Provider1 : ContentAndroidProvider()
+
+class Provider2 : ContentAndroidProvider()
+```
+- declare provider authorities
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <string name="content_provider_main_ipc">com.android.inter.process.provider.main</string>
+    <string name="content_provider_lib_ipc">com.android.inter.process.provider.broadcast</string>
+    <string name="content_provider_provider_ipc">com.android.inter.process.provider.provider</string>
+</resources>
 ```
 - declare your own interface
 ```kotlin
