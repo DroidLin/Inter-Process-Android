@@ -124,6 +124,12 @@ class MyInterfaceServiceFactory : ServiceFactory<MyInterface> {
         return MyInterfaceServiceB()
     }
 }
+
+fun main() {
+    val myInterfaceA = ProcessManager.fromPlayerProcess(MyInterface::class.java, KEY_INTERFACE_A)
+    val myInterfaceB = ProcessManager.fromPlayerProcess(MyInterface::class.java, KEY_INTERFACE_B)
+    // do your jobs.
+}
 ```
 
 # LICENSE
