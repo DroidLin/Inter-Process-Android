@@ -36,6 +36,7 @@ interface InterfaceGeneratorService {
     fun parcelableMetadata(): ParcelableMetadata
     fun String.numberOfChar(): Int
     fun ParcelFileDescriptor.content(): String
+    fun ParcelFileDescriptor?.nullableContent(): String?
 
     fun noReturnValue()
     fun noReturnValueOneParameter(number: Int)
@@ -65,7 +66,7 @@ interface InterfaceGeneratorService {
     suspend fun ParcelFileDescriptor.suspendContent(): String
 
     suspend fun suspendNoReturnValue()
-    suspend fun suspendNoReturnValueOneParameter(number: Int)
+    suspend fun suspendNoReturnValueOneParameter(number: Int?)
     suspend fun suspendNoReturnValueTwoParameter(number: Int, str: String)
     suspend fun suspendNoReturnValueThreeParameter(number: Int, str: String, serializableMetadata: SerializableMetadata)
     suspend fun suspendNoReturnValueFourParameter(number: Int, str: String, serializableMetadata: SerializableMetadata, parcelableMetadata: ParcelableMetadata)
@@ -130,6 +131,10 @@ class InterfaceGeneratorServiceImplementation : InterfaceGeneratorService {
 
     override fun ParcelFileDescriptor.content(): String {
         return use { FileInputStream(it.fileDescriptor).bufferedReader().readText() }
+    }
+
+    override fun ParcelFileDescriptor?.nullableContent(): String? {
+        return this?.use { FileInputStream(it.fileDescriptor).bufferedReader().readText() }
     }
 
     override fun noReturnValue() {
@@ -229,7 +234,7 @@ class InterfaceGeneratorServiceImplementation : InterfaceGeneratorService {
         println("suspendNoReturnValue.")
     }
 
-    override suspend fun suspendNoReturnValueOneParameter(number: Int) {
+    override suspend fun suspendNoReturnValueOneParameter(number: Int?) {
         println("suspendNoReturnValueOneParameter: number: ${number}.")
     }
 

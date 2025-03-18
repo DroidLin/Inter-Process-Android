@@ -1,6 +1,7 @@
 package com.android.inter.process
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
 import androidx.activity.ComponentActivity
@@ -127,6 +128,12 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            this.window.decorView.viewTreeObserver.addOnWindowVisibilityChangeListener {
+
             }
         }
     }

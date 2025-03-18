@@ -36,8 +36,8 @@ internal object FunctionConnectionPool {
         }
     }
 
-    fun removeRecord(androidAddress: ParcelableAndroidAddress) {
-        synchronized(this.connectionRunningRecord) {
+    fun removeRecord(androidAddress: ParcelableAndroidAddress): ConnectRunningTask? {
+        return synchronized(this.connectionRunningRecord) {
             this.connectionRunningRecord.remove(androidAddress)
         }
     }

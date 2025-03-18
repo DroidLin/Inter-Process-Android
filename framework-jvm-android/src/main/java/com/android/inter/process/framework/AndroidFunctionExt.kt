@@ -17,7 +17,7 @@ internal fun <T> Class<T>.callerAndroidFunction(androidFunction: AndroidFunction
 /**
  * generate proxies for the passed in instance, this is only used for remote calling.
  */
-internal fun <T> Class<T>.receiverAndroidFunction(instance: T): AndroidFunction {
+internal fun <T, P : T> Class<T>.receiverAndroidFunction(instance: P): AndroidFunction {
     if (!this.isInterface) throw IllegalArgumentException("parameter clazz requires interface.")
     val parcelableAddress = (processAddress as AndroidAddress).toParcelableAddress()
     val invocationReceiver = InvocationReceiverAndroid(instance = instance) as InvocationReceiver<Any>

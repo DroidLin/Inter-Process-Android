@@ -21,6 +21,11 @@ internal fun AndroidConnectorHandle(
         doConnect(this.address, connectTimeout) { functionHandle(this.address, it) }
 }
 
+/**
+ * real call for remote connection using android components.
+ *
+ * maybe sync call or async call due to different return values.
+ */
 internal fun functionAndroidConnectionHandle(
     remoteAddress: AndroidAddress,
     connectContext: ConnectContext
@@ -35,6 +40,9 @@ internal fun functionAndroidConnectionHandle(
     }
 }
 
+/**
+ * returns [BasicConnection] object through [ConnectContext.basicConnection] callback field.
+ */
 private fun broadcastConnectionInner(broadcastAddress: BroadcastAddress, connectContext: ConnectContext) {
     val intent = Intent(broadcastAddress.broadcastAction)
     intent.`package` = broadcastAddress.packageName
@@ -42,6 +50,9 @@ private fun broadcastConnectionInner(broadcastAddress: BroadcastAddress, connect
     broadcastAddress.context.sendBroadcast(intent)
 }
 
+/**
+ * provider types only allow sync all, returns value through [Bundle].
+ */
 private fun contentProviderConnectionInner(contentProviderAddress: ContentProviderAddress, connectContext: ConnectContext): ConnectContext {
     val uri = contentProviderAddress.uri
     val bundle = Bundle()

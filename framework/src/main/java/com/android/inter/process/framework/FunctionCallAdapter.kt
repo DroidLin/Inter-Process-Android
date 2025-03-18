@@ -18,5 +18,5 @@ fun interface FunctionCallAdapter {
  * blocking call with non-suspend functions
  */
 fun FunctionCallAdapter.syncCall(request: Request): Any? {
-    return runBlocking(Dispatchers.Unconfined) { call(request) }
+    return runBlocking { call(request) }
 }

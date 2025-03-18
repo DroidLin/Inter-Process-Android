@@ -11,7 +11,7 @@ import com.android.inter.process.framework.metadata.InitConfig
  * @author: liuzhongao
  * @since: 2024/9/15 01:25
  */
-fun IPCManager.install(config: InitConfig) {
+fun IPCManager.installAndroid(config: InitConfig) {
     val androidComponent = AndroidComponent()
     installComponent(AndroidAddress::class.java, androidComponent)
     installComponent(BroadcastAddress::class.java, androidComponent)
