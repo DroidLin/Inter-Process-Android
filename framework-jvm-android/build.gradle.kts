@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.android.inter.process.framework"
+    namespace = "com.android.inter.process.framework.android"
     compileSdk = 34
 
     defaultConfig {
