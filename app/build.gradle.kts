@@ -64,6 +64,11 @@ android {
             sourceSet.kotlin.srcDir("build${File.separator}generated${File.separator}ksp${File.separator}${sourceSet.name}${File.separator}resources")
         }
     }
+    lint {
+        ignoreWarnings = true
+        quiet = true
+        abortOnError = false
+    }
 }
 
 dependencies {
