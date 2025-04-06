@@ -27,7 +27,7 @@ dependencies {
 
 publishing {
     publications {
-        create<MavenPublication>("snapshot") {
+        create<MavenPublication>("release") {
             groupId = "io.github.droidlin"
             artifactId = "ioBinder-compiler"
             version = project.properties["component.version"].toString()
@@ -41,7 +41,7 @@ jreleaser {
     deploy {
         maven {
             mavenCentral {
-                create("snapshot") {
+                create("release") {
                     url = "https://central.sonatype.com/api/v1/publisher"
                     namespace = "io.github.droidlin"
                     sign = true

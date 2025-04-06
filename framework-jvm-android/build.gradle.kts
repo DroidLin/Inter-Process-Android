@@ -59,12 +59,15 @@ dependencies {
     kapt(project(":compiler"))
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("snapshot") {
-            groupId = "io.github.droidlin"
-            artifactId = "ioBinder-android"
-            version = project.properties["component.version"].toString()
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                groupId = "io.github.droidlin"
+                artifactId = "ioBinder-android"
+                version = project.properties["component.version"].toString()
+                from(components["release"])
+            }
         }
     }
 }
@@ -73,7 +76,7 @@ jreleaser {
     deploy {
         maven {
             mavenCentral {
-                create("snapshot") {
+                create("release") {
                     url = "https://central.sonatype.com/api/v1/publisher"
                     namespace = "io.github.droidlin"
                     sign = true
