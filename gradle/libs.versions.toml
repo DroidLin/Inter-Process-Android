@@ -47,4 +47,4 @@ jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrai
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-kapt = { id = "kotlin-kapt" }
 ksp-compiler = { id = "com.google.devtools.ksp", version.ref = "ksp-compiler" }
-
+jreleaser-publish = { id = "org.jreleaser", version = "1.17.0" }

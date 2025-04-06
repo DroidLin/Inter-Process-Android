@@ -6,6 +6,3 @@ plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.ksp.compiler) apply false
 }
-
-(rootProject.properties as MutableMap<String, Any>)["buildVer"] = System.currentTimeMillis()
-(rootProject.properties as MutableMap<String, Any>)["version"] = (1002002).toLong()
