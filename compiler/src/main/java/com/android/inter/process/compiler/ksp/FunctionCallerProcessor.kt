@@ -68,6 +68,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                     .appendLine("\t\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                     .appendLine("\t\t\t\t\tfunctionIdentifier = \"${ksPropertyDeclaration.identifier(isSetter = true)}\",")
                     .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this, " } ?: ""}value),")
+                    .appendLine("\t\t\t\t\thostUniqueKey = this@${classDeclaration.simpleName.asString()}Caller.uniqueKey,")
                     .appendLine("\t\t\t\t\tisSuspend = false")
                     .appendLine("\t\t\t\t)")
                     .appendLine("\t\t\t)")
@@ -80,6 +81,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                 .appendLine("\t\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\t\tfunctionIdentifier = \"${ksPropertyDeclaration.identifier(isGetter = true)}\",")
                 .appendLine("\t\t\t\t\tfunctionParameters = listOf(${ksPropertyDeclaration.extensionReceiver?.let { "this" } ?: ""}),")
+                .appendLine("\t\t\t\t\thostUniqueKey = this@${classDeclaration.simpleName.asString()}Caller.uniqueKey,")
                 .appendLine("\t\t\t\t\tisSuspend = false")
                 .appendLine("\t\t\t\t)")
                 .appendLine("\t\t\t) ${if (ksPropertyDeclaration.type.resolve().isMarkedNullable) "as? ${ksPropertyDeclaration.type.typeOfQualifiedName}" else "as ${ksPropertyDeclaration.type.typeOfQualifiedName}"}")
@@ -118,6 +120,7 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
                 .appendLine("\t\t\t\tclazz = ${classDeclaration.simpleName.asString()}::class.java,")
                 .appendLine("\t\t\t\tfunctionIdentifier = \"${ksFunctionDeclaration.identifier}\",")
                 .appendLine("\t\t\t\tfunctionParameters = listOf(${ksFunctionDeclaration.extensionReceiver?.let { "this, " } ?: ""}${parameters}),")
+                .appendLine("\t\t\t\thostUniqueKey = this@${classDeclaration.simpleName.asString()}Caller.uniqueKey,")
                 .appendLine("\t\t\t\tisSuspend = ${ksFunctionDeclaration.isSuspend}")
                 .appendLine("\t\t\t)")
                 .appendLine("\t\t) ${ksFunctionDeclaration.filterReturnType?.let { if (it.resolve().isMarkedNullable) "as? ${it.typeOfQualifiedName}" else "as ${it.typeOfQualifiedName}" } ?: ""}")
@@ -139,7 +142,8 @@ private fun buildCallerStructure(classDeclaration: KSClassDeclaration): String {
         }
         .appendLine()
         .appendLine("internal class ${classDeclaration.simpleName.asString()}Caller constructor(")
-        .appendLine("\tprivate val transformer: ${FunctionCallAdapter::class.java.simpleName}")
+        .appendLine("\tprivate val transformer: ${FunctionCallAdapter::class.java.simpleName},")
+        .appendLine("\tprivate val uniqueKey: ${String::class.java.simpleName}? = null,")
         .appendLine(") : ${classDeclaration.simpleName.asString()} {")
         .apply {
             bodyDeclarations.forEach { bodyDeclaration ->

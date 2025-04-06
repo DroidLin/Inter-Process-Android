@@ -62,8 +62,8 @@ internal fun processCustomFunctionCollector(
     stringBuilder.appendLine()
     stringBuilder.append('\t').appendLine("override fun collect() {")
     iPCInterfaceClassDeclarations.forEach { ksClassDeclaration ->
-        stringBuilder.append('\t').append('\t').appendLine("objectPool.putCallerFactory(${ksClassDeclaration.simpleName.asString()}::class.java) { ${ksClassDeclaration.callerFileName}(it) }")
-        stringBuilder.append('\t').append('\t').appendLine("objectPool.putReceiverFactory(${ksClassDeclaration.simpleName.asString()}::class.java) { ${ksClassDeclaration.receiverFileName}(it) }")
+        stringBuilder.append('\t').append('\t').appendLine("objectPool.putCallerFactory(${ksClassDeclaration.simpleName.asString()}::class.java) { adapter, uniqueKey -> ${ksClassDeclaration.callerFileName}(adapter, uniqueKey) }")
+        stringBuilder.append('\t').append('\t').appendLine("objectPool.putReceiverFactory(${ksClassDeclaration.simpleName.asString()}::class.java) { instance -> ${ksClassDeclaration.receiverFileName}(instance) }")
     }
     serviceFactoryClassDeclarations.forEach { ksClassDeclaration ->
         val annotation = ksClassDeclaration.annotations.find { it.shortName.asString() == IPCServiceFactory::class.java.simpleName }
